@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'venue_provider.dart';
 import '../../../features/auth/presentation/auth_provider.dart';
 import '../../../core/models/venue.dart';
+import '../../../core/models/offer.dart';
 import '../../../core/theme/app_theme.dart';
 
 class VenueListScreen extends ConsumerStatefulWidget {

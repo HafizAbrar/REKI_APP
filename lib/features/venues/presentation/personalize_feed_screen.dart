@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class PersonalizeFeedScreen extends ConsumerStatefulWidget {
-  const PersonalizeFeedScreen({Key? key}) : super(key: key);
+class PersonalizeFeedScreen extends StatefulWidget {
+  const PersonalizeFeedScreen({super.key});
   
   @override
-  ConsumerState<PersonalizeFeedScreen> createState() => _PersonalizeFeedScreenState();
+  State<PersonalizeFeedScreen> createState() => _PersonalizeFeedScreenState();
 }
 
-class _PersonalizeFeedScreenState extends ConsumerState<PersonalizeFeedScreen> {
+class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
   String selectedVibe = 'Party';
   String selectedLocation = 'Northern Quarter';
   double busynessLevel = 0.75;
@@ -316,7 +316,7 @@ class _PersonalizeFeedScreenState extends ConsumerState<PersonalizeFeedScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(28),
-                    onTap: () => Navigator.pop(context),
+                    onTap: () => context.go('/home'),
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24),
                       child: Row(

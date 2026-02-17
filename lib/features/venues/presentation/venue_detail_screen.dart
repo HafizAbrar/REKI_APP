@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 class VenueDetailScreen extends ConsumerWidget {
   final String venueId;
   
-  const VenueDetailScreen({Key? key, required this.venueId}) : super(key: key);
+  const VenueDetailScreen({super.key, required this.venueId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

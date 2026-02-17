@@ -1,4 +1,5 @@
 import '../models/venue.dart';
+import '../models/offer.dart';
 import '../models/user.dart';
 import '../constants/app_constants.dart';
 
@@ -22,7 +23,7 @@ class MockDataService {
             description: 'Happy hour special until 8pm',
             type: 'Drink',
             isActive: true,
-            validUntil: DateTime.now().add(Duration(hours: 4)),
+            validUntil: DateTime.now().add(const Duration(hours: 4)),
           ),
         ],
         lastUpdated: DateTime.now(),
@@ -44,7 +45,7 @@ class MockDataService {
             description: 'Weekday lunch discount',
             type: 'Food',
             isActive: true,
-            validUntil: DateTime.now().add(Duration(days: 1)),
+            validUntil: DateTime.now().add(const Duration(days: 1)),
           ),
         ],
         lastUpdated: DateTime.now(),
@@ -59,6 +60,41 @@ class MockDataService {
         busyness: AppConstants.quiet,
         currentVibe: 'Party',
         availableVibes: ['Party', 'Energetic'],
+        offers: [],
+        lastUpdated: DateTime.now(),
+      ),
+      Venue(
+        id: '4',
+        name: 'Cloud 23',
+        type: 'Bar',
+        latitude: 53.4776,
+        longitude: -2.2463,
+        address: 'Beetham Tower, Manchester',
+        busyness: AppConstants.moderate,
+        currentVibe: 'Romantic',
+        availableVibes: ['Romantic', 'Chill', 'Business'],
+        offers: [
+          Offer(
+            id: 'o3',
+            title: 'Free Appetizer',
+            description: 'With any main course',
+            type: 'Food',
+            isActive: true,
+            validUntil: DateTime.now().add(const Duration(hours: 6)),
+          ),
+        ],
+        lastUpdated: DateTime.now(),
+      ),
+      Venue(
+        id: '5',
+        name: 'Rudy\'s Pizza',
+        type: 'Restaurant',
+        latitude: 53.4839,
+        longitude: -2.2446,
+        address: 'Peter Street, Manchester',
+        busyness: AppConstants.busy,
+        currentVibe: 'Chill',
+        availableVibes: ['Chill', 'Business'],
         offers: [],
         lastUpdated: DateTime.now(),
       ),
@@ -78,7 +114,7 @@ class MockDataService {
   static User getDemoBusinessUser() {
     return User(
       id: 'business1',
-      email: 'venue@reki.app',
+      email: 'business@reki.app',
       name: 'The Alchemist Manager',
       type: UserType.business,
       preferences: [],

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../venues/presentation/venue_provider.dart';
 
 class BusinessDashboardScreen extends ConsumerStatefulWidget {
-  const BusinessDashboardScreen({Key? key}) : super(key: key);
+  const BusinessDashboardScreen({super.key});
   
   @override
   ConsumerState<BusinessDashboardScreen> createState() => _BusinessDashboardScreenState();
@@ -577,7 +579,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(32),
-                  onTap: () {},
+                  onTap: () => context.push('/business-update'),
                   child: Icon(Icons.add, color: Colors.white, size: 32),
                 ),
               ),
@@ -598,10 +600,10 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildNavItem(Icons.space_dashboard, 'DASH', true),
-                    _buildNavItem(Icons.calendar_today, 'EVENTS', false),
-                    _buildNavItem(Icons.leaderboard, 'STATS', false),
-                    _buildNavItem(Icons.person, 'PROFILE', false),
+                    _buildNavItem(Icons.space_dashboard, 'DASH', true, () {}),
+                    _buildNavItem(Icons.calendar_today, 'EVENTS', false, () {}),
+                    _buildNavItem(Icons.leaderboard, 'STATS', false, () => context.push('/manage-offers')),
+                    _buildNavItem(Icons.person, 'PROFILE', false, () {}),
                   ],
                 ),
               ),
@@ -691,26 +693,29 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isActive ? Color(0xFF14B8A6) : Color(0xFF94A3B8),
-          size: 28,
-        ),
-        SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(
+  Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
             color: isActive ? Color(0xFF14B8A6) : Color(0xFF94A3B8),
-            fontSize: 9,
-            fontWeight: isActive ? FontWeight.w900 : FontWeight.bold,
-            letterSpacing: 1,
+            size: 28,
           ),
-        ),
-      ],
+          SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: isActive ? Color(0xFF14B8A6) : Color(0xFF94A3B8),
+              fontSize: 9,
+              fontWeight: isActive ? FontWeight.w900 : FontWeight.bold,
+              letterSpacing: 1,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

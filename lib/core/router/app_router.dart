@@ -16,9 +16,13 @@ import '../../features/offers/presentation/offer_detail_screen.dart';
 import '../../features/offers/presentation/offer_redeemed_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/business/presentation/business_dashboard_screen.dart';
+import '../../features/business/presentation/business_update_screen.dart';
+import '../../features/business/presentation/manage_offers_screen.dart';
+import '../../features/splash/presentation/loading_screen.dart';
+import '../../features/venues/presentation/no_venues_found_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/splash',
+  initialLocation: '/loading',
   errorBuilder: (context, state) => Scaffold(
     body: Center(
       child: Text('Page not found: ${state.uri}'),
@@ -28,6 +32,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/splash',
       builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: '/loading',
+      builder: (context, state) => LoadingScreen(
+        onLoadingComplete: () => context.go('/splash'),
+      ),
     ),
     GoRoute(
       path: '/login',
@@ -97,6 +107,18 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/business-dashboard',
       builder: (context, state) => const BusinessDashboardScreen(),
+    ),
+    GoRoute(
+      path: '/business-update',
+      builder: (context, state) => const BusinessUpdateScreen(),
+    ),
+    GoRoute(
+      path: '/manage-offers',
+      builder: (context, state) => const ManageOffersScreen(),
+    ),
+    GoRoute(
+      path: '/no-venues',
+      builder: (context, state) => const NoVenuesFoundScreen(),
     ),
   ],
 );

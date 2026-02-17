@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/venue.dart';
+import '../../../core/models/offer.dart';
 import '../../../core/services/venue_service.dart';
 import '../../../core/services/auth_service.dart';
 

@@ -210,7 +210,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: () => context.go('/login'),
+                          onPressed: () => context.go('/signup'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppTheme.primaryColor,
