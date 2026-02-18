@@ -3,19 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class OfferRedeemedScreen extends ConsumerWidget {
-  const OfferRedeemedScreen({Key? key}) : super(key: key);
+  const OfferRedeemedScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: Color(0xFF0F172A),
+      backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
           // Background with blur effect
           Container(
             width: double.infinity,
             height: double.infinity,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuA2iDO7DrwRZYBx6o5gotXGL-veXd3iHhd7Y1xpSFMHZyAZd4jEe4rPQd4pezsahPqThD_ZSvZs_TLj8QXYZ2-736l_1_TipTJLlCQCLDGU9WKli8l7GAae_SuzuVtRhVSY5eplMdSEDKtAWvHryiLM3ap5-A5rdmB6q7D1PDLti1BMN6h-n8Y0PJDTJ-I0_dMsawrvfXSxokcMrWwm5IpGns0hLUxag8u4sFfj_BPzJ2_oFA6BAn7G1onZPO586xeV-yIKKA0MEP2_'),
                 fit: BoxFit.cover,
@@ -35,9 +35,9 @@ class OfferRedeemedScreen extends ConsumerWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF0F172A).withOpacity(0.9),
-                  Color(0xFF0F172A).withOpacity(0.95),
-                  Color(0xFF0F172A),
+                  const Color(0xFF0F172A).withOpacity(0.9),
+                  const Color(0xFF0F172A).withOpacity(0.95),
+                  const Color(0xFF0F172A),
                 ],
               ),
             ),
@@ -51,14 +51,14 @@ class OfferRedeemedScreen extends ConsumerWidget {
               height: 320,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFF2DD4BF).withOpacity(0.2),
+                color: const Color(0xFF2DD4BF).withOpacity(0.2),
               ),
             ),
           ),
           // Content
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
                   // Close button
@@ -76,12 +76,12 @@ class OfferRedeemedScreen extends ConsumerWidget {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(20),
                           onTap: () => Navigator.pop(context),
-                          child: Icon(Icons.close, color: Colors.white, size: 24),
+                          child: const Icon(Icons.close, color: Colors.white, size: 24),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   // Success icon and text
                   Column(
                     children: [
@@ -94,10 +94,10 @@ class OfferRedeemedScreen extends ConsumerWidget {
                             height: 96,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFF2DD4BF),
+                              color: const Color(0xFF2DD4BF),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Color(0xFF2DD4BF).withOpacity(0.4),
+                                  color: const Color(0xFF2DD4BF).withOpacity(0.4),
                                   blurRadius: 40,
                                 ),
                               ],
@@ -109,24 +109,24 @@ class OfferRedeemedScreen extends ConsumerWidget {
                             height: 96,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: LinearGradient(
+                              gradient: const LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Color(0xFF2DD4BF).withOpacity(0.5),
+                                  color: const Color(0xFF2DD4BF).withOpacity(0.5),
                                   blurRadius: 30,
                                 ),
                               ],
                             ),
-                            child: Icon(Icons.check, color: Colors.white, size: 48),
+                            child: const Icon(Icons.check, color: Colors.white, size: 48),
                           ),
                         ],
                       ),
-                      SizedBox(height: 24),
-                      Text(
+                      const SizedBox(height: 24),
+                      const Text(
                         "You're in!",
                         style: TextStyle(
                           color: Colors.white,
@@ -135,8 +135,8 @@ class OfferRedeemedScreen extends ConsumerWidget {
                           height: 1.2,
                         ),
                       ),
-                      SizedBox(height: 8),
-                      Text(
+                      const SizedBox(height: 8),
+                      const Text(
                         'Show this screen to the staff at The Alchemist.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -147,12 +147,12 @@ class OfferRedeemedScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  Spacer(),
+                  const Spacer(),
                   // Ticket card
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Color(0xFF1E293B),
+                      color: const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(32),
                       border: Border.all(color: Colors.white.withOpacity(0.05)),
                       boxShadow: [
@@ -166,7 +166,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                       children: [
                         // Top section
                         Padding(
-                          padding: EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(20),
                           child: Column(
                             children: [
                               // Venue info
@@ -177,14 +177,14 @@ class OfferRedeemedScreen extends ConsumerWidget {
                                     height: 64,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(16),
-                                      image: DecorationImage(
+                                      image: const DecorationImage(
                                         image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuBD13F8_qqkBgcfiZTXnjdCM4HOdaEIfsrQzWAK7auvunTd43LpB9c8EwqMkDyW8X7UvIqfZJbxe9vHxqAJYWGP8yudJbhpjp7ANNiwviNlOlFiWJX-4Fx_Hq_eOrTDFzGRZAtKuEMu9Butk5VXos7ioHyELxz2mCMo6-CiTMg32Ab3pfz9IBMyDSUip7ZIGAAxGcR7_s2mKNJeC9n4f-5FuFiOHTer4ZYM1sixnbHjLiS3VR8fJ1CKABLjhEu9peI0EK6GFBv_VeXN'),
                                         fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: 16),
-                                  Expanded(
+                                  const SizedBox(width: 16),
+                                  const Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -224,14 +224,14 @@ class OfferRedeemedScreen extends ConsumerWidget {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               // Offer details
                               Container(
-                                padding: EdgeInsets.all(16),
+                                padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Color(0xFF2DD4BF).withOpacity(0.05),
+                                  color: const Color(0xFF2DD4BF).withOpacity(0.05),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Color(0xFF2DD4BF).withOpacity(0.2)),
+                                  border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.2)),
                                 ),
                                 child: Row(
                                   children: [
@@ -242,16 +242,16 @@ class OfferRedeemedScreen extends ConsumerWidget {
                                         shape: BoxShape.circle,
                                         gradient: LinearGradient(
                                           colors: [
-                                            Color(0xFF2DD4BF).withOpacity(0.2),
-                                            Color(0xFFCFFAFE).withOpacity(0.2),
+                                            const Color(0xFF2DD4BF).withOpacity(0.2),
+                                            const Color(0xFFCFFAFE).withOpacity(0.2),
                                           ],
                                         ),
-                                        border: Border.all(color: Color(0xFF2DD4BF).withOpacity(0.2)),
+                                        border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.2)),
                                       ),
-                                      child: Icon(Icons.local_bar, color: Color(0xFF2DD4BF)),
+                                      child: const Icon(Icons.local_bar, color: Color(0xFF2DD4BF)),
                                     ),
-                                    SizedBox(width: 12),
-                                    Expanded(
+                                    const SizedBox(width: 12),
+                                    const Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
@@ -286,7 +286,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                           children: [
                             Container(
                               height: 1,
-                              margin: EdgeInsets.symmetric(horizontal: 32),
+                              margin: const EdgeInsets.symmetric(horizontal: 32),
                               decoration: BoxDecoration(
                                 border: Border(
                                   top: BorderSide(
@@ -303,7 +303,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                               child: Container(
                                 width: 24,
                                 height: 24,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Color(0xFF0F172A),
                                   shape: BoxShape.circle,
                                 ),
@@ -315,7 +315,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                               child: Container(
                                 width: 24,
                                 height: 24,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Color(0xFF0F172A),
                                   shape: BoxShape.circle,
                                 ),
@@ -325,15 +325,15 @@ class OfferRedeemedScreen extends ConsumerWidget {
                         ),
                         // QR Code section
                         Container(
-                          padding: EdgeInsets.all(24),
-                          decoration: BoxDecoration(
+                          padding: const EdgeInsets.all(24),
+                          decoration: const BoxDecoration(
                             color: Color(0xFF020617),
                             borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
                           ),
                           child: Column(
                             children: [
                               Container(
-                                padding: EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(12),
@@ -355,7 +355,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                                     children: [
                                       // QR pattern simulation
                                       Container(
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           image: DecorationImage(
                                             image: NetworkImage('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K'),
                                             fit: BoxFit.cover,
@@ -376,7 +376,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                                               width: 24,
                                               height: 24,
                                               decoration: BoxDecoration(
-                                                color: Color(0xFF2DD4BF),
+                                                color: const Color(0xFF2DD4BF),
                                                 borderRadius: BorderRadius.circular(2),
                                               ),
                                             ),
@@ -387,8 +387,8 @@ class OfferRedeemedScreen extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 12),
-                              Text(
+                              const SizedBox(height: 12),
+                              const Text(
                                 '#REKI-8829-VIP',
                                 style: TextStyle(
                                   color: Color(0xFF64748B),
@@ -403,7 +403,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
                   // Action buttons
                   Column(
                     children: [
@@ -411,13 +411,13 @@ class OfferRedeemedScreen extends ConsumerWidget {
                         width: double.infinity,
                         height: 56,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             colors: [Color(0xFF0D9488), Color(0xFF2DD4BF)],
                           ),
                           borderRadius: BorderRadius.circular(28),
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF2DD4BF).withOpacity(0.4),
+                              color: const Color(0xFF2DD4BF).withOpacity(0.4),
                               blurRadius: 20,
                             ),
                           ],
@@ -427,7 +427,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(28),
                             onTap: () => context.go('/map'),
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
@@ -445,8 +445,8 @@ class OfferRedeemedScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      SizedBox(height: 12),
-                      Container(
+                      const SizedBox(height: 12),
+                      SizedBox(
                         width: double.infinity,
                         height: 48,
                         child: Material(
@@ -454,7 +454,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(24),
                             onTap: () {},
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
@@ -474,7 +474,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  Spacer(),
+                  const Spacer(),
                 ],
               ),
             ),

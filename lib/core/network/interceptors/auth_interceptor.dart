@@ -6,7 +6,12 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    if (options.path.contains('/auth/')) {
+    // Skip auth header for login, register, refresh, forgot-password, reset-password
+    if (options.path.contains('/auth/login') || 
+        options.path.contains('/auth/register') ||
+        options.path.contains('/auth/refresh') ||
+        options.path.contains('/auth/forgot-password') ||
+        options.path.contains('/auth/reset-password')) {
       handler.next(options);
       return;
     }

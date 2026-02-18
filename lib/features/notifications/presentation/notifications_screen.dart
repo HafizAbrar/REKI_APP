@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../data/notification_management_provider.dart';
+import '../../../core/models/notification.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
-  const NotificationsScreen({Key? key}) : super(key: key);
+  const NotificationsScreen({super.key});
   
   @override
   ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -13,15 +15,23 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   int _selectedTab = 0;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(notificationManagementProvider.notifier).loadNotifications());
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final notificationsAsync = ref.watch(notificationManagementProvider);
+    final unreadCountAsync = ref.watch(unreadCountProvider);
     return Scaffold(
-      backgroundColor: Color(0xFF0F172A),
+      backgroundColor: const Color(0xFF0F172A),
       body: Column(
         children: [
           // Header
           Container(
             decoration: BoxDecoration(
-              color: Color(0xFF0F172A).withOpacity(0.8),
+              color: const Color(0xFF0F172A).withOpacity(0.8),
               border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.1))),
             ),
             child: SafeArea(
@@ -29,11 +39,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 children: [
                   // Title and Mark all read
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           'Notifications',
                           style: TextStyle(
                             color: Colors.white,
@@ -42,8 +52,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {},
-                          child: Text(
+                          onTap: () => ref.read(notificationManagementProvider.notifier).markAllAsRead(),
+                          child: const Text(
                             'Mark all read',
                             style: TextStyle(
                               color: Color(0xFF0D9488),
@@ -58,15 +68,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   // Filter tabs
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     child: Row(
                       children: [
                         _buildFilterTab('All', 0, true),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         _buildFilterTab('Vibes', 1, false),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         _buildFilterTab('Offers', 2, false),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         _buildFilterTab('Social', 3, false),
                       ],
                     ),
@@ -77,102 +87,57 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           // Notifications list
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // New section
-                  _buildSectionHeader('NEW'),
-                  _buildNotificationItem(
-                    icon: Icons.local_fire_department,
-                    iconColor: Color(0xFF0D9488),
-                    iconBg: Color(0xFF0D9488).withOpacity(0.1),
-                    title: "Albert's Schloss",
-                    description: 'Heating up! 🔥 Current vibe: Energetic.',
-                    time: '2m',
-                    hasIndicator: true,
-                    badge: 'Busy',
-                    hasStatusIcon: true,
-                  ),
-                  _buildNotificationItem(
-                    icon: Icons.local_offer,
-                    iconColor: Color(0xFF06B6D4),
-                    iconBg: Color(0xFF06B6D4).withOpacity(0.1),
-                    title: '20 Stories',
-                    description: 'New 2-for-1 cocktail offer live for the next hour.',
-                    time: '15m',
-                    hasIndicator: true,
-                  ),
-                  // Today section
-                  _buildSectionHeader('TODAY'),
-                  _buildNotificationItem(
-                    icon: Icons.trending_up,
-                    iconColor: Color(0xFFE11D48),
-                    iconBg: Color(0xFFE11D48).withOpacity(0.1),
-                    title: 'Warehouse Project',
-                    description: 'Venue is at 90% capacity. Get there soon!',
-                    time: '1h',
-                    opacity: 0.9,
-                  ),
-                  _buildNotificationItem(
-                    icon: Icons.face,
-                    iconColor: Color(0xFF0EA5E9),
-                    iconBg: Color(0xFF0EA5E9).withOpacity(0.1),
-                    title: 'Impossible',
-                    description: 'Your friend Sarah just checked in here.',
-                    time: '3h',
-                    hasStatusIcon: true,
-                    statusIconColor: Color(0xFF0EA5E9),
-                    opacity: 0.9,
-                  ),
-                  // Yesterday section
-                  _buildSectionHeader('YESTERDAY'),
-                  _buildNotificationItem(
-                    icon: Icons.music_note,
-                    iconColor: Color(0xFF6B7280),
-                    iconBg: Color(0xFF374151),
-                    title: 'Blues Kitchen',
-                    description: 'Live jazz night starting in 30 mins.',
-                    time: '1d',
-                    opacity: 0.7,
-                  ),
-                  // End message
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 4,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Color(0xFF6B7280),
-                            shape: BoxShape.circle,
+            child: notificationsAsync.when(
+              data: (notifications) => SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ...notifications.map((notification) => _buildNotificationItem(
+                      notification: notification,
+                      onTap: () => ref.read(notificationManagementProvider.notifier).markAsRead(notification.id),
+                      onDelete: () => ref.read(notificationManagementProvider.notifier).deleteNotification(notification.id),
+                    )),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF6B7280),
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          "YOU'RE ALL CAUGHT UP",
-                          style: TextStyle(
-                            color: Color(0xFF6B7280),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 2,
+                          const SizedBox(width: 8),
+                          const Text(
+                            "YOU'RE ALL CAUGHT UP",
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 2,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 8),
-                        Container(
-                          width: 4,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Color(0xFF6B7280),
-                            shape: BoxShape.circle,
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF6B7280),
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 100),
-                ],
+                    const SizedBox(height: 100),
+                  ],
+                ),
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, _) => Center(
+                child: Text('Error: $error', style: const TextStyle(color: Colors.white)),
               ),
             ),
           ),
@@ -187,14 +152,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       onTap: () => setState(() => _selectedTab = index),
       child: Container(
         height: 36,
-        padding: EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
-          color: isSelected ? Color(0xFF0D9488) : Color(0xFF1E293B),
+          color: isSelected ? const Color(0xFF0D9488) : const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(18),
           border: isSelected ? null : Border.all(color: Colors.white.withOpacity(0.1)),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: Color(0xFF0D9488).withOpacity(0.25),
+              color: const Color(0xFF0D9488).withOpacity(0.25),
               blurRadius: 10,
             ),
           ] : [],
@@ -203,7 +168,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : Color(0xFF94A3B8),
+              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
@@ -216,11 +181,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Widget _buildSectionHeader(String title) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: Color(0xFF0F172A).withOpacity(0.95),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      color: const Color(0xFF0F172A).withOpacity(0.95),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           color: Color(0xFF6B7280),
           fontSize: 12,
           fontWeight: FontWeight.bold,
@@ -231,6 +196,96 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Widget _buildNotificationItem({
+    required notification,
+    required VoidCallback onTap,
+    required VoidCallback onDelete,
+  }) {
+    final iconColor = notification.type == NotificationType.offer
+        ? const Color(0xFF06B6D4)
+        : notification.type == NotificationType.venue
+            ? const Color(0xFF0D9488)
+            : const Color(0xFF6B7280);
+    final icon = notification.type == NotificationType.offer
+        ? Icons.local_offer
+        : notification.type == NotificationType.venue
+            ? Icons.local_fire_department
+            : Icons.info;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Dismissible(
+        key: Key(notification.id),
+        direction: DismissDirection.endToStart,
+        onDismissed: (_) => onDelete(),
+        background: Container(
+          color: Colors.red,
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          child: const Icon(Icons.delete, color: Colors.white),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      notification.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      notification.message,
+                      style: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                children: [
+                  if (!notification.isRead)
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0D9488),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationItemOld({
     required IconData icon,
     required Color iconColor,
     required Color iconBg,
@@ -246,7 +301,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return Opacity(
       opacity: opacity,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
         ),
@@ -271,7 +326,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     child: Container(
                       width: 20,
                       height: 20,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Color(0xFF0F172A),
                         shape: BoxShape.circle,
                       ),
@@ -280,7 +335,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           width: 12,
                           height: 12,
                           decoration: BoxDecoration(
-                            color: statusIconColor ?? Color(0xFFEA580C),
+                            color: statusIconColor ?? const Color(0xFFEA580C),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -289,7 +344,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   ),
               ],
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             // Content
             Expanded(
               child: Column(
@@ -300,7 +355,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -308,14 +363,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       ),
                       if (badge != null)
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Color(0xFF0D9488).withOpacity(0.1),
+                            color: const Color(0xFF0D9488).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             badge,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Color(0xFF0D9488),
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -324,10 +379,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         ),
                     ],
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     description,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF94A3B8),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -336,29 +391,29 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 ],
               ),
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             // Time and indicator
             Column(
               children: [
                 Text(
                   time,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Color(0xFF6B7280),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 if (hasIndicator)
                   Container(
                     width: 10,
                     height: 10,
                     decoration: BoxDecoration(
-                      color: Color(0xFF0D9488),
+                      color: const Color(0xFF0D9488),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0xFF0D9488).withOpacity(0.6),
+                          color: const Color(0xFF0D9488).withOpacity(0.6),
                           blurRadius: 8,
                         ),
                       ],
@@ -376,12 +431,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return Container(
       height: 88,
       decoration: BoxDecoration(
-        color: Color(0xFF0F172A).withOpacity(0.9),
+        color: const Color(0xFF0F172A).withOpacity(0.9),
         border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
       ),
       child: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -406,7 +461,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             children: [
               Icon(
                 icon,
-                color: isActive ? Color(0xFF0D9488) : Color(0xFF6B7280),
+                color: isActive ? const Color(0xFF0D9488) : const Color(0xFF6B7280),
                 size: 28,
               ),
               if (hasNotification)
@@ -417,19 +472,19 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: Color(0xFF0D9488),
+                      color: const Color(0xFF0D9488),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Color(0xFF0F172A), width: 2),
+                      border: Border.all(color: const Color(0xFF0F172A), width: 2),
                     ),
                   ),
                 ),
             ],
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: isActive ? Color(0xFF0D9488) : Color(0xFF6B7280),
+              color: isActive ? const Color(0xFF0D9488) : const Color(0xFF6B7280),
               fontSize: 10,
               fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
             ),

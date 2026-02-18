@@ -22,11 +22,15 @@ class User {
   };
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json['id'],
-    email: json['email'],
-    name: json['name'],
-    type: UserType.values.firstWhere((e) => e.toString() == json['type']),
-    preferences: List<String>.from(json['preferences']),
+    id: json['id']?.toString() ?? '',
+    email: json['email'] ?? '',
+    name: json['name'] ?? '',
+    type: json['type'] is String 
+        ? (json['type'] == 'business' ? UserType.business : UserType.customer)
+        : UserType.customer,
+    preferences: json['preferences'] != null 
+        ? List<String>.from(json['preferences']) 
+        : [],
   );
 }
 

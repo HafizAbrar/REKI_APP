@@ -20,4 +20,22 @@ class AppNotification {
     required this.timestamp,
     this.isRead = false,
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'message': message,
+    'type': type.name,
+    'timestamp': timestamp.toIso8601String(),
+    'isRead': isRead,
+  };
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) => AppNotification(
+    id: json['id'],
+    title: json['title'],
+    message: json['message'],
+    type: NotificationType.values.firstWhere((e) => e.name == json['type']),
+    timestamp: DateTime.parse(json['timestamp']),
+    isRead: json['isRead'] ?? false,
+  );
 }

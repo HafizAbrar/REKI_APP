@@ -7,7 +7,7 @@ import '../../../core/theme/app_theme.dart';
 class PhoneVerificationScreen extends ConsumerStatefulWidget {
   final String phoneNumber;
   
-  const PhoneVerificationScreen({Key? key, required this.phoneNumber}) : super(key: key);
+  const PhoneVerificationScreen({super.key, required this.phoneNumber});
   
   @override
   ConsumerState<PhoneVerificationScreen> createState() => _PhoneVerificationScreenState();
@@ -30,7 +30,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
   void _startCountdown() {
     _canResend = false;
     _countdown = 60;
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_countdown > 0) {
         setState(() => _countdown--);
       } else {
@@ -48,7 +48,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
           // Background image
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 image: DecorationImage(
                   image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuAbUJHdVYXEM5nb7gdCJuVW7JCDHX57JIbHlYa1QpCwLUn3IQ18tWdOP6jjy3OzZFeql3aQIRSc8wPeA8vaC6vRU3T_5DxF_C73GGcJIfrB1ITMzi9x8PXpXmxXCfSpxFffphHCdnz0ZqfuDGZKFvKzy6FldO8KPMejI_K6IPmQc2plM0xNFnJs5m-WKeFdub0DJzwa6N37lz-xVZjkCCXVWncXp2ZAd7Fua4l0bLXe22WfCLqtsp83Ep1GvowtKY7ZneCKhcWUxEBs'),
                   fit: BoxFit.cover,
@@ -63,22 +63,22 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF0F172A).withOpacity(0.7),
-                  Color(0xFF0F172A).withOpacity(0.95),
-                  Color(0xFF0F172A),
+                  const Color(0xFF0F172A).withOpacity(0.7),
+                  const Color(0xFF0F172A).withOpacity(0.95),
+                  const Color(0xFF0F172A),
                 ],
               ),
             ),
           ),
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
                   Row(
                     children: [
                       IconButton(
-                        icon: Icon(Icons.arrow_back, color: AppTheme.primaryColor),
+                        icon: const Icon(Icons.arrow_back, color: AppTheme.primaryColor),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -88,8 +88,8 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 40),
-                          NeonText(
+                          const SizedBox(height: 40),
+                          const NeonText(
                             'Verify Phone',
                             style: TextStyle(
                               fontSize: 36,
@@ -97,34 +97,34 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
                               color: AppTheme.primaryColor,
                             ),
                           ),
-                          SizedBox(height: 16),
-                          Text(
+                          const SizedBox(height: 16),
+                          const Text(
                             'Enter the 6-digit code sent to',
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.white70,
                             ),
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Text(
                             widget.phoneNumber,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: AppTheme.primaryColor,
                             ),
                           ),
-                          SizedBox(height: 48),
+                          const SizedBox(height: 48),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: List.generate(6, (index) => _buildOTPField(index)),
                           ),
-                          SizedBox(height: 32),
+                          const SizedBox(height: 32),
                           Center(
                             child: _canResend
                                 ? TextButton(
                                     onPressed: _resendCode,
-                                    child: Text(
+                                    child: const Text(
                                       'Resend Code',
                                       style: TextStyle(
                                         fontSize: 16,
@@ -135,13 +135,13 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
                                   )
                                 : Text(
                                     'Resend code in $_countdown seconds',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.white54,
                                     ),
                                   ),
                           ),
-                          SizedBox(height: 32),
+                          const SizedBox(height: 32),
                           SizedBox(
                             width: double.infinity,
                             child: GlowButton(
@@ -184,12 +184,12 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
           textAlign: TextAlign.center,
           keyboardType: TextInputType.number,
           maxLength: 1,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             counterText: '',
             border: InputBorder.none,
           ),
@@ -211,7 +211,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
     String code = _controllers.map((c) => c.text).join();
     if (code.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please enter complete code'),
           backgroundColor: Colors.red,
         ),
@@ -220,12 +220,12 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
     }
 
     setState(() => _isVerifying = true);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     setState(() => _isVerifying = false);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Phone verified successfully!'),
           backgroundColor: AppTheme.primaryColor,
         ),
@@ -236,7 +236,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
 
   void _resendCode() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('Verification code sent!'),
         backgroundColor: AppTheme.primaryColor,
       ),

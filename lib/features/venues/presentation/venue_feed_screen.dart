@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 
 class VenueFeedScreen extends ConsumerStatefulWidget {
-  const VenueFeedScreen({Key? key}) : super(key: key);
+  const VenueFeedScreen({super.key});
   
   @override
   ConsumerState<VenueFeedScreen> createState() => _VenueFeedScreenState();
@@ -24,7 +24,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
             _buildFilterTabs(),
             Expanded(
               child: ListView(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 children: [
                   _buildVenueCard(
                     name: 'The Alchemist',
@@ -38,7 +38,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                     offerDescription: '2-for-1 Cocktails until 7pm',
                     isBookmarked: true,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _buildVenueCard(
                     name: 'Albert\'s Schloss',
                     subtitle: 'Bier Halle • Peter Street',
@@ -52,7 +52,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                     vibeTags: ['Loud', 'Energetic', 'Table Dancing'],
                     isBookmarked: false,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _buildVenueCard(
                     name: 'Northern Monk',
                     subtitle: 'Taproom • Northern Quarter',
@@ -65,10 +65,10 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                     offerTitle: 'UPCOMING',
                     offerDescription: 'Quiz Night starts at 8pm',
                     offerIcon: Icons.calendar_month,
-                    offerColor: Color(0xFFBAE6FD),
+                    offerColor: const Color(0xFFBAE6FD),
                     isBookmarked: false,
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   Center(
                     child: Container(
                       height: 4,
@@ -79,7 +79,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -92,7 +92,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
       decoration: BoxDecoration(
         color: AppTheme.surface.withOpacity(0.75),
         border: Border(
@@ -117,7 +117,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                         color: AppTheme.primaryColor.withOpacity(0.5),
                         width: 2,
                       ),
-                      image: DecorationImage(
+                      image: const DecorationImage(
                         image: NetworkImage('https://i.pravatar.cc/150?img=1'),
                         fit: BoxFit.cover,
                       ),
@@ -141,8 +141,8 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                   ),
                 ],
               ),
-              SizedBox(width: 12),
-              Expanded(
+              const SizedBox(width: 12),
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -173,7 +173,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                 ),
               ),
               _buildHeaderButton(Icons.search),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               _buildHeaderButton(Icons.tune),
             ],
           ),
@@ -201,10 +201,10 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
   Widget _buildFilterTabs() {
     return Container(
       height: 60,
-      padding: EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
           _buildTab('Trending', Icons.local_fire_department, 0),
           _buildTab('Bars', Icons.local_bar, 1),
@@ -218,11 +218,11 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
   Widget _buildTab(String label, IconData icon, int index) {
     bool isSelected = _selectedTab == index;
     return Padding(
-      padding: EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.only(right: 8),
       child: InkWell(
         onTap: () => setState(() => _selectedTab = index),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isSelected ? AppTheme.primaryColor : Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(24),
@@ -239,14 +239,14 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
             children: [
               Icon(
                 icon,
-                color: isSelected ? AppTheme.darkBg : Color(0xFFCBD5E1),
+                color: isSelected ? AppTheme.darkBg : const Color(0xFFCBD5E1),
                 size: 18,
               ),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? AppTheme.darkBg : Color(0xFFCBD5E1),
+                  color: isSelected ? AppTheme.darkBg : const Color(0xFFCBD5E1),
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -285,7 +285,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
             blurRadius: 20,
-            offset: Offset(0, 10),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -295,18 +295,18 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 child: Container(
                   height: 240,
                   width: double.infinity,
                   color: AppTheme.surfaceHighlight,
-                  child: Icon(Icons.image, size: 60, color: Color(0xFF64748B)),
+                  child: const Icon(Icons.image, size: 60, color: Color(0xFF64748B)),
                 ),
               ),
               Container(
                 height: 240,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -314,7 +314,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                       Colors.transparent,
                       AppTheme.darkBg.withOpacity(0.9),
                     ],
-                    stops: [0.3, 1.0],
+                    stops: const [0.3, 1.0],
                   ),
                 ),
               ),
@@ -329,7 +329,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                         children: [
                           if (statusLabel != null) ...[
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: (statusColor ?? Colors.red).withOpacity(0.9),
                                 borderRadius: BorderRadius.circular(24),
@@ -349,15 +349,15 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                                     Container(
                                       width: 8,
                                       height: 8,
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         color: Colors.white,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
-                                  SizedBox(width: 6),
+                                  const SizedBox(width: 6),
                                   Text(
                                     statusLabel,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
@@ -366,11 +366,11 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                                 ],
                               ),
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                           ],
                           if (vibeLabel != null)
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Colors.black.withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(24),
@@ -384,11 +384,11 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                                 children: [
                                   if (vibeIcon != null) ...[
                                     Icon(vibeIcon, color: Colors.white, size: 14),
-                                    SizedBox(width: 6),
+                                    const SizedBox(width: 6),
                                   ],
                                   Text(
                                     vibeLabel,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
@@ -435,12 +435,12 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
             ],
           ),
           Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppTheme.surface.withOpacity(0.75),
                     borderRadius: BorderRadius.circular(16),
@@ -461,16 +461,16 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                               children: [
                                 Text(
                                   name,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
                                   subtitle,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Color(0xFFCBD5E1),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -489,18 +489,18 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                                       : vibeScore != null
                                           ? 'Vibe Score'
                                           : 'Noise Level',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Color(0xFF94A3B8),
                                     fontSize: 10,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
                                   waitTime ?? vibeScore ?? noiseLevel ?? '',
                                   style: TextStyle(
                                     color: vibeScore != null
-                                        ? Color(0xFF4ADE80)
+                                        ? const Color(0xFF4ADE80)
                                         : Colors.white,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -511,19 +511,19 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                         ],
                       ),
                       if (vibeTags != null && vibeTags.isNotEmpty) ...[
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: vibeTags.map((tag) => Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.05),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               tag,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Color(0xFFCBD5E1),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -533,9 +533,9 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                         ),
                       ],
                       if (offerDescription != null) ...[
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Container(
-                          padding: EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             border: Border(
                               top: BorderSide(
@@ -547,7 +547,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                           child: Row(
                             children: [
                               Container(
-                                padding: EdgeInsets.all(6),
+                                padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
                                   color: (offerColor ?? AppTheme.primaryColor).withOpacity(0.2),
                                   shape: BoxShape.circle,
@@ -558,7 +558,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                                   size: 18,
                                 ),
                               ),
-                              SizedBox(width: 12),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -572,10 +572,10 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                                         letterSpacing: 1.2,
                                       ),
                                     ),
-                                    SizedBox(height: 2),
+                                    const SizedBox(height: 2),
                                     Text(
                                       offerDescription,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,
@@ -601,8 +601,8 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
 
   Widget _buildBottomNav() {
     return Container(
-      margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
-      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.surface.withOpacity(0.75),
         borderRadius: BorderRadius.circular(32),
@@ -614,7 +614,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
           BoxShadow(
             color: Colors.black.withOpacity(0.5),
             blurRadius: 30,
-            offset: Offset(0, 10),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -642,15 +642,15 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
             children: [
               Icon(
                 icon,
-                color: isActive ? AppTheme.primaryColor : Color(0xFF94A3B8),
+                color: isActive ? AppTheme.primaryColor : const Color(0xFF94A3B8),
                 size: 24,
               ),
               if (isActive)
                 Container(
-                  margin: EdgeInsets.only(top: 4),
+                  margin: const EdgeInsets.only(top: 4),
                   width: 4,
                   height: 4,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
                   ),
@@ -672,7 +672,7 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
                     width: 2,
                   ),
                 ),
-                child: Center(
+                child: const Center(
                   child: Text(
                     '3',
                     style: TextStyle(

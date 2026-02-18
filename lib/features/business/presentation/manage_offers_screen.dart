@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../offers/data/offer_management_provider.dart';
 
 class ManageOffersScreen extends ConsumerStatefulWidget {
-  const ManageOffersScreen({Key? key}) : super(key: key);
+  const ManageOffersScreen({super.key});
   
   @override
   ConsumerState<ManageOffersScreen> createState() => _ManageOffersScreenState();
 }
 
 class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
-  bool _studentNightEnabled = true;
-  bool _cocktailsEnabled = false;
-  bool _flashSaleEnabled = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(offerManagementProvider.notifier).loadOffers());
+  }
 
   @override
   Widget build(BuildContext context) {
+    final offersAsync = ref.watch(offerManagementProvider);
     return Scaffold(
-      backgroundColor: Color(0xFF0A1214),
+      backgroundColor: const Color(0xFF0A1214),
       body: Stack(
         children: [
           // Background glow
@@ -27,7 +31,7 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
               width: 400,
               height: 500,
               decoration: BoxDecoration(
-                color: Color(0xFF5EEAD4).withOpacity(0.05),
+                color: const Color(0xFF5EEAD4).withOpacity(0.05),
                 shape: BoxShape.circle,
               ),
             ),
@@ -37,13 +41,13 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
               // Header
               SafeArea(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
                       Container(
                         width: 40,
                         height: 40,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                         ),
                         child: Material(
@@ -51,11 +55,11 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(20),
                             onTap: () => Navigator.pop(context),
-                            child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 24),
+                            child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 24),
                           ),
                         ),
                       ),
-                      Expanded(
+                      const Expanded(
                         child: Text(
                           'Manage Offers',
                           textAlign: TextAlign.center,
@@ -66,7 +70,7 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                           ),
                         ),
                       ),
-                      Text(
+                      const Text(
                         'Save',
                         style: TextStyle(
                           color: Color(0xFF5EEAD4),
@@ -81,7 +85,7 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
               // Content
               Expanded(
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -90,16 +94,16 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                         children: [
                           Expanded(
                             child: Container(
-                              padding: EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: Color(0xFF131F22),
+                                color: const Color(0xFF131F22),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.white.withOpacity(0.05)),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
+                                  const Row(
                                     children: [
                                       Icon(Icons.redeem, color: Color(0xFF5EEAD4), size: 20),
                                       SizedBox(width: 8),
@@ -113,10 +117,10 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 8),
+                                  const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Text(
+                                      const Text(
                                         '142',
                                         style: TextStyle(
                                           color: Colors.white,
@@ -124,14 +128,14 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      SizedBox(width: 8),
+                                      const SizedBox(width: 8),
                                       Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: Color(0xFF2DD4BF).withOpacity(0.1),
+                                          color: const Color(0xFF2DD4BF).withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(12),
                                         ),
-                                        child: Row(
+                                        child: const Row(
                                           children: [
                                             Icon(Icons.trending_up, color: Color(0xFF2DD4BF), size: 14),
                                             SizedBox(width: 2),
@@ -152,19 +156,19 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Container(
-                              padding: EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: Color(0xFF131F22),
+                                color: const Color(0xFF131F22),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.white.withOpacity(0.05)),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
+                                  const Row(
                                     children: [
                                       Icon(Icons.groups, color: Color(0xFF5EEAD4), size: 20),
                                       SizedBox(width: 8),
@@ -178,10 +182,10 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 8),
+                                  const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Text(
+                                      const Text(
                                         '2.4k',
                                         style: TextStyle(
                                           color: Colors.white,
@@ -189,14 +193,14 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      SizedBox(width: 8),
+                                      const SizedBox(width: 8),
                                       Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: Color(0xFF2DD4BF).withOpacity(0.1),
+                                          color: const Color(0xFF2DD4BF).withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(12),
                                         ),
-                                        child: Row(
+                                        child: const Row(
                                           children: [
                                             Icon(Icons.trending_up, color: Color(0xFF2DD4BF), size: 14),
                                             SizedBox(width: 2),
@@ -219,9 +223,9 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       // Chart Section
-                      Text(
+                      const Text(
                         'Projected Vibe Impact',
                         style: TextStyle(
                           color: Colors.white,
@@ -229,11 +233,11 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Container(
-                        padding: EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Color(0xFF131F22),
+                          color: const Color(0xFF131F22),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.white.withOpacity(0.05)),
                         ),
@@ -242,7 +246,7 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Column(
+                                const Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
@@ -266,24 +270,24 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                                   ],
                                 ),
                                 Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Color(0xFF5EEAD4).withOpacity(0.1),
+                                    color: const Color(0xFF5EEAD4).withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Color(0xFF5EEAD4).withOpacity(0.2)),
+                                    border: Border.all(color: const Color(0xFF5EEAD4).withOpacity(0.2)),
                                   ),
                                   child: Row(
                                     children: [
                                       Container(
                                         width: 8,
                                         height: 8,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           color: Color(0xFF5EEAD4),
                                           shape: BoxShape.circle,
                                         ),
                                       ),
-                                      SizedBox(width: 6),
-                                      Text(
+                                      const SizedBox(width: 6),
+                                      const Text(
                                         'Live Sim',
                                         style: TextStyle(
                                           color: Color(0xFF5EEAD4),
@@ -296,16 +300,16 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 24),
-                            Container(
+                            const SizedBox(height: 24),
+                            SizedBox(
                               height: 160,
                               child: CustomPaint(
-                                size: Size(double.infinity, 160),
+                                size: const Size(double.infinity, 160),
                                 painter: ChartPainter(),
                               ),
                             ),
-                            SizedBox(height: 8),
-                            Row(
+                            const SizedBox(height: 8),
+                            const Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text('18:00', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 10, fontWeight: FontWeight.bold)),
@@ -318,9 +322,9 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 32),
+                      const SizedBox(height: 32),
                       // Active Offers
-                      Row(
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
@@ -341,39 +345,19 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       // Offer Cards
-                      _buildOfferCard(
-                        'Student Night',
-                        '50% Off Entry • 22:00 - 02:00',
-                        Icons.local_bar,
-                        'Vibe Booster',
-                        _studentNightEnabled,
-                        (value) => setState(() => _studentNightEnabled = value),
-                        isActive: true,
+                      offersAsync.when(
+                        data: (offers) => Column(
+                          children: offers.map((offer) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildOfferCard(offer),
+                          )).toList(),
+                        ),
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (error, _) => Text('Error: $error', style: const TextStyle(color: Colors.white)),
                       ),
-                      SizedBox(height: 12),
-                      _buildOfferCard(
-                        '2-for-1 Cocktails',
-                        'Happy Hour • 18:00 - 20:00',
-                        Icons.celebration,
-                        null,
-                        _cocktailsEnabled,
-                        (value) => setState(() => _cocktailsEnabled = value),
-                        isActive: false,
-                      ),
-                      SizedBox(height: 12),
-                      _buildOfferCard(
-                        'Flash Sale',
-                        'Free Shot w/ Entry • Active Now',
-                        Icons.flash_on,
-                        'Live',
-                        _flashSaleEnabled,
-                        (value) => setState(() => _flashSaleEnabled = value),
-                        isActive: true,
-                        isLive: true,
-                      ),
-                      SizedBox(height: 120),
+                      const SizedBox(height: 120),
                     ],
                   ),
                 ),
@@ -386,15 +370,15 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFF0A1214).withOpacity(0),
-                    Color(0xFF0A1214).withOpacity(0.95),
-                    Color(0xFF0A1214),
+                    const Color(0xFF0A1214).withOpacity(0),
+                    const Color(0xFF0A1214).withOpacity(0.95),
+                    const Color(0xFF0A1214),
                   ],
                 ),
               ),
@@ -403,11 +387,11 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                   width: double.infinity,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: Color(0xFF5EEAD4),
+                    color: const Color(0xFF5EEAD4),
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF5EEAD4).withOpacity(0.1),
+                        color: const Color(0xFF5EEAD4).withOpacity(0.1),
                         blurRadius: 10,
                       ),
                     ],
@@ -417,7 +401,7 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(28),
                       onTap: () {},
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add, color: Color(0xFF0A1214)),
@@ -443,7 +427,70 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
     );
   }
 
-  Widget _buildOfferCard(
+  Widget _buildOfferCard(offer) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131F22),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: offer.isActive ? const Color(0xFF5EEAD4).withOpacity(0.3) : Colors.white.withOpacity(0.05),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: offer.isActive ? const Color(0xFF008080).withOpacity(0.1) : Colors.white.withOpacity(0.05),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.local_activity,
+              color: offer.isActive ? const Color(0xFF5EEAD4) : const Color(0xFF6B7280),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  offer.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  offer.description,
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: offer.isActive,
+            onChanged: (value) => _toggleOffer(offer.id, value),
+            activeColor: const Color(0xFF5EEAD4),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _toggleOffer(String id, bool isActive) async {
+    await ref.read(offerManagementProvider.notifier).updateOfferStatus(id, isActive);
+  }
+
+  Widget _buildOfferCardOld(
     String title,
     String subtitle,
     IconData icon,
@@ -454,16 +501,16 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
     bool isLive = false,
   }) {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Color(0xFF131F22),
+        color: const Color(0xFF131F22),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isActive ? Color(0xFF5EEAD4).withOpacity(0.3) : Colors.white.withOpacity(0.05),
+          color: isActive ? const Color(0xFF5EEAD4).withOpacity(0.3) : Colors.white.withOpacity(0.05),
         ),
         boxShadow: isActive ? [
           BoxShadow(
-            color: Color(0xFF008080).withOpacity(0.05),
+            color: const Color(0xFF008080).withOpacity(0.05),
             blurRadius: 10,
           ),
         ] : [],
@@ -474,48 +521,48 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: isActive ? Color(0xFF008080).withOpacity(0.1) : Colors.white.withOpacity(0.05),
+              color: isActive ? const Color(0xFF008080).withOpacity(0.1) : Colors.white.withOpacity(0.05),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: isActive ? Color(0xFF5EEAD4) : Color(0xFF6B7280),
+              color: isActive ? const Color(0xFF5EEAD4) : const Color(0xFF6B7280),
               size: 24,
             ),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Color(0xFF9CA3AF),
                     fontSize: 14,
                   ),
                 ),
                 if (badge != null) ...[
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: isLive ? Color(0xFF2DD4BF).withOpacity(0.15) : Color(0xFF008080).withOpacity(0.1),
+                      color: isLive ? const Color(0xFF2DD4BF).withOpacity(0.15) : const Color(0xFF008080).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       badge,
                       style: TextStyle(
-                        color: isLive ? Color(0xFF2DD4BF) : Color(0xFF5EEAD4),
+                        color: isLive ? const Color(0xFF2DD4BF) : const Color(0xFF5EEAD4),
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
@@ -529,9 +576,9 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
           Switch(
             value: isEnabled,
             onChanged: onToggle,
-            activeColor: Color(0xFF5EEAD4),
+            activeColor: const Color(0xFF5EEAD4),
             inactiveThumbColor: Colors.white,
-            inactiveTrackColor: Color(0xFF374151),
+            inactiveTrackColor: const Color(0xFF374151),
           ),
         ],
       ),
@@ -543,7 +590,7 @@ class ChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Color(0xFF008080)
+      ..color = const Color(0xFF008080)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -571,8 +618,8 @@ class ChartPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Color(0xFF008080).withOpacity(0.4),
-          Color(0xFF008080).withOpacity(0.0),
+          const Color(0xFF008080).withOpacity(0.4),
+          const Color(0xFF008080).withOpacity(0.0),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 

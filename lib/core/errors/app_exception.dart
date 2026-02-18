@@ -9,11 +9,11 @@ class AppException implements Exception {
 }
 
 class NetworkException extends AppException {
-  NetworkException(String message) : super(message);
+  NetworkException(super.message);
 }
 
 class ValidationException extends AppException {
-  ValidationException(String message) : super(message, statusCode: 400);
+  ValidationException(super.message) : super(statusCode: 400);
 }
 
 class UnauthorizedException extends AppException {
@@ -21,5 +21,5 @@ class UnauthorizedException extends AppException {
 }
 
 class ServerException extends AppException {
-  ServerException(String message) : super(message, statusCode: 500);
+  ServerException(super.message) : super(statusCode: 500);
 }

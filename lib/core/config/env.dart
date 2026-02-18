@@ -2,7 +2,7 @@ class Env {
   static const String env = String.fromEnvironment('ENV', defaultValue: 'dev');
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000/',
+    defaultValue: 'http://18.171.182.71',
   );
   
   static bool get isProd => env == 'prod';

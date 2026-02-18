@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
   
   @override
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
@@ -18,7 +18,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: Duration(seconds: 2),
+      duration: const Duration(seconds: 2),
       vsync: this,
     );
     _progressAnimation = Tween<double>(begin: 0.0, end: 0.75).animate(
@@ -36,13 +36,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF021218),
+      backgroundColor: const Color(0xFF021218),
       body: Stack(
         children: [
           // Background image with overlay
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 image: DecorationImage(
                   image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuBzborjAAdzPy8cboHGNn3vzCWGkdUZRSrVYM9692EDdSjJq3vDM0JjjzVv9I5f-vKl2tc3DMSbxe1b9IzsFl9zqjpRCkImdV8wNWbvPlYyFPQ0sFXba-ZauTeINFolzYVnqV7g3HaxopKAoTHS0GfsorznNvYR817DeueCVXm6nPeiWw_z0XnJh2ELFEwZuOVrpy_HQxUrgNJJiTkYDroXCzL6xtVt-_mwTyMMwJ-zJL7DFrF_Nbq664wqJd4ydpDZ3_kydKWqtVBL'),
                   fit: BoxFit.cover,
@@ -55,14 +55,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
             child: Container(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
-                  center: Alignment(0, -0.4),
+                  center: const Alignment(0, -0.4),
                   radius: 1.2,
                   colors: [
                     AppTheme.primaryColor.withOpacity(0.25),
-                    Color(0xFF021218).withOpacity(0.8),
-                    Color(0xFF021218),
+                    const Color(0xFF021218).withOpacity(0.8),
+                    const Color(0xFF021218),
                   ],
-                  stops: [0, 0.6, 1],
+                  stops: const [0, 0.6, 1],
                 ),
               ),
             ),
@@ -75,9 +75,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFF021218).withOpacity(0.3),
+                    const Color(0xFF021218).withOpacity(0.3),
                     Colors.transparent,
-                    Color(0xFF021218),
+                    const Color(0xFF021218),
                   ],
                 ),
               ),
@@ -86,10 +86,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
           // Content
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  Spacer(flex: 1),
+                  const Spacer(flex: 1),
                   // Logo and tagline section
                   Expanded(
                     flex: 2,
@@ -121,7 +121,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Text(
                                 'REKI',
                                 style: TextStyle(
@@ -140,9 +140,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                             ],
                           ),
                         ),
-                        SizedBox(height: 32),
+                        const SizedBox(height: 32),
                         Container(
-                          constraints: BoxConstraints(maxWidth: 260),
+                          constraints: const BoxConstraints(maxWidth: 260),
                           child: Text(
                             'Discover the vibe before you go out.',
                             textAlign: TextAlign.center,
@@ -163,7 +163,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                     children: [
                       // Progress section
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -181,7 +181,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                                 ),
                               ],
                             ),
-                            SizedBox(height: 12),
+                            const SizedBox(height: 12),
                             AnimatedBuilder(
                               animation: _progressAnimation,
                               builder: (context, child) {
@@ -213,7 +213,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                           ],
                         ),
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       // Get Started button
                       Container(
                         width: double.infinity,
@@ -231,13 +231,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                           onPressed: () => context.go('/login'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
-                            foregroundColor: Color(0xFF0f766e),
+                            foregroundColor: const Color(0xFF0f766e),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(28),
                             ),
                             elevation: 0,
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
@@ -254,7 +254,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                           ),
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       // Location indicator
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -264,7 +264,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                             size: 14,
                             color: AppTheme.iceBlue.withOpacity(0.4),
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
                             'MANCHESTER, UK',
                             style: TextStyle(

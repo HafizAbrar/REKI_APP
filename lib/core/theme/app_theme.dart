@@ -17,7 +17,7 @@ class AppTheme {
     scaffoldBackgroundColor: darkBg,
     primaryColor: primaryColor,
     cardColor: cardBg,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: darkBg,
       elevation: 0,
     ),
@@ -31,12 +31,12 @@ class GlowContainer extends StatelessWidget {
   final double glowSpread;
   
   const GlowContainer({
-    Key? key,
+    super.key,
     required this.child,
     this.glowColor = AppTheme.primaryColor,
     this.glowRadius = 20,
     this.glowSpread = 5,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -60,7 +60,7 @@ class NeonText extends StatelessWidget {
   final TextStyle? style;
   final Color glowColor;
   
-  const NeonText(this.text, {Key? key, this.style, this.glowColor = AppTheme.primaryColor}) : super(key: key);
+  const NeonText(this.text, {super.key, this.style, this.glowColor = AppTheme.primaryColor});
   
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class NeonText extends StatelessWidget {
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2
             ..color = glowColor.withOpacity(0.5)
-            ..maskFilter = MaskFilter.blur(BlurStyle.outer, 10),
+            ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 10),
         )),
         Text(text, style: style),
       ],
@@ -87,13 +87,13 @@ class GlowButton extends StatelessWidget {
   final Color? textColor;
   
   const GlowButton({
-    Key? key,
+    super.key,
     required this.text,
     this.onPressed,
     this.color = AppTheme.primaryColor,
     this.isLoading = false,
     this.textColor,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -112,7 +112,7 @@ class GlowButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          padding: EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           elevation: 0,
         ),
         onPressed: isLoading ? null : onPressed,
@@ -128,7 +128,7 @@ class GlowCard extends StatelessWidget {
   final Widget child;
   final Color? glowColor;
   
-  const GlowCard({Key? key, required this.child, this.glowColor}) : super(key: key);
+  const GlowCard({super.key, required this.child, this.glowColor});
   
   @override
   Widget build(BuildContext context) {

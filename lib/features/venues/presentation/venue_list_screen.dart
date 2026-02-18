@@ -8,7 +8,7 @@ import '../../../core/models/offer.dart';
 import '../../../core/theme/app_theme.dart';
 
 class VenueListScreen extends ConsumerStatefulWidget {
-  const VenueListScreen({Key? key}) : super(key: key);
+  const VenueListScreen({super.key});
   
   @override
   ConsumerState<VenueListScreen> createState() => _VenueListScreenState();
@@ -31,14 +31,14 @@ class _VenueListScreenState extends ConsumerState<VenueListScreen> {
       backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
         backgroundColor: AppTheme.darkBg,
-        title: NeonText('REKI - Manchester', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+        title: const NeonText('REKI - Manchester', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
         actions: [
           IconButton(
-            icon: Icon(Icons.tune, color: AppTheme.primaryColor),
+            icon: const Icon(Icons.tune, color: AppTheme.primaryColor),
             onPressed: () => context.push('/filters'),
           ),
           IconButton(
-            icon: Icon(Icons.logout, color: AppTheme.primaryColor),
+            icon: const Icon(Icons.logout, color: AppTheme.primaryColor),
             onPressed: () async {
               await ref.read(authStateProvider.notifier).logout();
               if (mounted) {
@@ -53,7 +53,7 @@ class _VenueListScreenState extends ConsumerState<VenueListScreen> {
           _buildFilterChips(venueState),
           Expanded(
             child: venueState.isLoading
-                ? Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
                 : RefreshIndicator(
                     color: AppTheme.primaryColor,
                     onRefresh: () async => ref.read(venueProvider.notifier).refreshVenues(),
@@ -85,7 +85,7 @@ class _VenueListScreenState extends ConsumerState<VenueListScreen> {
           final isSelected = venueState.selectedFilter == filter;
           
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             child: GlowContainer(
               glowRadius: isSelected ? 15 : 0,
               glowSpread: isSelected ? 2 : 0,
@@ -107,29 +107,29 @@ class _VenueListScreenState extends ConsumerState<VenueListScreen> {
   Widget _buildVenueCard(Venue venue) {
     return GlowCard(
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: ListTile(
-          title: Text(venue.name, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          title: Text(venue.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('${venue.type} • ${venue.address}', style: TextStyle(color: Colors.grey[400])),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   _buildBusynessChip(venue.busyness),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   _buildVibeChip(venue.currentVibe),
                 ],
               ),
               if (venue.offers.isNotEmpty) ...[
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text('${venue.offers.length} offer(s) available', 
-                     style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w500)),
+                     style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w500)),
               ],
             ],
           ),
-          trailing: Icon(Icons.arrow_forward_ios, color: AppTheme.primaryColor),
+          trailing: const Icon(Icons.arrow_forward_ios, color: AppTheme.primaryColor),
           onTap: () => context.push('/venue-detail?id=${venue.id}'),
         ),
       ),
@@ -146,14 +146,14 @@ class _VenueListScreenState extends ConsumerState<VenueListScreen> {
     }
     
     return Chip(
-      label: Text(busyness, style: TextStyle(color: Colors.white, fontSize: 12)),
+      label: Text(busyness, style: const TextStyle(color: Colors.white, fontSize: 12)),
       backgroundColor: color,
     );
   }
 
   Widget _buildVibeChip(String vibe) {
     return Chip(
-      label: Text(vibe, style: TextStyle(fontSize: 12, color: Colors.white)),
+      label: Text(vibe, style: const TextStyle(fontSize: 12, color: Colors.white)),
       backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
     );
   }
@@ -163,29 +163,29 @@ class _VenueListScreenState extends ConsumerState<VenueListScreen> {
       context: context,
       backgroundColor: AppTheme.cardBg,
       builder: (context) => Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(venue.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-            SizedBox(height: 8),
+            Text(venue.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 8),
             Text('${venue.type} • ${venue.address}', style: TextStyle(color: Colors.grey[400])),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
-                Text('Busyness: ', style: TextStyle(color: Colors.white)),
+                const Text('Busyness: ', style: TextStyle(color: Colors.white)),
                 _buildBusynessChip(venue.busyness),
-                SizedBox(width: 16),
-                Text('Vibe: ', style: TextStyle(color: Colors.white)),
+                const SizedBox(width: 16),
+                const Text('Vibe: ', style: TextStyle(color: Colors.white)),
                 _buildVibeChip(venue.currentVibe),
               ],
             ),
             if (venue.offers.isNotEmpty) ...[
-              SizedBox(height: 16),
-              Text('Active Offers:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              const SizedBox(height: 16),
+              const Text('Active Offers:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
               ...venue.offers.map((offer) => ListTile(
-                title: Text(offer.title, style: TextStyle(color: Colors.white)),
+                title: Text(offer.title, style: const TextStyle(color: Colors.white)),
                 subtitle: Text(offer.description, style: TextStyle(color: Colors.grey[400])),
                 trailing: GlowButton(
                   text: 'Redeem',

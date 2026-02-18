@@ -136,7 +136,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                   fit: BoxFit.cover,
                   opacity: 0.15,
                   colorFilter: ColorFilter.mode(
-                    Colors.white.withOpacity(1.25),
+                    Colors.white.withOpacity(0.25),
                     BlendMode.multiply,
                   ),
                 ),
@@ -239,15 +239,15 @@ class _LoadingScreenState extends State<LoadingScreen>
                               ),
                               // Background image
                               Container(
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   shape: BoxShape.circle,
                                   image: DecorationImage(
-                                    image: const NetworkImage(
+                                    image: NetworkImage(
                                       'https://lh3.googleusercontent.com/aida-public/AB6AXuAZbgUqh_6AXrwjHT0MpvTjgKrb4UymE81OI6k-MPOr6Bcu009QqkbuK7cqSE7iwXabQpyN0Uj9IZ04R3I-8KVx55GtqQvyfjr61LdjPlumaYWQip_Uljd4Rn98l07cPAXIVwxTPkSi1NHNSmXbxwtcODVbi7zQCVqNfuBnKe-HWKniJTn5u2cTiuJqO-btJdzsbwh6ltlA_aP9_y6xm2qzkMP1XsYr8HF5kRAiLcBe3O-erSb5nEelKKr40xhg6FhQRtA2R3GwUYiV',
                                     ),
                                     fit: BoxFit.cover,
                                     opacity: 0.3,
-                                    colorFilter: const ColorFilter.matrix([
+                                    colorFilter: ColorFilter.matrix([
                                       0.2126, 0.7152, 0.0722, 0, 0,
                                       0.2126, 0.7152, 0.0722, 0, 0,
                                       0.2126, 0.7152, 0.0722, 0, 0,

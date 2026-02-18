@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../venues/presentation/venue_provider.dart';
 
 class BusinessDashboardScreen extends ConsumerStatefulWidget {
   const BusinessDashboardScreen({super.key});
@@ -12,13 +11,12 @@ class BusinessDashboardScreen extends ConsumerStatefulWidget {
 
 class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScreen> {
   bool _isLiveFeedEnabled = true;
-  double _busynessLevel = 88.0;
   int _selectedVibe = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -27,7 +25,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 // Header
                 SafeArea(
                   child: Padding(
-                    padding: EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(24),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -38,26 +36,26 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                             color: Colors.white,
                             shape: BoxShape.circle,
                             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
-                            border: Border.all(color: Color(0xFFE2E8F0)),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          child: Icon(Icons.dashboard, color: Color(0xFF475569), size: 24),
+                          child: const Icon(Icons.dashboard, color: Color(0xFF475569), size: 24),
                         ),
                         Row(
                           children: [
                             Container(
-                              padding: EdgeInsets.all(6),
+                              padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
+                                gradient: const LinearGradient(
                                   colors: [Color(0xFF14B8A6), Color(0xFF0F766E)],
                                 ),
                                 borderRadius: BorderRadius.circular(12),
-                                boxShadow: [BoxShadow(color: Color(0xFF14B8A6).withOpacity(0.2), blurRadius: 10)],
+                                boxShadow: [BoxShadow(color: const Color(0xFF14B8A6).withOpacity(0.2), blurRadius: 10)],
                               ),
-                              child: Icon(Icons.bolt, color: Colors.white, size: 20),
+                              child: const Icon(Icons.bolt, color: Colors.white, size: 20),
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             RichText(
-                              text: TextSpan(
+                              text: const TextSpan(
                                 children: [
                                   TextSpan(
                                     text: 'REKI ',
@@ -90,9 +88,9 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                                 boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
-                                border: Border.all(color: Color(0xFFE2E8F0)),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
                               ),
-                              child: Icon(Icons.notifications, color: Color(0xFF64748B), size: 24),
+                              child: const Icon(Icons.notifications, color: Color(0xFF64748B), size: 24),
                             ),
                             Positioned(
                               top: 8,
@@ -115,15 +113,15 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 ),
                 // Venue Card
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Container(
-                    padding: EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [Colors.white, Color(0xFFF0F9FF)],
                       ),
                       borderRadius: BorderRadius.circular(40),
-                      border: Border.all(color: Color(0xFFBFDBFE)),
+                      border: Border.all(color: const Color(0xFFBFDBFE)),
                       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
                     ),
                     child: Row(
@@ -135,12 +133,12 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                               height: 64,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
-                                image: DecorationImage(
+                                image: const DecorationImage(
                                   image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuDFxzM8e4ebOKzrczUUzDrJf6jIs5FFyhoNZQv0C9PPoZV_Q1rElKn7rRApFmpc1elyJuE-gaxJmuOYmOfnNyOvsUS-i1wNp5rMXPAn3X6J1j0WCxFsWur5iRoaYmH5djIVi02mL15iQMuDd9FS9qO_3rbmIq5-HSClyA4eUZnS2AGLnWAv3PyjffBxPfKnoMMuJzkctX1KdCEhRX1EXsG-nQ4xAumiAo_WrP_iE9qTy31eGPb2tTQCy3gU6JjgB1EjxC9YAYvmPIxl'),
                                   fit: BoxFit.cover,
                                 ),
                                 border: Border.all(color: Colors.white, width: 2),
-                                boxShadow: [BoxShadow(color: Color(0xFF14B8A6).withOpacity(0.05), blurRadius: 20)],
+                                boxShadow: [BoxShadow(color: const Color(0xFF14B8A6).withOpacity(0.05), blurRadius: 20)],
                               ),
                             ),
                             Positioned(
@@ -150,7 +148,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                                 width: 20,
                                 height: 20,
                                 decoration: BoxDecoration(
-                                  color: Color(0xFF14B8A6),
+                                  color: const Color(0xFF14B8A6),
                                   shape: BoxShape.circle,
                                   border: Border.all(color: Colors.white, width: 2),
                                 ),
@@ -158,8 +156,8 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                             ),
                           ],
                         ),
-                        SizedBox(width: 16),
-                        Expanded(
+                        const SizedBox(width: 16),
+                        const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -194,9 +192,9 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                             Switch(
                               value: _isLiveFeedEnabled,
                               onChanged: (value) => setState(() => _isLiveFeedEnabled = value),
-                              activeColor: Color(0xFF14B8A6),
+                              activeColor: const Color(0xFF14B8A6),
                             ),
-                            Text(
+                            const Text(
                               'LIVE FEED',
                               style: TextStyle(
                                 color: Color(0xFF14B8A6),
@@ -213,13 +211,13 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 ),
                 // Busyness Status
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   child: Column(
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
+                          const Row(
                             children: [
                               Icon(Icons.bar_chart, color: Color(0xFF14B8A6)),
                               SizedBox(width: 8),
@@ -235,24 +233,24 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                             ],
                           ),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Color(0xFF14B8A6).withOpacity(0.05),
+                              color: const Color(0xFF14B8A6).withOpacity(0.05),
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Color(0xFF14B8A6).withOpacity(0.1)),
+                              border: Border.all(color: const Color(0xFF14B8A6).withOpacity(0.1)),
                             ),
                             child: Row(
                               children: [
                                 Container(
                                   width: 6,
                                   height: 6,
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     color: Color(0xFF14B8A6),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
-                                SizedBox(width: 6),
-                                Text(
+                                const SizedBox(width: 6),
+                                const Text(
                                   'Auto-updating',
                                   style: TextStyle(
                                     color: Color(0xFF14B8A6),
@@ -265,18 +263,18 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                           ),
                         ],
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Container(
-                        padding: EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(32),
                           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
-                          border: Border.all(color: Color(0xFFF1F5F9)),
+                          border: Border.all(color: const Color(0xFFF1F5F9)),
                         ),
                         child: Column(
                           children: [
-                            Row(
+                            const Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Column(
@@ -340,22 +338,22 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                                 ),
                               ],
                             ),
-                            SizedBox(height: 32),
+                            const SizedBox(height: 32),
                             Stack(
                               children: [
                                 Container(
                                   height: 16,
                                   decoration: BoxDecoration(
-                                    color: Color(0xFFF0F9FF),
+                                    color: const Color(0xFFF0F9FF),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Color(0xFFBAE6FD).withOpacity(0.3)),
+                                    border: Border.all(color: const Color(0xFFBAE6FD).withOpacity(0.3)),
                                   ),
                                 ),
                                 Container(
                                   height: 16,
                                   width: MediaQuery.of(context).size.width * 0.88 * 0.7,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
+                                    gradient: const LinearGradient(
                                       colors: [Color(0xFF99F6E4), Color(0xFF14B8A6), Color(0xFF0F766E)],
                                     ),
                                     borderRadius: BorderRadius.circular(8),
@@ -370,14 +368,14 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       shape: BoxShape.circle,
-                                      border: Border.all(color: Color(0xFF14B8A6), width: 2),
+                                      border: Border.all(color: const Color(0xFF14B8A6), width: 2),
                                       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
                                     ),
                                     child: Center(
                                       child: Container(
                                         width: 12,
                                         height: 12,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           color: Color(0xFF14B8A6),
                                           shape: BoxShape.circle,
                                         ),
@@ -387,8 +385,8 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                                 ),
                               ],
                             ),
-                            SizedBox(height: 24),
-                            Row(
+                            const SizedBox(height: 24),
+                            const Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text('CHILL', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w900)),
@@ -405,11 +403,11 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 ),
                 // Vibe Selection
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
+                      const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 24),
                         child: Text(
                           'SET ACTIVE VIBE',
@@ -421,18 +419,18 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                           ),
                         ),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Row(
                           children: [
                             _buildVibeButton('Party', Icons.celebration, 0, true),
-                            SizedBox(width: 12),
+                            const SizedBox(width: 12),
                             _buildVibeButton('Events', Icons.theater_comedy, 1, false),
-                            SizedBox(width: 12),
+                            const SizedBox(width: 12),
                             _buildVibeButton('Social', Icons.local_bar, 2, false),
-                            SizedBox(width: 12),
+                            const SizedBox(width: 12),
                             _buildVibeButton('Dining', Icons.dinner_dining, 3, false),
                           ],
                         ),
@@ -442,13 +440,13 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 ),
                 // Metrics
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   child: Column(
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             "Tonight's Impact",
                             style: TextStyle(
                               color: Color(0xFF1E293B),
@@ -457,13 +455,13 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                             ),
                           ),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Color(0xFF14B8A6).withOpacity(0.05),
+                              color: const Color(0xFF14B8A6).withOpacity(0.05),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Color(0xFF14B8A6).withOpacity(0.1)),
+                              border: Border.all(color: const Color(0xFF14B8A6).withOpacity(0.1)),
                             ),
-                            child: Text(
+                            child: const Text(
                               'Full Report',
                               style: TextStyle(
                                 color: Color(0xFF14B8A6),
@@ -474,11 +472,11 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                           ),
                         ],
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       GridView.count(
                         crossAxisCount: 2,
                         shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
+                        physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                         children: [
@@ -493,11 +491,11 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 ),
                 // Boost Listing
                 Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Container(
-                    padding: EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Color(0xFF0F172A),
+                      color: const Color(0xFF0F172A),
                       borderRadius: BorderRadius.circular(32),
                       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20)],
                     ),
@@ -507,13 +505,13 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: Color(0xFF14B8A6).withOpacity(0.2),
+                            color: const Color(0xFF14B8A6).withOpacity(0.2),
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Icon(Icons.campaign, color: Color(0xFF14B8A6), size: 32),
+                          child: const Icon(Icons.campaign, color: Color(0xFF14B8A6), size: 32),
                         ),
-                        SizedBox(width: 16),
-                        Expanded(
+                        const SizedBox(width: 16),
+                        const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -537,13 +535,13 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                           decoration: BoxDecoration(
-                            color: Color(0xFF14B8A6),
+                            color: const Color(0xFF14B8A6),
                             borderRadius: BorderRadius.circular(16),
-                            boxShadow: [BoxShadow(color: Color(0xFF14B8A6).withOpacity(0.3), blurRadius: 10)],
+                            boxShadow: [BoxShadow(color: const Color(0xFF14B8A6).withOpacity(0.3), blurRadius: 10)],
                           ),
-                          child: Text(
+                          child: const Text(
                             'ACTIVATE',
                             style: TextStyle(
                               color: Colors.white,
@@ -557,7 +555,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                     ),
                   ),
                 ),
-                SizedBox(height: 120),
+                const SizedBox(height: 120),
               ],
             ),
           ),
@@ -569,18 +567,18 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [Color(0xFF14B8A6), Color(0xFF0F766E)],
                 ),
                 borderRadius: BorderRadius.circular(32),
-                boxShadow: [BoxShadow(color: Color(0xFF14B8A6).withOpacity(0.4), blurRadius: 20)],
+                boxShadow: [BoxShadow(color: const Color(0xFF14B8A6).withOpacity(0.4), blurRadius: 20)],
               ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(32),
                   onTap: () => context.push('/business-update'),
-                  child: Icon(Icons.add, color: Colors.white, size: 32),
+                  child: const Icon(Icons.add, color: Colors.white, size: 32),
                 ),
               ),
             ),
@@ -594,7 +592,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
               height: 80,
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.8),
-                border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+                border: const Border(top: BorderSide(color: Color(0xFFF1F5F9))),
               ),
               child: SafeArea(
                 child: Row(
@@ -618,26 +616,26 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
     return GestureDetector(
       onTap: () => setState(() => _selectedVibe = index),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         decoration: BoxDecoration(
-          gradient: isSelected ? LinearGradient(colors: [Color(0xFF14B8A6), Color(0xFF0F766E)]) : null,
+          gradient: isSelected ? const LinearGradient(colors: [Color(0xFF14B8A6), Color(0xFF0F766E)]) : null,
           color: isSelected ? null : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: isSelected ? null : Border.all(color: Color(0xFFE2E8F0)),
-          boxShadow: isSelected ? [BoxShadow(color: Color(0xFF14B8A6).withOpacity(0.3), blurRadius: 10)] : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
+          border: isSelected ? null : Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF14B8A6).withOpacity(0.3), blurRadius: 10)] : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : Color(0xFF14B8A6),
+              color: isSelected ? Colors.white : const Color(0xFF14B8A6),
               size: 22,
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : Color(0xFF64748B),
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
               ),
@@ -650,11 +648,11 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
 
   Widget _buildMetricCard(IconData icon, String value, String label) {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Color(0xFFF1F5F9)),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
       ),
       child: Column(
@@ -664,16 +662,16 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Color(0xFFF0F9FF),
+              color: const Color(0xFFF0F9FF),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Color(0xFFBFDBFE)),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
             ),
-            child: Icon(icon, color: Color(0xFF14B8A6), size: 22),
+            child: Icon(icon, color: const Color(0xFF14B8A6), size: 22),
           ),
-          Spacer(),
+          const Spacer(),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               color: Color(0xFF1E293B),
               fontSize: 24,
               fontWeight: FontWeight.w900,
@@ -681,7 +679,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
           ),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               color: Color(0xFF94A3B8),
               fontSize: 10,
               fontWeight: FontWeight.bold,
@@ -701,14 +699,14 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
         children: [
           Icon(
             icon,
-            color: isActive ? Color(0xFF14B8A6) : Color(0xFF94A3B8),
+            color: isActive ? const Color(0xFF14B8A6) : const Color(0xFF94A3B8),
             size: 28,
           ),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           Text(
             label,
             style: TextStyle(
-              color: isActive ? Color(0xFF14B8A6) : Color(0xFF94A3B8),
+              color: isActive ? const Color(0xFF14B8A6) : const Color(0xFF94A3B8),
               fontSize: 9,
               fontWeight: isActive ? FontWeight.w900 : FontWeight.bold,
               letterSpacing: 1,

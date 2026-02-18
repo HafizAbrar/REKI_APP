@@ -86,7 +86,7 @@ class NoVenuesFoundScreen extends StatelessWidget {
                     top: MediaQuery.of(context).size.height * 0.5,
                     left: MediaQuery.of(context).size.width * 0.5,
                     child: Transform.translate(
-                      offset: Offset(-144, -144),
+                      offset: const Offset(-144, -144),
                       child: Container(
                         width: 288,
                         height: 288,
@@ -106,7 +106,7 @@ class NoVenuesFoundScreen extends StatelessWidget {
                     top: MediaQuery.of(context).size.height * 0.33,
                     left: MediaQuery.of(context).size.width * 0.33,
                     child: Transform.translate(
-                      offset: Offset(-96, -96),
+                      offset: const Offset(-96, -96),
                       child: Container(
                         width: 192,
                         height: 192,
@@ -275,7 +275,7 @@ class NoVenuesFoundScreen extends StatelessWidget {
                                 ),
                               ),
                               // Explore button
-                              Container(
+                              SizedBox(
                                 width: double.infinity,
                                 height: 56,
                                 child: ElevatedButton(
@@ -350,11 +350,11 @@ class NoVenuesFoundScreen extends StatelessWidget {
   Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         width: 56,
         child: Column(
           children: [
-            Container(
+            SizedBox(
               height: 28,
               child: Icon(
                 icon,

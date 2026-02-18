@@ -1,32 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../venues/data/venue_management_provider.dart';
+import '../../../core/services/venue_repository.dart';
 
 class BusinessUpdateScreen extends ConsumerStatefulWidget {
-  const BusinessUpdateScreen({Key? key}) : super(key: key);
+  const BusinessUpdateScreen({super.key});
   
   @override
   ConsumerState<BusinessUpdateScreen> createState() => _BusinessUpdateScreenState();
 }
 
 class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
-  double _occupancyLevel = 72.0;
-  List<int> _selectedVibes = [0, 1, 2]; // Cocktails, Good Music, Energetic selected
+  String _busynessLevel = 'Busy';
+  final List<String> _selectedVibes = ['Cocktails', 'Good Music', 'Energetic'];
+  String _venueId = '1';
 
-  final List<Map<String, dynamic>> _vibes = [
-    {'icon': Icons.local_bar, 'label': 'Cocktails'},
-    {'icon': Icons.music_note, 'label': 'Good Music'},
-    {'icon': Icons.bolt, 'label': 'Energetic'},
-    {'icon': Icons.favorite, 'label': 'Date Night'},
-    {'icon': Icons.groups, 'label': 'Crowded'},
-    {'icon': Icons.volume_up, 'label': 'Loud'},
-    {'icon': Icons.nightlife, 'label': 'Dance Floor'},
-    {'icon': Icons.coffee, 'label': 'Chill'},
+  final List<String> _vibes = [
+    'Cocktails',
+    'Good Music',
+    'Energetic',
+    'Date Night',
+    'Crowded',
+    'Loud',
+    'Dance Floor',
+    'Chill',
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0A1414),
+      backgroundColor: const Color(0xFF0A1414),
       body: Stack(
         children: [
           // Background glow
@@ -37,7 +40,7 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
               width: 400,
               height: 320,
               decoration: BoxDecoration(
-                color: Color(0xFF008080).withOpacity(0.1),
+                color: const Color(0xFF008080).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -47,7 +50,7 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
               // Handle
               SafeArea(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 16, bottom: 8),
+                  padding: const EdgeInsets.only(top: 16, bottom: 8),
                   child: Center(
                     child: Container(
                       width: 48,
@@ -62,15 +65,15 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
               ),
               // Header
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
                   children: [
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Color(0xFFE0F7FA).withOpacity(0.3),
+                        color: const Color(0xFFE0F7FA).withOpacity(0.3),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Color(0xFF008080).withOpacity(0.2)),
+                        border: Border.all(color: const Color(0xFF008080).withOpacity(0.2)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -80,15 +83,15 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                             height: 24,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              image: DecorationImage(
+                              image: const DecorationImage(
                                 image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuCiJuYyd3juLJnztwe07Z1qTPCtswFvj5KM8ZKj2v55uOEr_YCd33aXD67pL72XBloOPqrhGIWyHLA32noeZWBh6rhppSXPHt6VD7jATQIHuUGCKZHqvKPGqbnPMb6yffL6wUwXeWZtaB1aVvRz7Ex9_CXT5VyooFckJu1TWOXgqyLClaqz58UNeKGRNs60gs1qb2B7JOIYlkqicyUIsbBbMM5tZ1EYEDFjtx6MSZVXx23gSwIHq5N9buKrKBf9IKzRkBv383I2PqDw'),
                                 fit: BoxFit.cover,
                               ),
-                              border: Border.all(color: Color(0xFF008080).withOpacity(0.2)),
+                              border: Border.all(color: const Color(0xFF008080).withOpacity(0.2)),
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Text(
+                          const SizedBox(width: 8),
+                          const Text(
                             'OWNER DASHBOARD',
                             style: TextStyle(
                               color: Color(0xFF008080),
@@ -97,12 +100,12 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                               letterSpacing: 2,
                             ),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                         ],
                       ),
                     ),
-                    SizedBox(height: 12),
-                    Text(
+                    const SizedBox(height: 12),
+                    const Text(
                       'The Alchemist',
                       style: TextStyle(
                         color: Colors.white,
@@ -110,13 +113,13 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.location_on, color: Color(0xFF94A3B8), size: 16),
-                        SizedBox(width: 4),
-                        Text(
+                        const Icon(Icons.location_on, color: Color(0xFF94A3B8), size: 16),
+                        const SizedBox(width: 4),
+                        const Text(
                           'Spinningfields, Manchester',
                           style: TextStyle(
                             color: Color(0xFF94A3B8),
@@ -124,17 +127,17 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Container(
                           width: 4,
                           height: 4,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Color(0xFF94A3B8),
                             shape: BoxShape.circle,
                           ),
                         ),
-                        SizedBox(width: 8),
-                        Text(
+                        const SizedBox(width: 8),
+                        const Text(
                           '10:42 PM',
                           style: TextStyle(
                             color: Color(0xFF94A3B8),
@@ -150,13 +153,13 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
               // Divider
               Container(
                 height: 1,
-                margin: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 color: Colors.white.withOpacity(0.05),
               ),
               // Content
               Expanded(
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
                       // Occupancy Section
@@ -165,7 +168,7 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
+                              const Text(
                                 'Current Occupancy',
                                 style: TextStyle(
                                   color: Color(0xFFE2E8F0),
@@ -174,15 +177,15 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                                 ),
                               ),
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Color(0xFF008080).withOpacity(0.1),
+                                  color: const Color(0xFF008080).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Color(0xFF008080).withOpacity(0.2)),
+                                  border: Border.all(color: const Color(0xFF008080).withOpacity(0.2)),
                                 ),
                                 child: Text(
-                                  'BUSY',
-                                  style: TextStyle(
+                                  _busynessLevel.toUpperCase(),
+                                  style: const TextStyle(
                                     color: Color(0xFF008080),
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -191,17 +194,17 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Container(
-                            padding: EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Color(0xFF122020),
+                              color: const Color(0xFF122020),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: Colors.white.withOpacity(0.05)),
                             ),
                             child: Column(
                               children: [
-                                Row(
+                                const Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text('QUIET', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 2)),
@@ -209,7 +212,7 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                                     Text('PEAK', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 2)),
                                   ],
                                 ),
-                                SizedBox(height: 12),
+                                const SizedBox(height: 12),
                                 Stack(
                                   children: [
                                     Container(
@@ -224,12 +227,12 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                                       width: MediaQuery.of(context).size.width * 0.72 * 0.7,
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
-                                          colors: [Color(0xFF008080).withOpacity(0.6), Color(0xFF008080)],
+                                          colors: [const Color(0xFF008080).withOpacity(0.6), const Color(0xFF008080)],
                                         ),
                                         borderRadius: BorderRadius.circular(6),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Color(0xFF008080).withOpacity(0.2),
+                                            color: const Color(0xFF008080).withOpacity(0.2),
                                             blurRadius: 15,
                                           ),
                                         ],
@@ -244,7 +247,7 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           shape: BoxShape.circle,
-                                          border: Border.all(color: Color(0xFF008080), width: 4),
+                                          border: Border.all(color: const Color(0xFF008080), width: 4),
                                           boxShadow: [
                                             BoxShadow(
                                               color: Colors.black.withOpacity(0.2),
@@ -256,7 +259,7 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                                           child: Container(
                                             width: 6,
                                             height: 6,
-                                            decoration: BoxDecoration(
+                                            decoration: const BoxDecoration(
                                               color: Color(0xFF008080),
                                               shape: BoxShape.circle,
                                             ),
@@ -266,8 +269,8 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 20),
-                                Row(
+                                const SizedBox(height: 20),
+                                const Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Column(
@@ -307,11 +310,11 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 32),
+                      const SizedBox(height: 32),
                       // Vibe Section
                       Column(
                         children: [
-                          Row(
+                          const Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
@@ -332,56 +335,45 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Wrap(
                             spacing: 10,
                             runSpacing: 10,
                             children: _vibes.asMap().entries.map((entry) {
                               int index = entry.key;
-                              Map<String, dynamic> vibe = entry.value;
-                              bool isSelected = _selectedVibes.contains(index);
+                              String vibe = entry.value;
+                              bool isSelected = _selectedVibes.contains(vibe);
                               
                               return GestureDetector(
                                 onTap: () {
                                   setState(() {
                                     if (isSelected) {
-                                      _selectedVibes.remove(index);
+                                      _selectedVibes.remove(vibe);
                                     } else {
-                                      _selectedVibes.add(index);
+                                      _selectedVibes.add(vibe);
                                     }
                                   });
                                 },
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? Color(0xFF008080) : Color(0xFF122020),
+                                    color: isSelected ? const Color(0xFF008080) : const Color(0xFF122020),
                                     borderRadius: BorderRadius.circular(20),
                                     border: isSelected ? null : Border.all(color: Colors.white.withOpacity(0.1)),
                                     boxShadow: isSelected ? [
                                       BoxShadow(
-                                        color: Color(0xFF008080).withOpacity(0.2),
+                                        color: const Color(0xFF008080).withOpacity(0.2),
                                         blurRadius: 10,
                                       ),
                                     ] : [],
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        vibe['icon'],
-                                        color: isSelected ? Colors.white : Color(0xFF94A3B8),
-                                        size: 18,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        vibe['label'],
-                                        style: TextStyle(
-                                          color: isSelected ? Colors.white : Color(0xFF94A3B8),
-                                          fontSize: 14,
-                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
+                                  child: Text(
+                                    vibe,
+                                    style: TextStyle(
+                                      color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                                      fontSize: 14,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                    ),
                                   ),
                                 ),
                               );
@@ -389,9 +381,9 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 32),
+                      const SizedBox(height: 32),
                       // Sync info
-                      Row(
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.verified_user, color: Color(0xFF008080), size: 16),
@@ -407,7 +399,7 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 120),
+                      const SizedBox(height: 120),
                     ],
                   ),
                 ),
@@ -420,15 +412,15 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFF0A1414).withOpacity(0),
-                    Color(0xFF0A1414).withOpacity(0.95),
-                    Color(0xFF0A1414),
+                    const Color(0xFF0A1414).withOpacity(0),
+                    const Color(0xFF0A1414).withOpacity(0.95),
+                    const Color(0xFF0A1414),
                   ],
                 ),
               ),
@@ -439,11 +431,11 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                       width: double.infinity,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: Color(0xFF008080),
+                        color: const Color(0xFF008080),
                         borderRadius: BorderRadius.circular(28),
                         boxShadow: [
                           BoxShadow(
-                            color: Color(0xFF008080).withOpacity(0.3),
+                            color: const Color(0xFF008080).withOpacity(0.3),
                             blurRadius: 20,
                           ),
                         ],
@@ -452,11 +444,11 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                         color: Colors.transparent,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(28),
-                          onTap: () {},
+                          onTap: _broadcastUpdate,
                           child: Row(
                             children: [
                               Container(
-                                margin: EdgeInsets.all(6),
+                                margin: const EdgeInsets.all(6),
                                 width: 44,
                                 height: 44,
                                 decoration: BoxDecoration(
@@ -464,9 +456,9 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                                   shape: BoxShape.circle,
                                   border: Border.all(color: Colors.white.withOpacity(0.1)),
                                 ),
-                                child: Icon(Icons.refresh, color: Colors.white),
+                                child: const Icon(Icons.refresh, color: Colors.white),
                               ),
-                              Expanded(
+                              const Expanded(
                                 child: Text(
                                   'Broadcast Update',
                                   textAlign: TextAlign.center,
@@ -477,14 +469,14 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 50),
+                              const SizedBox(width: 50),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 16),
-                    Text(
+                    const SizedBox(height: 16),
+                    const Text(
                       'LAST UPDATED 2 MINS AGO',
                       style: TextStyle(
                         color: Color(0xFF94A3B8),
@@ -501,5 +493,19 @@ class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _broadcastUpdate() async {
+    final success = await ref.read(venueManagementProvider.notifier).updateLiveState(
+      _venueId,
+      busyness: _busynessLevel,
+      currentVibe: _selectedVibes.isNotEmpty ? _selectedVibes.first : null,
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(success ? 'Update broadcasted' : 'Failed to update')),
+      );
+    }
   }
 }

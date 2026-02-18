@@ -20,6 +20,10 @@ import '../../features/business/presentation/business_update_screen.dart';
 import '../../features/business/presentation/manage_offers_screen.dart';
 import '../../features/splash/presentation/loading_screen.dart';
 import '../../features/venues/presentation/no_venues_found_screen.dart';
+import '../../features/users/presentation/user_list_screen.dart';
+import '../../features/users/presentation/user_detail_screen.dart';
+import '../../features/users/presentation/user_preferences_screen.dart';
+import '../../features/users/presentation/user_profile_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/loading',
@@ -119,6 +123,25 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/no-venues',
       builder: (context, state) => const NoVenuesFoundScreen(),
+    ),
+    GoRoute(
+      path: '/users',
+      builder: (context, state) => const UserListScreen(),
+    ),
+    GoRoute(
+      path: '/user-detail',
+      builder: (context, state) {
+        final userId = state.uri.queryParameters['id'] ?? '';
+        return UserDetailScreen(userId: userId);
+      },
+    ),
+    GoRoute(
+      path: '/user-preferences',
+      builder: (context, state) => const UserPreferencesScreen(),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const UserProfileScreen(),
     ),
   ],
 );

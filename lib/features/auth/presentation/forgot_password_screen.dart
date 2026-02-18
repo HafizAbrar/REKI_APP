@@ -1,34 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({Key? key}) : super(key: key);
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final TextEditingController _phoneController = TextEditingController();
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AuthState>(authStateProvider, (previous, next) {
+      if (next is AuthStateForgotPasswordSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Password reset link sent to your email!'),
+            backgroundColor: Colors.green[700],
+          ),
+        );
+        context.pop();
+      } else if (next is AuthStateError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.message),
+            backgroundColor: Colors.red[700],
+          ),
+        );
+      }
+    });
+
+    final authState = ref.watch(authStateProvider);
+    final isLoading = authState is AuthStateLoading;
+
     return Scaffold(
-      backgroundColor: Color(0xFF0F172A),
+      backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
           // Background image
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 image: DecorationImage(
                   image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuAbUJHdVYXEM5nb7gdCJuVW7JCDHX57JIbHlYa1QpCwLUn3IQ18tWdOP6jjy3OzZFeql3aQIRSc8wPeA8vaC6vRU3T_5DxF_C73GGcJIfrB1ITMzi9x8PXpXmxXCfSpxFffphHCdnz0ZqfuDGZKFvKzy6FldO8KPMejI_K6IPmQc2plM0xNFnJs5m-WKeFdub0DJzwa6N37lz-xVZjkCCXVWncXp2ZAd7Fua4l0bLXe22WfCLqtsp83Ep1GvowtKY7ZneCKhcWUxEBs'),
                   fit: BoxFit.cover,
@@ -44,9 +68,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFF0F172A).withOpacity(0.7),
-                    Color(0xFF0F172A).withOpacity(0.95),
-                    Color(0xFF0F172A),
+                    const Color(0xFF0F172A).withOpacity(0.7),
+                    const Color(0xFF0F172A).withOpacity(0.95),
+                    const Color(0xFF0F172A),
                   ],
                 ),
               ),
@@ -54,17 +78,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   IconButton(
-                    icon: Icon(Icons.arrow_back, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () => context.pop(),
                   ),
-                  SizedBox(height: 40),
-                  Text(
+                  const SizedBox(height: 40),
+                  const Text(
                     'Forgot Password',
                     style: TextStyle(
                       color: Colors.white,
@@ -72,44 +96,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Enter your phone number to receive a verification code',
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Enter your email to receive a password reset link',
                     style: TextStyle(color: Color(0xFF94A3B8), fontSize: 16, fontWeight: FontWeight.w500),
                   ),
-                  SizedBox(height: 40),
+                  const SizedBox(height: 40),
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(9999),
                       border: Border.all(
-                        color: Color(0xFF334155),
+                        color: const Color(0xFF334155),
                         width: 1,
                       ),
                     ),
                     child: TextField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      style: TextStyle(color: Colors.white),
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        hintText: 'Phone Number',
-                        hintStyle: TextStyle(color: Color(0xFF64748B)),
-                        prefixIcon: Icon(Icons.phone_android, color: Color(0xFF64748B)),
+                        hintText: 'Email',
+                        hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                        prefixIcon: const Icon(Icons.email, color: Color(0xFF64748B)),
                         filled: true,
-                        fillColor: Color(0xFF1E293B),
+                        fillColor: const Color(0xFF1E293B),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(9999),
                           borderSide: BorderSide.none,
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(9999),
-                          borderSide: BorderSide(color: AppTheme.primaryColor, width: 1),
+                          borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1),
                         ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
                       ),
                     ),
                   ),
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -121,7 +144,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             color: AppTheme.primaryColor.withOpacity(0.39),
                             blurRadius: 14,
                             spreadRadius: 0,
-                            offset: Offset(0, 4),
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
@@ -134,22 +157,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ),
                           elevation: 0,
                         ),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Verification code sent!'),
-                              backgroundColor: Colors.green[700],
-                            ),
-                          );
-                          context.go('/code-verification', extra: _phoneController.text);
-                        },
-                        child: Text(
-                          'Send Code',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                        onPressed: isLoading 
+                            ? null 
+                            : () => ref.read(authStateProvider.notifier).forgotPassword(_emailController.text),
+                        child: isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppTheme.darkBg,
+                                ),
+                              )
+                            : const Text(
+                                'Send Reset Link',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                       ),
                     ),
                   ),
