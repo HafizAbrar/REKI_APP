@@ -46,7 +46,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             backgroundColor: Colors.green[700],
           ),
         );
-        context.go('/home');
+        context.go('/personalize');
       } else if (next is AuthStateError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

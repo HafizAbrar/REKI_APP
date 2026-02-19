@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/network/auth_api_service.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/models/user.dart';
 
 // Auth state provider
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
@@ -35,6 +36,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         phone: phone,
       );
       await _storeTokens(response);
+      await _authService.register(email, password, name, UserType.customer);
       state = const AuthStateRegisterSuccess();
     } catch (e) {
       state = AuthStateError(e.toString());
@@ -49,6 +51,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final response = await _apiService.login(email: email, password: password);
       await _storeTokens(response);
+      await _authService.login(email, password);
       state = const AuthStateLoginSuccess();
     } catch (e) {
       state = AuthStateError(e.toString());

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../venues/data/venue_management_provider.dart';
-import '../../../core/services/venue_repository.dart';
 
 class BusinessUpdateScreen extends ConsumerStatefulWidget {
   const BusinessUpdateScreen({super.key});
@@ -11,9 +10,9 @@ class BusinessUpdateScreen extends ConsumerStatefulWidget {
 }
 
 class _BusinessUpdateScreenState extends ConsumerState<BusinessUpdateScreen> {
-  String _busynessLevel = 'Busy';
+  final String _busynessLevel = 'Busy';
   final List<String> _selectedVibes = ['Cocktails', 'Good Music', 'Energetic'];
-  String _venueId = '1';
+  final String _venueId = '1';
 
   final List<String> _vibes = [
     'Cocktails',

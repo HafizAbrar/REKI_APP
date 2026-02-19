@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
+import '../../../core/config/env.dart';
 
 class MapViewScreen extends ConsumerStatefulWidget {
   const MapViewScreen({super.key});
@@ -82,8 +83,8 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
               data: (venues) => venues.map((venue) {
                 final isSelected = _selectedVenueId == venue.id;
                 // Convert lat/lng to screen coordinates
-                final centerLat = 53.4808;
-                final centerLng = -2.2426;
+                const centerLat = 53.4808;
+                const centerLng = -2.2426;
                 final screenWidth = MediaQuery.of(context).size.width;
                 final screenHeight = MediaQuery.of(context).size.height;
                 
@@ -233,7 +234,7 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(16),
                                       child: Image.network(
-                                        venue.coverImageUrl ?? 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200',
+                                        venue.coverImageUrl != null ? '${Env.apiBaseUrl}${venue.coverImageUrl}' : 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200',
                                         width: 96,
                                         height: 96,
                                         fit: BoxFit.cover,

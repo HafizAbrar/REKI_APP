@@ -33,10 +33,10 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: SizedBox(
+                      child: const SizedBox(
                         width: 48,
                         height: 48,
-                        child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                        child: Icon(Icons.arrow_back, color: Colors.white, size: 24),
                       ),
                     ),
                     const Expanded(

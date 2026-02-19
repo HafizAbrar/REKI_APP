@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
+import '../../../core/config/env.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -225,7 +226,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     _buildNavItem(Icons.home, 0),
                     _buildNavItem(Icons.map, 1),
-                    _buildNavItem(Icons.favorite, 2, hasNotification: true),
+                    _buildNavItem(Icons.local_activity, 2),
                     _buildNavItem(Icons.person, 3),
                   ],
                 ),
@@ -390,23 +391,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                  child: Image.network(
-                    name == 'The Alchemist' 
-                        ? 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800'
-                        : name == 'Albert\'s Schloss'
-                            ? 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800'
-                            : 'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=800',
-                    width: double.infinity,
-                    height: 280,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 280,
-                      color: const Color(0xFF334155),
-                      child: const Center(
-                        child: Icon(Icons.image, size: 60, color: Color(0xFF64748B)),
+                  child: venue.coverImageUrl != null
+                    ? Image.network(
+                        '${Env.apiBaseUrl}${venue.coverImageUrl}',
+                        width: double.infinity,
+                        height: 280,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            height: 280,
+                            color: const Color(0xFF334155),
+                            child: const Center(
+                              child: CircularProgressIndicator(color: Color(0xFF2DD4BF)),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 280,
+                          color: const Color(0xFF334155),
+                          child: const Center(
+                            child: Icon(Icons.image, size: 60, color: Color(0xFF64748B)),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        height: 280,
+                        color: const Color(0xFF334155),
+                        child: const Center(
+                          child: Icon(Icons.image, size: 60, color: Color(0xFF64748B)),
+                        ),
                       ),
-                    ),
-                  ),
                 ),
               ),
               Container(
@@ -450,29 +465,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  if (statusIcon != null)
-                                    Icon(statusIcon, color: Colors.white, size: 14)
-                                  else
-                                    Stack(
-                                      children: [
-                                        Container(
-                                          width: 8,
-                                          height: 8,
-                                          decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                          ),
+                                  Stack(
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
                                         ),
-                                        Container(
-                                          width: 8,
-                                          height: 8,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(0.75),
-                                            shape: BoxShape.circle,
-                                          ),
+                                      ),
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.75),
+                                          shape: BoxShape.circle,
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
+                                  ),
                                   const SizedBox(width: 6),
                                   Text(
                                     statusLabel,
@@ -498,10 +510,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  if (vibeIcon != null) ...[ 
-                                    Icon(vibeIcon, color: Colors.white, size: 14),
-                                    const SizedBox(width: 6),
-                                  ],
                                   Text(
                                     vibeLabel,
                                     style: const TextStyle(
@@ -585,33 +593,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ],
                         ),
                       ),
-                      if (waitTime != null || vibeScore != null || noiseLevel != null)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              waitTime != null
-                                  ? 'Wait Time'
-                                  : vibeScore != null
-                                      ? 'Vibe Score'
-                                      : 'Noise Level',
-                              style: const TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              waitTime ?? vibeScore ?? noiseLevel ?? '',
-                              style: TextStyle(
-                                color: vibeScore != null ? const Color(0xFF4ADE80) : Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
                     ],
                   ),
                   if (vibeTags != null && vibeTags.isNotEmpty) ...[
@@ -706,6 +687,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         setState(() => _selectedNavIndex = index);
         if (index == 1) {
           context.push('/map');
+        } else if (index == 2) {
+          context.push('/offers');
         } else if (index == 3) {
           context.push('/profile');
         }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/services/user_repository.dart';
 
 class UserPreferencesScreen extends ConsumerStatefulWidget {
@@ -10,72 +11,132 @@ class UserPreferencesScreen extends ConsumerStatefulWidget {
 }
 
 class _UserPreferencesScreenState extends ConsumerState<UserPreferencesScreen> {
-  final List<String> _availablePreferences = [
-    'Chill', 'Energetic', 'Romantic', 'Business', 'Party',
-    'Live Music', 'Sports', 'Rooftop', 'Cocktails', 'Food'
-  ];
-  final Set<String> _selectedPreferences = {};
+  String selectedVibe = 'Party';
+  String selectedBusyness = 'Moderate';
+  Set<String> selectedCategories = {'BAR', 'RESTAURANT'};
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Update Preferences')),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: _availablePreferences.length,
-              itemBuilder: (context, index) {
-                final pref = _availablePreferences[index];
-                return CheckboxListTile(
-                  title: Text(pref),
-                  value: _selectedPreferences.contains(pref),
-                  onChanged: (checked) {
+      backgroundColor: const Color(0xFF0F172A),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1E293B),
+        elevation: 0,
+        title: const Text('Preferences', style: TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Preferred Vibe', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              children: ['Chill', 'Party', 'Romantic', 'Business', 'Energetic'].map((vibe) => 
+                ChoiceChip(
+                  label: Text(vibe),
+                  selected: selectedVibe == vibe,
+                  onSelected: (selected) => setState(() => selectedVibe = vibe),
+                  selectedColor: const Color(0xFF2DD4BF),
+                  labelStyle: TextStyle(color: selectedVibe == vibe ? Colors.black : Colors.white),
+                )
+              ).toList(),
+            ),
+            const SizedBox(height: 24),
+            const Text('Preferred Busyness', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              children: ['Quiet', 'Moderate', 'Busy'].map((level) => 
+                ChoiceChip(
+                  label: Text(level),
+                  selected: selectedBusyness == level,
+                  onSelected: (selected) => setState(() => selectedBusyness = level),
+                  selectedColor: const Color(0xFF2DD4BF),
+                  labelStyle: TextStyle(color: selectedBusyness == level ? Colors.black : Colors.white),
+                )
+              ).toList(),
+            ),
+            const SizedBox(height: 24),
+            const Text('Venue Categories', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              children: ['BAR', 'RESTAURANT', 'CLUB', 'CASINO'].map((cat) => 
+                FilterChip(
+                  label: Text(cat),
+                  selected: selectedCategories.contains(cat),
+                  onSelected: (selected) {
                     setState(() {
-                      if (checked == true) {
-                        _selectedPreferences.add(pref);
-                      } else {
-                        _selectedPreferences.remove(pref);
-                      }
+                      if (selected) selectedCategories.add(cat); else selectedCategories.remove(cat);
                     });
                   },
-                );
-              },
+                  selectedColor: const Color(0xFF2DD4BF),
+                  labelStyle: TextStyle(color: selectedCategories.contains(cat) ? Colors.black : Colors.white),
+                )
+              ).toList(),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
+            const SizedBox(height: 32),
+            SizedBox(
               width: double.infinity,
+              height: 56,
               child: ElevatedButton(
                 onPressed: _savePreferences,
-                child: const Text('Save Preferences'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2DD4BF),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                ),
+                child: const Text('Save Preferences', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Future<void> _savePreferences() async {
     final repository = ref.read(userRepositoryProvider);
-    final result = await repository.updatePreferences(_selectedPreferences.toList());
+    try {
+      final result = await repository.updatePreferences({
+        'preferredVibe': selectedVibe.toUpperCase(),
+        'preferredBusyness': selectedBusyness.toUpperCase(),
+        'preferredCategories': selectedCategories.toList(),
+      });
 
-    if (mounted) {
-      result.when(
-        success: (_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Preferences updated')),
-          );
-          Navigator.pop(context);
-        },
-        failure: (error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $error')),
-          );
-        },
-      );
+      if (mounted) {
+        result.when(
+          success: (_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Preferences saved'), backgroundColor: Colors.green),
+            );
+            context.go('/home');
+          },
+          failure: (error) {
+            if (error.contains('401') || error.contains('Unauthorized')) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Session expired. Please login again.'), backgroundColor: Colors.red),
+              );
+              context.go('/login');
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red),
+              );
+            }
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 }

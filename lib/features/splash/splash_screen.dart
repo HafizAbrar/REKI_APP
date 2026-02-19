@@ -20,7 +20,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _progressAnimation = Tween<double>(begin: 0, end: 0.75).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
-    _controller.forward();
+    _controller.forward().then((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) context.go('/signup');
+      });
+    });
   }
 
   @override

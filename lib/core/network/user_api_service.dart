@@ -20,7 +20,8 @@ class UserApiService {
 
   // GET /users/{id} - Get user by ID
   Future<User> getUserById(String id) async {
-    final response = await _dio.get('/users/$id');
+    final path = id == 'current' ? '/users/me' : '/users/$id';
+    final response = await _dio.get(path);
     return User.fromJson(response.data);
   }
 
@@ -36,10 +37,8 @@ class UserApiService {
   }
 
   // PATCH /users/preferences - Update user preferences
-  Future<User> updatePreferences(List<String> preferences) async {
-    final response = await _dio.patch('/users/preferences', data: {
-      'preferences': preferences,
-    });
+  Future<User> updatePreferences(Map<String, dynamic> preferences) async {
+    final response = await _dio.patch('/users/preferences', data: preferences);
     return User.fromJson(response.data);
   }
 }

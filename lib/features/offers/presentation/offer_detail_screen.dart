@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/offer_management_provider.dart';
 import '../../../core/services/offer_repository.dart';
 
 class OfferDetailScreen extends ConsumerStatefulWidget {

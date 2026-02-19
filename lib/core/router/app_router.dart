@@ -14,6 +14,7 @@ import '../../features/venues/presentation/venue_detail_screen.dart';
 import '../../features/venues/presentation/map_view_screen.dart';
 import '../../features/offers/presentation/offer_detail_screen.dart';
 import '../../features/offers/presentation/offer_redeemed_screen.dart';
+import '../../features/offers/presentation/offers_list_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/business/presentation/business_dashboard_screen.dart';
 import '../../features/business/presentation/business_update_screen.dart';
@@ -26,7 +27,7 @@ import '../../features/users/presentation/user_preferences_screen.dart';
 import '../../features/users/presentation/user_profile_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/loading',
+  initialLocation: '/splash',
   errorBuilder: (context, state) => Scaffold(
     body: Center(
       child: Text('Page not found: ${state.uri}'),
@@ -92,6 +93,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/map',
       builder: (context, state) => const MapViewScreen(),
+    ),
+    GoRoute(
+      path: '/offers',
+      builder: (context, state) => const OffersListScreen(),
     ),
     GoRoute(
       path: '/offer-detail',

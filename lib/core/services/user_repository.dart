@@ -48,7 +48,7 @@ class UserRepository {
     }
   }
 
-  Future<Result<User>> updatePreferences(List<String> preferences) async {
+  Future<Result<User>> updatePreferences(Map<String, dynamic> preferences) async {
     try {
       final user = await _apiService.updatePreferences(preferences);
       return Result.success(user);

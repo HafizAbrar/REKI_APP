@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
 import '../../../core/network/vibe_schedule_api_service.dart';
 import '../../../core/models/vibe_schedule.dart';
+import '../../../core/config/env.dart';
 
 class VenueDetailScreen extends ConsumerStatefulWidget {
   final String venueId;
@@ -50,16 +51,34 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                   height: MediaQuery.of(context).size.height * 0.45,
                   child: Stack(
                     children: [
-                      Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: NetworkImage(venue.coverImageUrl ?? 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800'),
+                      venue.coverImageUrl != null
+                        ? Image.network(
+                            '${Env.apiBaseUrl}${venue.coverImageUrl}',
+                            width: double.infinity,
+                            height: double.infinity,
                             fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                color: const Color(0xFF334155),
+                                child: const Center(
+                                  child: CircularProgressIndicator(color: Color(0xFF2DD4BF)),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: const Color(0xFF334155),
+                              child: const Center(
+                                child: Icon(Icons.image, size: 60, color: Color(0xFF64748B)),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: const Color(0xFF334155),
+                            child: const Center(
+                              child: Icon(Icons.image, size: 60, color: Color(0xFF64748B)),
+                            ),
                           ),
-                        ),
-                      ),
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -82,16 +101,10 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _buildHeaderButton(Icons.arrow_back, () => Navigator.pop(context)),
-                            Row(
-                              children: [
-                                _buildHeaderButton(Icons.ios_share, () {}),
-                                const SizedBox(width: 12),
-                                _buildHeaderButton(
-                                  _isFavorite ? Icons.favorite : Icons.favorite_border,
-                                  () => setState(() => _isFavorite = !_isFavorite),
-                                  isFavorite: _isFavorite,
-                                ),
-                              ],
+                            _buildHeaderButton(
+                              _isFavorite ? Icons.favorite : Icons.favorite_border,
+                              () => setState(() => _isFavorite = !_isFavorite),
+                              isFavorite: _isFavorite,
                             ),
                           ],
                         ),

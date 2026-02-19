@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/models/user.dart';
+import '../../../core/services/user_repository.dart';
+import '../../../core/utils/result.dart';
 
 class UserProfileScreen extends ConsumerWidget {
   const UserProfileScreen({super.key});
@@ -10,7 +13,7 @@ class UserProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authService = AuthService();
     final currentUser = authService.currentUser;
-
+    
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
@@ -97,7 +100,7 @@ class UserProfileScreen extends ConsumerWidget {
                     title: 'Logout',
                     isDestructive: true,
                     onTap: () {
-                      authService.logout();
+                      AuthService().logout();
                       context.go('/login');
                     },
                   ),
