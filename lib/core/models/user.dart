@@ -34,15 +34,26 @@ class User {
       orElse: () => UserRole.USER,
     );
     
+    List<String> preferencesList = [];
+    if (json['preferences'] != null) {
+      if (json['preferences'] is Map) {
+        // Preferences is an object, extract relevant fields
+        final prefs = json['preferences'] as Map<String, dynamic>;
+        if (prefs['preferredCategories'] != null) {
+          preferencesList.addAll(List<String>.from(prefs['preferredCategories']));
+        }
+      } else if (json['preferences'] is List) {
+        preferencesList = List<String>.from(json['preferences']);
+      }
+    }
+    
     return User(
       id: json['id']?.toString() ?? '',
       email: json['email'] ?? '',
       name: json['name'] ?? json['email'] ?? '',
       type: role == UserRole.BUSINESS ? UserType.business : UserType.customer,
       role: role,
-      preferences: json['preferences'] != null 
-          ? List<String>.from(json['preferences']) 
-          : [],
+      preferences: preferencesList,
       isActive: json['isActive'] ?? true,
     );
   }

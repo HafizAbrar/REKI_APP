@@ -12,6 +12,7 @@ import '../../features/venues/presentation/venue_filter_screen.dart';
 import '../../features/venues/presentation/personalize_feed_screen.dart';
 import '../../features/venues/presentation/venue_detail_screen.dart';
 import '../../features/venues/presentation/map_view_screen.dart';
+import '../../features/venues/presentation/vibe_schedules_screen.dart';
 import '../../features/offers/presentation/offer_detail_screen.dart';
 import '../../features/offers/presentation/offer_redeemed_screen.dart';
 import '../../features/offers/presentation/offers_list_screen.dart';
@@ -26,7 +27,10 @@ import '../../features/users/presentation/user_detail_screen.dart';
 import '../../features/users/presentation/user_preferences_screen.dart';
 import '../../features/users/presentation/user_profile_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
-import '../../features/auth/presentation/token_input_screen.dart';
+import '../../features/admin/presentation/venue_analytics_screen.dart';
+import '../../features/admin/presentation/create_business_user_screen.dart';
+import '../../features/business/presentation/create_offer_screen.dart';
+import '../../features/venues/presentation/create_venue_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -158,8 +162,30 @@ final appRouter = GoRouter(
       builder: (context, state) => const AdminDashboardScreen(),
     ),
     GoRoute(
-      path: '/token-input',
-      builder: (context, state) => const TokenInputScreen(),
+      path: '/admin/venue-analytics/:venueId',
+      builder: (context, state) {
+        final venueId = state.pathParameters['venueId'] ?? '';
+        return VenueAnalyticsScreen(venueId: venueId);
+      },
+    ),
+    GoRoute(
+      path: '/admin/create-business-user',
+      builder: (context, state) => const CreateBusinessUserScreen(),
+    ),
+    GoRoute(
+      path: '/create-offer',
+      builder: (context, state) {
+        final venueId = state.uri.queryParameters['venueId'] ?? '';
+        return CreateOfferScreen(venueId: venueId);
+      },
+    ),
+    GoRoute(
+      path: '/vibe-schedules',
+      builder: (context, state) => const VibeSchedulesScreen(),
+    ),
+    GoRoute(
+      path: '/admin/create-venue',
+      builder: (context, state) => const CreateVenueScreen(),
     ),
   ],
 );

@@ -68,27 +68,9 @@ class UserProfileScreen extends ConsumerWidget {
                   ),
                   _buildMenuItem(
                     context,
-                    icon: Icons.tune,
-                    title: 'Preferences',
-                    onTap: () => context.push('/personalize'),
-                  ),
-                  _buildMenuItem(
-                    context,
                     icon: Icons.notifications,
                     title: 'Notifications',
                     onTap: () => context.push('/notifications'),
-                  ),
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.favorite,
-                    title: 'Saved Venues',
-                    onTap: () {},
-                  ),
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.history,
-                    title: 'Offer History',
-                    onTap: () {},
                   ),
                   const SizedBox(height: 16),
                   _buildMenuItem(

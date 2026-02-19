@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/auth_validators.dart';
+import '../../../core/models/user.dart';
 
 class ValidatedLoginScreen extends ConsumerStatefulWidget {
   const ValidatedLoginScreen({super.key});
@@ -39,8 +40,26 @@ class _ValidatedLoginScreenState extends ConsumerState<ValidatedLoginScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authStateProvider, (previous, next) {
+      print('DEBUG: Auth state changed from ${previous.runtimeType} to ${next.runtimeType}');
       if (next is AuthStateLoginSuccess) {
-        context.go('/personalize');
+        final user = ref.read(authNotifierProvider).currentUser;
+        print('DEBUG: User after login: ${user?.email}, Role: ${user?.role}');
+        if (user != null) {
+          switch (user.role) {
+            case UserRole.ADMIN:
+              print('DEBUG: Navigating to admin dashboard');
+              context.go('/admin-dashboard');
+            case UserRole.BUSINESS:
+              print('DEBUG: Navigating to business dashboard');
+              context.go('/business-dashboard');
+            case UserRole.USER:
+              print('DEBUG: Navigating to personalize');
+              context.go('/personalize');
+          }
+        } else {
+          print('DEBUG: User is null, defaulting to personalize');
+          context.go('/personalize');
+        }
       } else if (next is AuthStateError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

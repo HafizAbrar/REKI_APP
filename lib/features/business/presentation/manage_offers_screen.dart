@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../offers/data/offer_management_provider.dart';
+import '../../../core/utils/error_handler.dart';
 
 class ManageOffersScreen extends ConsumerStatefulWidget {
   const ManageOffersScreen({super.key});
@@ -400,7 +402,7 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(28),
-                      onTap: () {},
+                      onTap: () => context.push('/create-offer?venueId=d6cda10c-4c74-437f-99d4-5660e73c01ff'),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -487,7 +489,14 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
   }
 
   Future<void> _toggleOffer(String id, bool isActive) async {
-    await ref.read(offerManagementProvider.notifier).updateOfferStatus(id, isActive);
+    try {
+      final success = await ref.read(offerManagementProvider.notifier).updateOfferStatus(id, isActive);
+      if (!success && mounted) {
+        ErrorHandler.showError(context, 'Failed to update offer status');
+      }
+    } catch (e) {
+      if (mounted) ErrorHandler.showError(context, e);
+    }
   }
 
   Widget _buildOfferCardOld(

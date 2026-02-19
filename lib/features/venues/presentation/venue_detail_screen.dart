@@ -18,7 +18,6 @@ class VenueDetailScreen extends ConsumerStatefulWidget {
 class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
   bool _isFavorite = false;
   List<VibeSchedule>? _vibeSchedules;
-  final _vibeScheduleService = VibeScheduleApiService();
 
   @override
   void initState() {
@@ -28,8 +27,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
 
   Future<void> _loadVibeSchedules() async {
     try {
-      final schedules = await _vibeScheduleService.getVibeSchedules(widget.venueId);
-      setState(() => _vibeSchedules = schedules);
+      final apiService = ref.read(vibeScheduleApiServiceProvider);
+      final schedules = await apiService.getVibeSchedules(widget.venueId);
+      setState(() => _vibeSchedules = schedules.map((s) => VibeSchedule.fromJson(s)).toList());
     } catch (e) {
       // Handle error silently
     }

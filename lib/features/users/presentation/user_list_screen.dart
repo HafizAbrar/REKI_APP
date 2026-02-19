@@ -47,10 +47,13 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Chip(
-                    label: Text(user.type.name),
-                    backgroundColor: user.type == UserType.business
-                        ? Colors.blue.shade100
-                        : Colors.green.shade100,
+                    label: Text(user.role.name.toUpperCase()),
+                    backgroundColor: user.role == UserRole.BUSINESS
+                        ? const Color(0xFF3B82F6)
+                        : user.role == UserRole.ADMIN
+                        ? const Color(0xFFEC4899)
+                        : const Color(0xFF10B981),
+                    labelStyle: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),

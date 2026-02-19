@@ -4,6 +4,7 @@ import '../../config/env.dart';
 
 class AuthInterceptor extends Interceptor {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  Dio? _dio;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
@@ -29,16 +30,22 @@ class AuthInterceptor extends Interceptor {
       final refreshToken = await _storage.read(key: 'refresh_token');
       if (refreshToken != null) {
         try {
-          final dio = Dio(BaseOptions(baseUrl: Env.apiBaseUrl));
-          final response = await dio.post('/auth/refresh', data: {'refresh_token': refreshToken});
+          _dio ??= Dio(BaseOptions(baseUrl: Env.apiBaseUrl));
+          final response = await _dio!.post('/auth/refresh', data: {'refreshToken': refreshToken});
           
           final newAccessToken = response.data['accessToken'];
+          final newRefreshToken = response.data['refreshToken'];
+          
           await _storage.write(key: 'access_token', value: newAccessToken);
+          if (newRefreshToken != null) {
+            await _storage.write(key: 'refresh_token', value: newRefreshToken);
+          }
           
           final requestOptions = err.requestOptions;
           requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
           
-          final retryResponse = await dio.fetch(requestOptions);
+          final retryDio = Dio(BaseOptions(baseUrl: Env.apiBaseUrl));
+          final retryResponse = await retryDio.fetch(requestOptions);
           handler.resolve(retryResponse);
           return;
         } catch (e) {

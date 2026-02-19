@@ -31,6 +31,7 @@ class AuthService {
   }
 
   Future<bool> login(String email, String password) async {
+    print('DEBUG: AuthService.login called, useMockData: $useMockData, apiService: $_apiService');
     if (useMockData || _apiService == null) {
       await Future.delayed(const Duration(seconds: 1));
       if (email.contains('business')) {
@@ -47,9 +48,11 @@ class AuthService {
       _refreshToken = response['refresh_token'];
       await _storage.write(key: 'access_token', value: _accessToken);
       await _storage.write(key: 'refresh_token', value: _refreshToken);
+      print('DEBUG: Tokens stored, calling fetchCurrentUser');
       await fetchCurrentUser();
       return true;
     } catch (e) {
+      print('DEBUG: Login error: $e');
       return false;
     }
   }
@@ -65,10 +68,14 @@ class AuthService {
       }
       if (_accessToken == null) return null;
       
+      print('DEBUG: Fetching current user from API');
       final response = await _apiService!.getCurrentUser();
+      print('DEBUG: API response: $response');
       _currentUser = User.fromJson(response);
+      print('DEBUG: User set: ${_currentUser?.email}, Role: ${_currentUser?.role}');
       return _currentUser;
     } catch (e) {
+      print('DEBUG: Error fetching user: $e');
       return null;
     }
   }

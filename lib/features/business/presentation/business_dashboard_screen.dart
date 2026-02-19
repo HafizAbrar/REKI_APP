@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/network/admin_api_service.dart';
+
+final businessDashboardProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final apiService = ref.watch(adminApiServiceProvider);
+  return await apiService.getDashboardStats();
+});
 
 class BusinessDashboardScreen extends ConsumerStatefulWidget {
   const BusinessDashboardScreen({super.key});
@@ -10,13 +16,89 @@ class BusinessDashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScreen> {
-  bool _isLiveFeedEnabled = true;
   int _selectedVibe = 0;
 
   @override
   Widget build(BuildContext context) {
+    final dashboardAsync = ref.watch(businessDashboardProvider);
+    
+    return dashboardAsync.when(
+      data: (data) => _buildDashboard(context, data),
+      loading: () => const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6))),
+      ),
+      error: (error, _) => Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
+        body: Center(child: Text('Error loading data', style: TextStyle(color: Colors.red))),
+      ),
+    );
+  }
+
+  Widget _buildDashboard(BuildContext context, Map<String, dynamic> data) {
+    final summary = data['summary'] ?? {};
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+      drawer: Drawer(
+        backgroundColor: const Color(0xFF0F172A),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(colors: [Color(0xFF14B8A6), Color(0xFF0F766E)]),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(Icons.business, color: Colors.white, size: 48),
+                  SizedBox(height: 8),
+                  Text('Business Portal', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                  Text('Manage your venue', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.dashboard, color: Colors.white),
+              title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
+              onTap: () => context.go('/business-dashboard'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_business, color: Colors.white),
+              title: const Text('Create Venue', style: TextStyle(color: Colors.white)),
+              onTap: () => context.push('/admin/create-venue'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.local_offer, color: Colors.white),
+              title: const Text('Create Offer', style: TextStyle(color: Colors.white)),
+              onTap: () => context.push('/create-offer?venueId='),
+            ),
+            ListTile(
+              leading: const Icon(Icons.list, color: Colors.white),
+              title: const Text('Manage Offers', style: TextStyle(color: Colors.white)),
+              onTap: () => context.push('/manage-offers'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.schedule, color: Colors.white),
+              title: const Text('Vibe Schedule', style: TextStyle(color: Colors.white)),
+              onTap: () => context.push('/vibe-schedules?venueId=c5051a16-8cc7-41e6-ac9a-8d2f4087f0d0'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.white),
+              title: const Text('Profile', style: TextStyle(color: Colors.white)),
+              onTap: () => context.push('/profile'),
+            ),
+            const Divider(color: Colors.white24),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Logout', style: TextStyle(color: Colors.red)),
+              onTap: () => context.go('/login'),
+            ),
+          ],
+        ),
+      ),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -29,16 +111,21 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                        Builder(
+                          builder: (context) => GestureDetector(
+                            onTap: () => Scaffold.of(context).openDrawer(),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: const Icon(Icons.menu, color: Color(0xFF475569), size: 24),
+                            ),
                           ),
-                          child: const Icon(Icons.dashboard, color: Color(0xFF475569), size: 24),
                         ),
                         Row(
                           children: [
@@ -190,8 +277,8 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                         Column(
                           children: [
                             Switch(
-                              value: _isLiveFeedEnabled,
-                              onChanged: (value) => setState(() => _isLiveFeedEnabled = value),
+                              value: true,
+                              onChanged: (value) {},
                               activeColor: const Color(0xFF14B8A6),
                             ),
                             const Text(
@@ -480,10 +567,10 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                         children: [
-                          _buildMetricCard(Icons.visibility, '1.4k', 'APP VIEWS'),
-                          _buildMetricCard(Icons.directions_walk, '42', 'FOOTFALL IN'),
-                          _buildMetricCard(Icons.star, '4.9', 'RATING'),
-                          _buildMetricCard(Icons.trending_up, '+18%', 'VS LAST WEEK'),
+                          _buildMetricCard(Icons.visibility, summary['totalViews']?.toString() ?? '0', 'VIEWS'),
+                          _buildMetricCard(Icons.local_offer, summary['totalOffers']?.toString() ?? '0', 'OFFERS'),
+                          _buildMetricCard(Icons.redeem, summary['totalRedemptions']?.toString() ?? '0', 'REDEMPTIONS'),
+                          _buildMetricCard(Icons.trending_up, '${((summary['overallConversionRate'] ?? 0) * 100).toStringAsFixed(1)}%', 'CONVERSION'),
                         ],
                       ),
                     ],
@@ -577,7 +664,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(32),
-                  onTap: () => context.push('/business-update'),
+                  onTap: () => context.push('/vibe-schedules?venueId=c5051a16-8cc7-41e6-ac9a-8d2f4087f0d0'),
                   child: const Icon(Icons.add, color: Colors.white, size: 32),
                 ),
               ),
@@ -598,10 +685,10 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildNavItem(Icons.space_dashboard, 'DASH', true, () {}),
-                    _buildNavItem(Icons.calendar_today, 'EVENTS', false, () {}),
-                    _buildNavItem(Icons.leaderboard, 'STATS', false, () => context.push('/manage-offers')),
-                    _buildNavItem(Icons.person, 'PROFILE', false, () {}),
+                    _buildNavItem(Icons.space_dashboard, 'DASH', true, () => context.go('/business-dashboard')),
+                    _buildNavItem(Icons.local_offer, 'OFFERS', false, () => context.push('/manage-offers')),
+                    _buildNavItem(Icons.schedule, 'SCHEDULE', false, () => context.push('/vibe-schedules?venueId=c5051a16-8cc7-41e6-ac9a-8d2f4087f0d0')),
+                    _buildNavItem(Icons.person, 'PROFILE', false, () => context.push('/profile')),
                   ],
                 ),
               ),

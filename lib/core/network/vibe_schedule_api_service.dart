@@ -1,19 +1,23 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../models/vibe_schedule.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'api_client.dart';
+
+final vibeScheduleApiServiceProvider = Provider<VibeScheduleApiService>((ref) {
+  return VibeScheduleApiService(ref.read(apiClientProvider));
+});
 
 class VibeScheduleApiService {
-  Future<List<VibeSchedule>> getVibeSchedules(String venueId) async {
-    final response = await http.get(
-      Uri.parse('http://18.171.182.71/venues/$venueId/vibe-schedules'),
-      headers: {'accept': '*/*'},
-    );
+  final Dio _dio;
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => VibeSchedule.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load vibe schedules');
-    }
+  VibeScheduleApiService(this._dio);
+
+  Future<List<dynamic>> getVibeSchedules(String venueId) async {
+    final response = await _dio.get('/venues/$venueId/vibe-schedules');
+    return response.data as List;
+  }
+
+  Future<Map<String, dynamic>> createVibeSchedule(String venueId, Map<String, dynamic> data) async {
+    final response = await _dio.post('/venues/$venueId/vibe-schedules', data: data);
+    return response.data;
   }
 }

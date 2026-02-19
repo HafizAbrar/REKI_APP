@@ -1,208 +1,235 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'venue_provider.dart';
-import '../../../features/auth/presentation/auth_provider.dart';
-import '../../../core/models/venue.dart';
-import '../../../core/models/offer.dart';
+import '../../../core/network/admin_api_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/error_handler.dart';
 
-class VenueListScreen extends ConsumerStatefulWidget {
+final venuesListProvider = FutureProvider<List<dynamic>>((ref) async {
+  final apiService = ref.watch(adminApiServiceProvider);
+  return await apiService.getVenues();
+});
+
+class VenueListScreen extends ConsumerWidget {
   const VenueListScreen({super.key});
   
   @override
-  ConsumerState<VenueListScreen> createState() => _VenueListScreenState();
-}
-
-class _VenueListScreenState extends ConsumerState<VenueListScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(venueProvider.notifier).initialize();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final venueState = ref.watch(venueProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final venuesAsync = ref.watch(venuesListProvider);
     
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
-        backgroundColor: AppTheme.darkBg,
-        title: const NeonText('REKI - Manchester', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+        backgroundColor: AppTheme.backgroundDark,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Manage Venues', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.tune, color: AppTheme.primaryColor),
-            onPressed: () => context.push('/filters'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppTheme.primaryColor),
-            onPressed: () async {
-              await ref.read(authStateProvider.notifier).logout();
-              if (mounted) {
-                context.go('/login');
-              }
-            },
+            icon: const Icon(Icons.add, color: Colors.white),
+            onPressed: () => context.push('/admin/create-venue'),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildFilterChips(venueState),
-          Expanded(
-            child: venueState.isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-                : RefreshIndicator(
-                    color: AppTheme.primaryColor,
-                    onRefresh: () async => ref.read(venueProvider.notifier).refreshVenues(),
-                    child: ListView.builder(
-                      itemCount: venueState.filteredVenues.length,
-                      itemBuilder: (context, index) {
-                        final venue = venueState.filteredVenues[index];
-                        return _buildVenueCard(venue);
-                      },
-                    ),
+      body: venuesAsync.when(
+        data: (venues) => venues.isEmpty
+            ? _buildEmptyState(context)
+            : RefreshIndicator(
+                color: AppTheme.primaryColor,
+                onRefresh: () async => ref.refresh(venuesListProvider),
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: venues.length,
+                  itemBuilder: (context, index) => _buildVenueCard(context, venues[index]),
+                ),
+              ),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+        error: (error, stack) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    shape: BoxShape.circle,
                   ),
+                  child: const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                ),
+                const SizedBox(height: 24),
+                const Text('Error Loading Venues', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 12),
+                Text(
+                  ErrorHandler.getErrorMessage(error),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  onPressed: () => ref.refresh(venuesListProvider),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.store_outlined, color: AppTheme.primaryColor, size: 64),
+          ),
+          const SizedBox(height: 24),
+          const Text('No Venues Found', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 12),
+          Text(
+            'Create your first venue to get started',
+            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            onPressed: () => context.push('/admin/create-venue'),
+            icon: const Icon(Icons.add),
+            label: const Text('Create Venue'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChips(VenueState venueState) {
-    final filters = ['All', 'Bar', 'Restaurant', 'Club', 'With Offers'];
+  Widget _buildVenueCard(BuildContext context, Map<String, dynamic> venue) {
+    final busyness = venue['busyness'] ?? 'MODERATE';
+    final vibe = venue['currentVibe'] ?? 'CHILL';
     
     return Container(
-      height: 60,
-      color: AppTheme.cardBg,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: filters.length,
-        itemBuilder: (context, index) {
-          final filter = filters[index];
-          final isSelected = venueState.selectedFilter == filter;
-          
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            child: GlowContainer(
-              glowRadius: isSelected ? 15 : 0,
-              glowSpread: isSelected ? 2 : 0,
-              child: FilterChip(
-                label: Text(filter),
-                selected: isSelected,
-                onSelected: (_) => ref.read(venueProvider.notifier).setFilter(filter),
-                backgroundColor: AppTheme.cardBg,
-                selectedColor: AppTheme.primaryColor,
-                labelStyle: TextStyle(color: isSelected ? Colors.black : Colors.white),
-              ),
-            ),
-          );
-        },
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
-    );
-  }
-
-  Widget _buildVenueCard(Venue venue) {
-    return GlowCard(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: ListTile(
-          title: Text(venue.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${venue.type} • ${venue.address}', style: TextStyle(color: Colors.grey[400])),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  _buildBusynessChip(venue.busyness),
-                  const SizedBox(width: 8),
-                  _buildVibeChip(venue.currentVibe),
-                ],
-              ),
-              if (venue.offers.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text('${venue.offers.length} offer(s) available', 
-                     style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w500)),
-              ],
-            ],
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, color: AppTheme.primaryColor),
-          onTap: () => context.push('/venue-detail?id=${venue.id}'),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBusynessChip(String busyness) {
-    Color color;
-    switch (busyness) {
-      case 'Quiet': color = Colors.green; break;
-      case 'Moderate': color = Colors.orange; break;
-      case 'Busy': color = Colors.red; break;
-      default: color = Colors.grey;
-    }
-    
-    return Chip(
-      label: Text(busyness, style: const TextStyle(color: Colors.white, fontSize: 12)),
-      backgroundColor: color,
-    );
-  }
-
-  Widget _buildVibeChip(String vibe) {
-    return Chip(
-      label: Text(vibe, style: const TextStyle(fontSize: 12, color: Colors.white)),
-      backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
-    );
-  }
-
-  void _showVenueDetails(Venue venue) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.cardBg,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(venue.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 8),
-            Text('${venue.type} • ${venue.address}', style: TextStyle(color: Colors.grey[400])),
-            const SizedBox(height: 16),
-            Row(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => context.push('/venue-detail?id=${venue['id']}'),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Busyness: ', style: TextStyle(color: Colors.white)),
-                _buildBusynessChip(venue.busyness),
-                const SizedBox(width: 16),
-                const Text('Vibe: ', style: TextStyle(color: Colors.white)),
-                _buildVibeChip(venue.currentVibe),
+                Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.store, color: AppTheme.primaryColor, size: 28),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            venue['name'] ?? 'Unknown Venue',
+                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            venue['address'] ?? 'No address',
+                            style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, color: AppTheme.primaryColor, size: 20),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _buildStatusChip(busyness, _getBusynessColor(busyness)),
+                    const SizedBox(width: 8),
+                    _buildStatusChip(vibe, AppTheme.primaryColor.withOpacity(0.8)),
+                    const Spacer(),
+                    if (venue['type'] != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          venue['type'].toString().toUpperCase(),
+                          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
-            if (venue.offers.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              const Text('Active Offers:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-              ...venue.offers.map((offer) => ListTile(
-                title: Text(offer.title, style: const TextStyle(color: Colors.white)),
-                subtitle: Text(offer.description, style: TextStyle(color: Colors.grey[400])),
-                trailing: GlowButton(
-                  text: 'Redeem',
-                  onPressed: () => _redeemOffer(offer),
-                ),
-              )),
-            ],
-          ],
+          ),
         ),
       ),
     );
   }
 
-  void _redeemOffer(Offer offer) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Offer "${offer.title}" redeemed!'), backgroundColor: AppTheme.primaryColor),
+  Widget _buildStatusChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+      ),
     );
-    Navigator.pop(context);
+  }
+
+  Color _getBusynessColor(String busyness) {
+    switch (busyness.toUpperCase()) {
+      case 'QUIET': return const Color(0xFF10B981);
+      case 'MODERATE': return const Color(0xFFF59E0B);
+      case 'BUSY': return const Color(0xFFEF4444);
+      default: return Colors.grey;
+    }
   }
 }

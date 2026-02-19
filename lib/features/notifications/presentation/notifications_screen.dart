@@ -143,7 +143,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigation(),
     );
   }
 
@@ -423,73 +422,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigation() {
-    return Container(
-      height: 88,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withOpacity(0.9),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildNavItem(Icons.explore, 'Explore', false, () => context.go('/home')),
-              _buildNavItem(Icons.map, 'Map', false, () => context.go('/map')),
-              _buildNavItem(Icons.notifications, 'Activity', true, () {}, hasNotification: true),
-              _buildNavItem(Icons.person, 'Profile', false, () {}),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap, {bool hasNotification = false}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            children: [
-              Icon(
-                icon,
-                color: isActive ? const Color(0xFF0D9488) : const Color(0xFF6B7280),
-                size: 28,
-              ),
-              if (hasNotification)
-                Positioned(
-                  top: -2,
-                  right: 8,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0D9488),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF0F172A), width: 2),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isActive ? const Color(0xFF0D9488) : const Color(0xFF6B7280),
-              fontSize: 10,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }

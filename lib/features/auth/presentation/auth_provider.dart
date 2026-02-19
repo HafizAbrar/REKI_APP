@@ -6,7 +6,7 @@ import '../../../core/models/user.dart';
 
 // Auth service provider
 final authNotifierProvider = Provider<AuthService>((ref) {
-  return AuthService();
+  return AuthService(apiService: ref.watch(authApiServiceProvider));
 });
 
 // Auth state provider
@@ -56,13 +56,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final response = await _apiService.login(email: email, password: password);
       await _storeTokens(response);
-      final success = await _authService.login(email, password);
-      if (success) {
-        state = const AuthStateLoginSuccess();
-      } else {
-        state = const AuthStateError('Login failed');
-      }
+      await _authService.login(email, password);
+      await _authService.fetchCurrentUser();
+      print('DEBUG: Login complete, user: ${_authService.currentUser?.email}, role: ${_authService.currentUser?.role}');
+      state = const AuthStateLoginSuccess();
     } catch (e) {
+      print('DEBUG: Login failed: $e');
       state = AuthStateError(e.toString());
     }
   }

@@ -2,12 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/offers_provider.dart';
+import '../../../core/services/offer_repository.dart';
 
-class OffersListScreen extends ConsumerWidget {
+class OffersListScreen extends ConsumerStatefulWidget {
   const OffersListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OffersListScreen> createState() => _OffersListScreenState();
+}
+
+class _OffersListScreenState extends ConsumerState<OffersListScreen> {
+  final Set<String> _viewedOffers = {};
+
+  void _markAsViewed(String offerId) {
+    if (!_viewedOffers.contains(offerId)) {
+      _viewedOffers.add(offerId);
+      ref.read(offerRepositoryProvider).markOfferViewed(offerId);
+    }
+  }
+
+  void _markAsClicked(String offerId) {
+    ref.read(offerRepositoryProvider).markOfferClicked(offerId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final offersAsync = ref.watch(offersProvider);
     
     return Scaffold(
@@ -34,10 +53,15 @@ class OffersListScreen extends ConsumerWidget {
             itemCount: offers.length,
             itemBuilder: (context, index) {
               final offer = offers[index];
+              WidgetsBinding.instance.addPostFrameCallback((_) => _markAsViewed(offer.id));
+              
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: GestureDetector(
-                  onTap: () => context.push('/offer-detail?id=${offer.id}'),
+                  onTap: () {
+                    _markAsClicked(offer.id);
+                    context.push('/offer-detail?id=${offer.id}');
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFF1E293B),
