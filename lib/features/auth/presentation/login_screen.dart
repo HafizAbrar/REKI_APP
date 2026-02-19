@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/models/user.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -34,7 +35,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (next is AuthStateLoginSuccess) {
-        context.go('/home');
+        final user = ref.read(authNotifierProvider).currentUser;
+        if (user != null) {
+          switch (user.role) {
+            case UserRole.ADMIN:
+              context.go('/admin-dashboard');
+            case UserRole.BUSINESS:
+              context.go('/business-dashboard');
+            case UserRole.USER:
+              context.go('/personalize');
+          }
+        } else {
+          context.go('/personalize');
+        }
       } else if (next is AuthStateError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -261,6 +274,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           SizedBox(width: 8),
                           Icon(Icons.arrow_forward, color: Colors.white, size: 18),
                         ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Token input link
+                  TextButton(
+                    onPressed: () => context.push('/token-input'),
+                    child: const Text(
+                      'Login with Token',
+                      style: TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),

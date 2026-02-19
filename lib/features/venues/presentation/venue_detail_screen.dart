@@ -360,7 +360,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
         ),
         const SizedBox(height: 12),
         GestureDetector(
-          onTap: () => GoRouter.of(context).push('/map'),
+          onTap: () => context.push('/map?venueId=${venue.id}'),
           child: Container(
             height: 200,
             decoration: BoxDecoration(

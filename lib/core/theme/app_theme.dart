@@ -10,6 +10,7 @@ class AppTheme {
   static const surface = Color(0xFF1E293B); // slate-800
   static const surfaceHighlight = Color(0xFF334155); // slate-700
   static const cardBg = surface;
+  static const cardDark = surface; // Add cardDark alias
   static const accentPurple = Color(0xFF9D4EDD);
   static const accentPink = Color(0xFFFF006E);
   

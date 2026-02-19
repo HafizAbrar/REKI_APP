@@ -14,7 +14,8 @@ class OfferApiService {
 
   Future<List<Offer>> getAllOffers() async {
     final response = await _dio.get('/offers');
-    return (response.data as List).map((json) => Offer.fromJson(json)).toList();
+    final data = response.data is Map ? response.data['data'] ?? response.data : response.data;
+    return (data as List).map((json) => Offer.fromJson(json as Map<String, dynamic>)).toList();
   }
 
   Future<Offer> createOffer(Map<String, dynamic> offerData) async {

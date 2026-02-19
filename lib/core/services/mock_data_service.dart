@@ -107,6 +107,7 @@ class MockDataService {
       email: 'demo@reki.app',
       name: 'Demo User',
       type: UserType.customer,
+      role: UserRole.USER,
       preferences: ['Bar', 'Restaurant'],
     );
   }
@@ -117,6 +118,7 @@ class MockDataService {
       email: 'business@reki.app',
       name: 'The Alchemist Manager',
       type: UserType.business,
+      role: UserRole.BUSINESS,
       preferences: [],
     );
   }

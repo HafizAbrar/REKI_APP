@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
+import '../../users/data/user_preferences_provider.dart';
 import '../../../core/config/env.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -25,6 +26,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final venuesAsync = ref.watch(venueManagementProvider);
+    final preferencesAsync = ref.watch(currentUserPreferencesProvider);
+    
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
@@ -148,6 +151,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Expanded(
                 child: venuesAsync.when(
                   data: (venues) {
+                    final preferences = preferencesAsync.value;
+                    final preferredCategories = preferences?['preferredCategories'] as List?;
+                    final preferredVibes = preferences?['preferredVibes'] as List?;
+                    
                     var filteredVenues = _selectedTab == 0 
                       ? venues 
                       : venues.where((v) {
@@ -158,6 +165,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           if (_selectedTab == 4) return category == 'CASINO';
                           return true;
                         }).toList();
+                    
+                    // Filter by user preferences if available
+                    if (_selectedTab == 0 && preferredCategories != null && preferredCategories.isNotEmpty) {
+                      filteredVenues = filteredVenues.where((v) => 
+                        preferredCategories.contains(v.type.toUpperCase())
+                      ).toList();
+                    }
+                    
+                    if (_selectedTab == 0 && preferredVibes != null && preferredVibes.isNotEmpty) {
+                      filteredVenues = filteredVenues.where((v) => 
+                        preferredVibes.contains(v.currentVibe.toUpperCase())
+                      ).toList();
+                    }
                     
                     if (_searchQuery.isNotEmpty) {
                       filteredVenues = filteredVenues.where((v) => 

@@ -25,6 +25,8 @@ import '../../features/users/presentation/user_list_screen.dart';
 import '../../features/users/presentation/user_detail_screen.dart';
 import '../../features/users/presentation/user_preferences_screen.dart';
 import '../../features/users/presentation/user_profile_screen.dart';
+import '../../features/admin/presentation/admin_dashboard_screen.dart';
+import '../../features/auth/presentation/token_input_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -92,7 +94,10 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/map',
-      builder: (context, state) => const MapViewScreen(),
+      builder: (context, state) {
+        final venueId = state.uri.queryParameters['venueId'];
+        return MapViewScreen(venueId: venueId);
+      },
     ),
     GoRoute(
       path: '/offers',
@@ -147,6 +152,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/profile',
       builder: (context, state) => const UserProfileScreen(),
+    ),
+    GoRoute(
+      path: '/admin-dashboard',
+      builder: (context, state) => const AdminDashboardScreen(),
+    ),
+    GoRoute(
+      path: '/token-input',
+      builder: (context, state) => const TokenInputScreen(),
     ),
   ],
 );

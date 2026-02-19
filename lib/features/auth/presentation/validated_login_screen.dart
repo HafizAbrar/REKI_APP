@@ -40,7 +40,7 @@ class _ValidatedLoginScreenState extends ConsumerState<ValidatedLoginScreen> {
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (next is AuthStateLoginSuccess) {
-        context.go('/home');
+        context.go('/personalize');
       } else if (next is AuthStateError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

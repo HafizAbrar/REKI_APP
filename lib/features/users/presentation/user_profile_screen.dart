@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/models/user.dart';
-import '../../../core/services/user_repository.dart';
-import '../../../core/utils/result.dart';
 
 class UserProfileScreen extends ConsumerWidget {
   const UserProfileScreen({super.key});
@@ -73,7 +70,7 @@ class UserProfileScreen extends ConsumerWidget {
                     context,
                     icon: Icons.tune,
                     title: 'Preferences',
-                    onTap: () => context.push('/user-preferences'),
+                    onTap: () => context.push('/personalize'),
                   ),
                   _buildMenuItem(
                     context,

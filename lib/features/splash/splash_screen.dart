@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/models/user.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,6 +15,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
+  final _authService = AuthService();
 
   @override
   void initState() {
@@ -20,11 +24,37 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _progressAnimation = Tween<double>(begin: 0, end: 0.75).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
-    _controller.forward().then((_) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) context.go('/signup');
-      });
-    });
+    _controller.forward().then((_) => _checkAuthAndNavigate());
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    if (!mounted) return;
+
+    // Check if user has access token in storage
+    final token = await const FlutterSecureStorage().read(key: 'access_token');
+    
+    if (token != null) {
+      await _authService.setAccessToken(token);
+      final user = await _authService.fetchCurrentUser();
+      
+      if (user != null && mounted) {
+        // Route based on role
+        switch (user.role) {
+          case UserRole.ADMIN:
+            context.go('/admin-dashboard');
+          case UserRole.BUSINESS:
+            context.go('/business-dashboard');
+          case UserRole.USER:
+            context.go('/home');
+        }
+        return;
+      }
+    }
+    
+    // No token or failed to fetch user, go to login
+    if (mounted) context.go('/login');
   }
 
   @override

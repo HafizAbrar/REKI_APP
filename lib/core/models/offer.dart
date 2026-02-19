@@ -6,6 +6,7 @@ class Offer {
   final bool isActive;
   final DateTime validUntil;
   final String terms;
+  final Map<String, dynamic>? venue;
 
   Offer({
     required this.id,
@@ -15,6 +16,7 @@ class Offer {
     required this.isActive,
     required this.validUntil,
     this.terms = '',
+    this.venue,
   });
 
   Map<String, dynamic> toJson() => {
@@ -27,11 +29,13 @@ class Offer {
   };
 
   factory Offer.fromJson(Map<String, dynamic> json) => Offer(
-    id: json['id'],
-    title: json['title'],
-    description: json['description'],
-    type: json['type'],
-    isActive: json['isActive'],
-    validUntil: DateTime.parse(json['validUntil']),
+    id: json['id']?.toString() ?? '',
+    title: json['title']?.toString() ?? '',
+    description: json['description']?.toString() ?? '',
+    type: json['offerType']?.toString() ?? json['type']?.toString() ?? '',
+    isActive: json['isActive'] ?? false,
+    validUntil: json['endsAt'] != null ? DateTime.parse(json['endsAt']) : (json['validUntil'] != null ? DateTime.parse(json['validUntil']) : DateTime.now()),
+    terms: json['terms']?.toString() ?? '',
+    venue: json['venue'],
   );
 }

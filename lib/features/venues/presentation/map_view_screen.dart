@@ -5,20 +5,22 @@ import '../data/venue_management_provider.dart';
 import '../../../core/config/env.dart';
 
 class MapViewScreen extends ConsumerStatefulWidget {
-  const MapViewScreen({super.key});
+  final String? venueId;
+  const MapViewScreen({super.key, this.venueId});
   
   @override
   ConsumerState<MapViewScreen> createState() => _MapViewScreenState();
 }
 
 class _MapViewScreenState extends ConsumerState<MapViewScreen> {
-  int _selectedTab = 0;
+  String _selectedCategory = 'ALL';
   String? _selectedVenueId;
   double _scale = 8000.0;
 
   @override
   void initState() {
     super.initState();
+    _selectedVenueId = widget.venueId;
     Future.microtask(() => ref.read(venueManagementProvider.notifier).loadVenues());
   }
 
@@ -80,25 +82,32 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
             ),
             // Map Pins - Real venues with actual coordinates
             ...venuesAsync.maybeWhen(
-              data: (venues) => venues.map((venue) {
-                final isSelected = _selectedVenueId == venue.id;
-                // Convert lat/lng to screen coordinates
-                const centerLat = 53.4808;
-                const centerLng = -2.2426;
-                final screenWidth = MediaQuery.of(context).size.width;
-                final screenHeight = MediaQuery.of(context).size.height;
-                
-                final x = screenWidth / 2 + (venue.longitude - centerLng) * _scale;
-                final y = screenHeight / 2 - (venue.latitude - centerLat) * _scale;
-                
-                return _buildVenuePin(
-                  venue: venue,
-                  top: y,
-                  left: x,
-                  isSelected: isSelected,
-                  onTap: () => setState(() => _selectedVenueId = venue.id),
-                );
-              }).toList(),
+              data: (venues) {
+                final filteredVenues = widget.venueId != null
+                  ? venues.where((v) => v.id == widget.venueId).toList()
+                  : (_selectedCategory == 'ALL' 
+                    ? venues 
+                    : venues.where((v) => v.type.toUpperCase() == _selectedCategory).toList());
+                return filteredVenues.map((venue) {
+                  final isSelected = _selectedVenueId == venue.id;
+                  // Convert lat/lng to screen coordinates
+                  const centerLat = 53.4808;
+                  const centerLng = -2.2426;
+                  final screenWidth = MediaQuery.of(context).size.width;
+                  final screenHeight = MediaQuery.of(context).size.height;
+                  
+                  final x = screenWidth / 2 + (venue.longitude - centerLng) * _scale;
+                  final y = screenHeight / 2 - (venue.latitude - centerLat) * _scale;
+                  
+                  return _buildVenuePin(
+                    venue: venue,
+                    top: y,
+                    left: x,
+                    isSelected: isSelected,
+                    onTap: () => setState(() => _selectedVenueId = venue.id),
+                  );
+                }).toList();
+              },
               orElse: () => [],
             ),
             // Top Content
@@ -171,13 +180,15 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          _buildFilterTab('Trending', Icons.local_fire_department, 0, true),
+                          _buildFilterTab('All', Icons.grid_view, 'ALL'),
                           const SizedBox(width: 8),
-                          _buildFilterTab('Nightlife', Icons.nightlife, 1, false),
+                          _buildFilterTab('Bars', Icons.local_bar, 'BAR'),
                           const SizedBox(width: 8),
-                          _buildFilterTab('Food', Icons.restaurant, 2, false),
+                          _buildFilterTab('Clubs', Icons.music_note, 'CLUB'),
                           const SizedBox(width: 8),
-                          _buildFilterTab('Live Music', Icons.music_note, 3, false),
+                          _buildFilterTab('Restaurants', Icons.restaurant, 'RESTAURANT'),
+                          const SizedBox(width: 8),
+                          _buildFilterTab('Casinos', Icons.casino, 'CASINO'),
                         ],
                       ),
                     ),
@@ -459,9 +470,10 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
     }
   }
 
-  Widget _buildFilterTab(String label, IconData icon, int index, bool isSelected) {
+  Widget _buildFilterTab(String label, IconData icon, String category) {
+    final isSelected = _selectedCategory == category;
     return GestureDetector(
-      onTap: () => setState(() => _selectedTab = index),
+      onTap: () => setState(() => _selectedCategory = category),
       child: Container(
         height: 36,
         padding: const EdgeInsets.symmetric(horizontal: 16),

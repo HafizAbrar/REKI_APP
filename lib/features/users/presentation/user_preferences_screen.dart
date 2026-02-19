@@ -73,7 +73,11 @@ class _UserPreferencesScreenState extends ConsumerState<UserPreferencesScreen> {
                   selected: selectedCategories.contains(cat),
                   onSelected: (selected) {
                     setState(() {
-                      if (selected) selectedCategories.add(cat); else selectedCategories.remove(cat);
+                      if (selected) {
+                        selectedCategories.add(cat);
+                      } else {
+                        selectedCategories.remove(cat);
+                      }
                     });
                   },
                   selectedColor: const Color(0xFF2DD4BF),
@@ -104,8 +108,6 @@ class _UserPreferencesScreenState extends ConsumerState<UserPreferencesScreen> {
     final repository = ref.read(userRepositoryProvider);
     try {
       final result = await repository.updatePreferences({
-        'preferredVibe': selectedVibe.toUpperCase(),
-        'preferredBusyness': selectedBusyness.toUpperCase(),
         'preferredCategories': selectedCategories.toList(),
       });
 

@@ -1,17 +1,20 @@
 import '../models/user.dart';
 import '../network/auth_api_service.dart';
 import 'mock_data_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   AuthApiService? _apiService;
-  final bool useMockData;
+  bool useMockData;
+  final _storage = const FlutterSecureStorage();
 
   static final AuthService _instance = AuthService._internal();
-  factory AuthService({AuthApiService? apiService, bool useMockData = true}) {
+  factory AuthService({AuthApiService? apiService, bool useMockData = false}) {
     if (apiService != null) _instance._apiService = apiService;
+    _instance.useMockData = useMockData;
     return _instance;
   }
-  AuthService._internal() : useMockData = true, _apiService = null;
+  AuthService._internal() : useMockData = false, _apiService = null;
 
   User? _currentUser;
   String? _accessToken;
@@ -20,6 +23,12 @@ class AuthService {
   User? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
   bool get isBusinessUser => _currentUser?.type == UserType.business;
+  String? get accessToken => _accessToken;
+
+  Future<void> setAccessToken(String token) async {
+    _accessToken = token;
+    await _storage.write(key: 'access_token', value: token);
+  }
 
   Future<bool> login(String email, String password) async {
     if (useMockData || _apiService == null) {
@@ -36,10 +45,31 @@ class AuthService {
       final response = await _apiService!.login(email: email, password: password);
       _accessToken = response['access_token'];
       _refreshToken = response['refresh_token'];
-      _currentUser = User.fromJson(response['user']);
+      await _storage.write(key: 'access_token', value: _accessToken);
+      await _storage.write(key: 'refresh_token', value: _refreshToken);
+      await fetchCurrentUser();
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<User?> fetchCurrentUser() async {
+    if (useMockData || _apiService == null) {
+      return _currentUser;
+    }
+
+    try {
+      if (_accessToken == null) {
+        _accessToken = await _storage.read(key: 'access_token');
+      }
+      if (_accessToken == null) return null;
+      
+      final response = await _apiService!.getCurrentUser();
+      _currentUser = User.fromJson(response);
+      return _currentUser;
+    } catch (e) {
+      return null;
     }
   }
 
@@ -52,6 +82,8 @@ class AuthService {
     _currentUser = null;
     _accessToken = null;
     _refreshToken = null;
+    await _storage.delete(key: 'access_token');
+    await _storage.delete(key: 'refresh_token');
   }
 
   Future<bool> register(String email, String password, String name, UserType type) async {
@@ -62,6 +94,7 @@ class AuthService {
         email: email,
         name: name,
         type: type,
+        role: type == UserType.business ? UserRole.BUSINESS : UserRole.USER,
         preferences: [],
       );
       return true;
@@ -75,7 +108,6 @@ class AuthService {
       );
       _accessToken = response['access_token'];
       _refreshToken = response['refresh_token'];
-      _currentUser = User.fromJson(response['user']);
       return true;
     } catch (e) {
       return false;
@@ -128,17 +160,7 @@ class AuthService {
   }
 
   Future<User?> getCurrentUser() async {
-    if (useMockData || _apiService == null) {
-      return _currentUser;
-    }
-
-    try {
-      final response = await _apiService!.getCurrentUser();
-      _currentUser = User.fromJson(response['user']);
-      return _currentUser;
-    } catch (e) {
-      return null;
-    }
+    return _currentUser;
   }
 
   Future<bool> refreshAccessToken() async {
@@ -154,6 +176,4 @@ class AuthService {
       return false;
     }
   }
-
-  String? get accessToken => _accessToken;
 }
