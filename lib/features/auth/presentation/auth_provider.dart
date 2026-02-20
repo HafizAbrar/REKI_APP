@@ -41,7 +41,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         phone: phone,
       );
       await _storeTokens(response);
-      await _authService.register(email, password, name, UserType.customer);
+      await _authService.setAccessToken(response['access_token']);
+      await _authService.fetchCurrentUser();
       state = const AuthStateRegisterSuccess();
     } catch (e) {
       state = AuthStateError(e.toString());

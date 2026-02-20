@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
 import '../../users/data/user_preferences_provider.dart';
 import '../../../core/config/env.dart';
+import '../../../core/services/auth_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -27,6 +28,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final venuesAsync = ref.watch(venueManagementProvider);
     final preferencesAsync = ref.watch(currentUserPreferencesProvider);
+    final authService = AuthService();
+    final user = authService.currentUser;
     
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -85,32 +88,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ],
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'LOCATION',
-                                style: TextStyle(
-                                  color: Color(0xFF94A3B8),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 1.5,
+                                user?.name ?? 'Guest User',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  Text(
-                                    'Manchester, UK',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -0.5,
-                                    ),
-                                  ),
-                                  Icon(Icons.expand_more, color: Colors.white, size: 18),
-                                ],
+                              Text(
+                                user?.email ?? 'Not logged in',
+                                style: const TextStyle(
+                                  color: Color(0xFF94A3B8),
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
@@ -704,13 +699,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     bool isActive = _selectedNavIndex == index;
     return GestureDetector(
       onTap: () {
-        setState(() => _selectedNavIndex = index);
         if (index == 1) {
-          context.push('/map');
+          context.push('/map').then((_) => setState(() => _selectedNavIndex = 0));
         } else if (index == 2) {
-          context.push('/offers');
+          context.push('/offers').then((_) => setState(() => _selectedNavIndex = 0));
         } else if (index == 3) {
-          context.push('/profile');
+          context.push('/profile').then((_) => setState(() => _selectedNavIndex = 0));
+        } else {
+          setState(() => _selectedNavIndex = index);
         }
       },
       child: Stack(
