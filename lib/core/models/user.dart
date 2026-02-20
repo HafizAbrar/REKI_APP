@@ -50,7 +50,7 @@ class User {
     return User(
       id: json['id']?.toString() ?? '',
       email: json['email'] ?? '',
-      name: json['name'] ?? json['email'] ?? '',
+      name: json['fullName'] ?? json['name'] ?? json['email'] ?? '',
       type: role == UserRole.BUSINESS ? UserType.business : UserType.customer,
       role: role,
       preferences: preferencesList,
