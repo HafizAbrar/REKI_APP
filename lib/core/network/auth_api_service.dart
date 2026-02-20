@@ -21,6 +21,8 @@ class AuthApiService {
     final response = await _dio.post('/auth/register', data: {
       'email': email,
       'password': password,
+      'fullName': name,
+      'phone': phone,
       'role': 'USER',
     });
     return response.data;

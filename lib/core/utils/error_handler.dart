@@ -6,7 +6,18 @@ class ErrorHandler {
     if (error is DioException) {
       switch (error.response?.statusCode) {
         case 400:
-          return 'Invalid request. Please check your input.';
+          final data = error.response?.data;
+          if (data is Map && data['message'] is List) {
+            final messages = data['message'] as List;
+            if (messages.isNotEmpty) {
+              final firstError = messages.first.toString();
+              if (firstError.contains('fullName')) return 'Please enter your full name (at least 2 characters)';
+              if (firstError.contains('phone')) return 'Please enter a valid phone number (at least 7 digits)';
+              if (firstError.contains('email')) return 'Please enter a valid email address';
+              if (firstError.contains('password')) return 'Password must be at least 8 characters';
+            }
+          }
+          return data?['message']?.toString() ?? 'Invalid request. Please check your input.';
         case 401:
           return 'Session expired. Please login again.';
         case 403:
