@@ -43,6 +43,15 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
     _selectedVenueId = widget.venueId.isEmpty ? null : widget.venueId;
   }
 
+  void _initializeVenueId(List<dynamic> venues) {
+    if (_selectedVenueId != null) {
+      final venueExists = venues.any((v) => v['id'] == _selectedVenueId);
+      if (!venueExists) {
+        _selectedVenueId = venues.isNotEmpty ? venues.first['id'] as String : null;
+      }
+    }
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -155,18 +164,9 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
   }
 
   Widget _buildForm(List<dynamic> venues) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundDark,
-      appBar: AppBar(
-        backgroundColor: AppTheme.backgroundDark,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text('Create Offer', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
-      ),
-      body: SingleChildScrollView(
+    _initializeVenueId(venues);
+    
+    return SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
@@ -190,7 +190,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                         color: AppTheme.primaryColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.local_offer, color: AppTheme.backgroundDark, size: 28),
+                      child: const Icon(Icons.local_offer, color: AppTheme.backgroundDark, size: 28),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -216,13 +216,13 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                 decoration: InputDecoration(
                   labelText: 'Venue',
                   labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-                  prefixIcon: Icon(Icons.store, color: AppTheme.primaryColor),
+                  prefixIcon: const Icon(Icons.store, color: AppTheme.primaryColor),
                   filled: true,
                   fillColor: AppTheme.cardDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
                 ),
-                items: venues.map<DropdownMenuItem<String>>((v) => DropdownMenuItem<String>(value: v['id'] as String, child: Text(v['name'] ?? 'Unknown'))).toList(),
+                items: venues.map<DropdownMenuItem<String>>((v) => DropdownMenuItem<String>(value: v['id'] as String, child: Text(v['name'] ?? 'Unknown'))).toSet().toList(),
                 onChanged: (v) => setState(() => _selectedVenueId = v),
                 validator: (v) => v == null || v.isEmpty ? 'Please select a venue' : null,
               ),
@@ -235,12 +235,12 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                 decoration: InputDecoration(
                   labelText: 'Offer Title',
                   labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-                  prefixIcon: Icon(Icons.title, color: AppTheme.primaryColor),
+                  prefixIcon: const Icon(Icons.title, color: AppTheme.primaryColor),
                   filled: true,
                   fillColor: AppTheme.cardDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 2)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2)),
                 ),
                 validator: (v) => v?.isEmpty ?? true ? 'Title is required' : null,
               ),
@@ -252,12 +252,12 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                 decoration: InputDecoration(
                   labelText: 'Description',
                   labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-                  prefixIcon: Icon(Icons.description, color: AppTheme.primaryColor),
+                  prefixIcon: const Icon(Icons.description, color: AppTheme.primaryColor),
                   filled: true,
                   fillColor: AppTheme.cardDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 2)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2)),
                 ),
                 validator: (v) => v?.isEmpty ?? true ? 'Description is required' : null,
               ),
@@ -271,7 +271,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                 decoration: InputDecoration(
                   labelText: 'Offer Type',
                   labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-                  prefixIcon: Icon(Icons.category, color: AppTheme.primaryColor),
+                  prefixIcon: const Icon(Icons.category, color: AppTheme.primaryColor),
                   filled: true,
                   fillColor: AppTheme.cardDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -290,7 +290,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                 decoration: InputDecoration(
                   labelText: 'Minimum Busyness',
                   labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-                  prefixIcon: Icon(Icons.people, color: AppTheme.primaryColor),
+                  prefixIcon: const Icon(Icons.people, color: AppTheme.primaryColor),
                   filled: true,
                   fillColor: AppTheme.cardDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -315,7 +315,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.calendar_today, color: AppTheme.primaryColor),
+                      const Icon(Icons.calendar_today, color: AppTheme.primaryColor),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -344,7 +344,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.event, color: AppTheme.primaryColor),
+                      const Icon(Icons.event, color: AppTheme.primaryColor),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -409,7 +409,6 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

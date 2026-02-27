@@ -63,9 +63,7 @@ class AuthService {
     }
 
     try {
-      if (_accessToken == null) {
-        _accessToken = await _storage.read(key: 'access_token');
-      }
+      _accessToken ??= await _storage.read(key: 'access_token');
       if (_accessToken == null) return null;
       
       print('DEBUG: Fetching current user from API');

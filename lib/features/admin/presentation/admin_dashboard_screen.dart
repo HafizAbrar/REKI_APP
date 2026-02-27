@@ -49,7 +49,7 @@ class AdminDashboardScreen extends ConsumerWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: AppTheme.primaryColor),
+              decoration: const BoxDecoration(color: AppTheme.primaryColor),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -64,33 +64,49 @@ class AdminDashboardScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.dashboard, color: Colors.white),
               title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/admin-dashboard'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/admin-dashboard');
+              },
             ),
             ListTile(
               leading: const Icon(Icons.add_business, color: Colors.white),
               title: const Text('Create Venue', style: TextStyle(color: Colors.white)),
-              onTap: () => context.push('/admin/create-venue'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/admin/create-venue');
+              },
             ),
             ListTile(
               leading: const Icon(Icons.person_add, color: Colors.white),
               title: const Text('Create Business User', style: TextStyle(color: Colors.white)),
-              onTap: () => context.push('/admin/create-business-user'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/admin/create-business-user');
+              },
             ),
             ListTile(
               leading: const Icon(Icons.people, color: Colors.white),
               title: const Text('Manage Users', style: TextStyle(color: Colors.white)),
-              onTap: () => context.push('/users'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/users');
+              },
             ),
             ListTile(
               leading: const Icon(Icons.store, color: Colors.white),
               title: const Text('Manage Venues', style: TextStyle(color: Colors.white)),
-              onTap: () => context.push('/venues'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/venues');
+              },
             ),
             const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout', style: TextStyle(color: Colors.red)),
               onTap: () async {
+                Navigator.pop(context);
                 await authService.logout();
                 if (context.mounted) context.go('/login');
               },
@@ -174,7 +190,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                     color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.admin_panel_settings,
                     color: AppTheme.backgroundDark,
                     size: 28,
@@ -190,7 +206,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                         style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 4),
-                      Text(
+                      const Text(
                         'Administrator',
                         style: TextStyle(color: AppTheme.primaryColor, fontSize: 14, fontWeight: FontWeight.w600),
                       ),
@@ -404,7 +420,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                 color: AppTheme.primaryColor.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.store_rounded, color: AppTheme.primaryColor, size: 24),
+              child: const Icon(Icons.store_rounded, color: AppTheme.primaryColor, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -425,7 +441,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                       const SizedBox(width: 12),
                       Text(
                         '${venue['activeOffers'] ?? 0} offers',
-                        style: TextStyle(color: AppTheme.primaryColor, fontSize: 12, fontWeight: FontWeight.w600),
+                        style: const TextStyle(color: AppTheme.primaryColor, fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -501,7 +517,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ),
                 child: Text(
                   '${topVenues.length} venues',
-                  style: TextStyle(color: AppTheme.primaryColor, fontSize: 12, fontWeight: FontWeight.w600),
+                  style: const TextStyle(color: AppTheme.primaryColor, fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -538,7 +554,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               name.length > 10 ? '${name.substring(0, 10)}...' : name,
-                              style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500),
+                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500),
                               textAlign: TextAlign.center,
                             ),
                           );

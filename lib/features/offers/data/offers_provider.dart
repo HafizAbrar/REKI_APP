@@ -10,3 +10,21 @@ final offersProvider = FutureProvider<List<Offer>>((ref) async {
     failure: (error) => throw Exception(error),
   );
 });
+
+final venueOffersFilterProvider = FutureProvider.family<List<Offer>, String?>((ref, venueId) async {
+  if (venueId == null || venueId.isEmpty) {
+    final repository = ref.read(offerRepositoryProvider);
+    final result = await repository.getAllOffers();
+    return result.when(
+      success: (offers) => offers,
+      failure: (error) => throw Exception(error),
+    );
+  }
+  
+  final repository = ref.read(offerRepositoryProvider);
+  final result = await repository.getOffersByVenue(venueId);
+  return result.when(
+    success: (offers) => offers,
+    failure: (error) => throw Exception(error),
+  );
+});

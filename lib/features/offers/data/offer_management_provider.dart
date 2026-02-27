@@ -32,13 +32,33 @@ class OfferManagementNotifier extends StateNotifier<AsyncValue<List<Offer>>> {
   }
 
   Future<bool> updateOfferStatus(String id, bool isActive) async {
+    // Optimistically update the UI
+    state.whenData((offers) {
+      final updatedOffers = offers.map((offer) {
+        if (offer.id == id) {
+          return Offer(
+            id: offer.id,
+            title: offer.title,
+            description: offer.description,
+            type: offer.type,
+            isActive: isActive,
+            validUntil: offer.validUntil,
+            terms: offer.terms,
+            venue: offer.venue,
+          );
+        }
+        return offer;
+      }).toList();
+      state = AsyncValue.data(updatedOffers);
+    });
+
     final result = await _repository.updateOfferStatus(id, isActive);
     return result.when(
-      success: (_) {
-        loadOffers();
-        return true;
+      success: (_) => true,
+      failure: (_) {
+        loadOffers(); // Reload on failure
+        return false;
       },
-      failure: (_) => false,
     );
   }
 }

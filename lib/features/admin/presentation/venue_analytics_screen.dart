@@ -44,7 +44,7 @@ class VenueAnalyticsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 const Text('Error Loading Analytics', style: TextStyle(color: Colors.white, fontSize: 18)),
                 const SizedBox(height: 8),
-                Text(ErrorHandler.getErrorMessage(error), style: TextStyle(color: Colors.white54, fontSize: 14), textAlign: TextAlign.center),
+                Text(ErrorHandler.getErrorMessage(error), style: const TextStyle(color: Colors.white54, fontSize: 14), textAlign: TextAlign.center),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () => ref.refresh(venueAnalyticsProvider(venueId)),
@@ -85,7 +85,7 @@ class VenueAnalyticsScreen extends ConsumerWidget {
               children: [
                 Text(venue['name'] ?? 'Venue', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 8),
-                Text(venue['category'] ?? 'N/A', style: TextStyle(color: AppTheme.primaryColor, fontSize: 16, fontWeight: FontWeight.w600)),
+                Text(venue['category'] ?? 'N/A', style: const TextStyle(color: AppTheme.primaryColor, fontSize: 16, fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -127,7 +127,7 @@ class VenueAnalyticsScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             const Text('Top Offers', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
-            ...topOffers.map((offer) => _buildOfferCard(offer)).toList(),
+            ...topOffers.map((offer) => _buildOfferCard(offer)),
           ],
         ],
       ),

@@ -57,7 +57,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
           ),
           // Content
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
@@ -147,7 +147,7 @@ class OfferRedeemedScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 24),
                   // Ticket card
                   Container(
                     width: double.infinity,
@@ -351,39 +351,8 @@ class OfferRedeemedScreen extends ConsumerWidget {
                                     color: Colors.black,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: Stack(
-                                    children: [
-                                      // QR pattern simulation
-                                      Container(
-                                        decoration: const BoxDecoration(
-                                          image: DecorationImage(
-                                            image: NetworkImage('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K'),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                      // Center logo
-                                      Center(
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Center(
-                                            child: Container(
-                                              width: 24,
-                                              height: 24,
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF2DD4BF),
-                                                borderRadius: BorderRadius.circular(2),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  child: const Center(
+                                    child: Icon(Icons.qr_code_2, color: Colors.white, size: 80),
                                   ),
                                 ),
                               ),
@@ -474,7 +443,6 @@ class OfferRedeemedScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const Spacer(),
                 ],
               ),
             ),

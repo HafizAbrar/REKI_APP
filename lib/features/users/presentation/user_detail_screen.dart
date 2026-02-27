@@ -29,7 +29,7 @@ class UserDetailScreen extends ConsumerWidget {
       body: userAsync.when(
         data: (user) => _UserDetailContent(user: user),
         loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
-        error: (error, _) => Center(child: Text('Error: $error', style: TextStyle(color: Colors.red))),
+        error: (error, _) => Center(child: Text('Error: $error', style: const TextStyle(color: Colors.red))),
       ),
     );
   }
@@ -87,7 +87,7 @@ class _UserDetailContentState extends ConsumerState<_UserDetailContent> {
                     color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.person, color: AppTheme.backgroundDark, size: 28),
+                  child: const Icon(Icons.person, color: AppTheme.backgroundDark, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -123,12 +123,12 @@ class _UserDetailContentState extends ConsumerState<_UserDetailContent> {
             decoration: InputDecoration(
               labelText: 'Name',
               labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-              prefixIcon: Icon(Icons.person_outline, color: AppTheme.primaryColor),
+              prefixIcon: const Icon(Icons.person_outline, color: AppTheme.primaryColor),
               filled: true,
               fillColor: AppTheme.cardDark,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 2)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2)),
             ),
           ),
           const SizedBox(height: 16),
@@ -139,12 +139,12 @@ class _UserDetailContentState extends ConsumerState<_UserDetailContent> {
             decoration: InputDecoration(
               labelText: 'Email',
               labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-              prefixIcon: Icon(Icons.email_outlined, color: AppTheme.primaryColor),
+              prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.primaryColor),
               filled: true,
               fillColor: AppTheme.cardDark,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 2)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2)),
             ),
           ),
           const SizedBox(height: 24),
@@ -158,11 +158,11 @@ class _UserDetailContentState extends ConsumerState<_UserDetailContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   children: [
                     Icon(Icons.info_outline, color: AppTheme.primaryColor, size: 20),
-                    const SizedBox(width: 8),
-                    const Text('Details', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    SizedBox(width: 8),
+                    Text('Details', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -185,7 +185,7 @@ class _UserDetailContentState extends ConsumerState<_UserDetailContent> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
                 ),
-                child: Text(p, style: TextStyle(color: AppTheme.primaryColor, fontSize: 14)),
+                child: Text(p, style: const TextStyle(color: AppTheme.primaryColor, fontSize: 14)),
               )).toList(),
             ),
           ],
@@ -225,10 +225,10 @@ class _UserDetailContentState extends ConsumerState<_UserDetailContent> {
                         });
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppTheme.primaryColor),
+                        side: const BorderSide(color: AppTheme.primaryColor),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: Text('Cancel', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.primaryColor)),
+                      child: const Text('Cancel', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.primaryColor)),
                     ),
                   ),
                 ),

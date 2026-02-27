@@ -73,7 +73,7 @@ class _TokenInputScreenState extends ConsumerState<TokenInputScreen> {
               style: const TextStyle(color: Colors.white, fontSize: 12),
               decoration: InputDecoration(
                 hintText: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-                hintStyle: TextStyle(color: Colors.white30),
+                hintStyle: const TextStyle(color: Colors.white30),
                 filled: true,
                 fillColor: AppTheme.cardDark,
                 border: OutlineInputBorder(

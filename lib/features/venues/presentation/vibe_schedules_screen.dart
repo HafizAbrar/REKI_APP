@@ -118,7 +118,7 @@ class _VibeSchedulesScreenState extends ConsumerState<VibeSchedulesScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: AppTheme.primaryColor, borderRadius: BorderRadius.circular(12)),
-                    child: Icon(Icons.schedule, color: AppTheme.backgroundDark, size: 28),
+                    child: const Icon(Icons.schedule, color: AppTheme.backgroundDark, size: 28),
                   ),
                   const SizedBox(width: 16),
                   const Expanded(
@@ -202,7 +202,7 @@ class _VibeSchedulesScreenState extends ConsumerState<VibeSchedulesScreen> {
                         decoration: InputDecoration(
                           labelText: 'Start Time',
                           labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-                          suffixIcon: Icon(Icons.access_time, color: AppTheme.primaryColor),
+                          suffixIcon: const Icon(Icons.access_time, color: AppTheme.primaryColor),
                           filled: true,
                           fillColor: AppTheme.cardDark,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -222,7 +222,7 @@ class _VibeSchedulesScreenState extends ConsumerState<VibeSchedulesScreen> {
                         decoration: InputDecoration(
                           labelText: 'End Time',
                           labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-                          suffixIcon: Icon(Icons.access_time, color: AppTheme.primaryColor),
+                          suffixIcon: const Icon(Icons.access_time, color: AppTheme.primaryColor),
                           filled: true,
                           fillColor: AppTheme.cardDark,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),

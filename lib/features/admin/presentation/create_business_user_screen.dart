@@ -16,6 +16,8 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _phoneController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -23,6 +25,8 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _fullNameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -36,6 +40,8 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
       await apiService.createBusinessUser({
         'email': _emailController.text,
         'password': _passwordController.text,
+        'fullName': _fullNameController.text,
+        'phone': _phoneController.text,
         'role': 'BUSINESS',
       });
 
@@ -94,7 +100,7 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
                         color: AppTheme.primaryColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.person_add, color: AppTheme.backgroundDark, size: 28),
+                      child: const Icon(Icons.person_add, color: AppTheme.backgroundDark, size: 28),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -114,13 +120,13 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
               const Text('User Information', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _emailController,
+                controller: _fullNameController,
                 style: const TextStyle(color: Colors.white, fontSize: 16),
-                keyboardType: TextInputType.emailAddress,
+                keyboardType: TextInputType.name,
                 decoration: InputDecoration(
-                  labelText: 'Email Address',
+                  labelText: 'Full Name',
                   labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-                  prefixIcon: Icon(Icons.email_outlined, color: AppTheme.primaryColor),
+                  prefixIcon: const Icon(Icons.person_outline, color: AppTheme.primaryColor),
                   filled: true,
                   fillColor: AppTheme.cardDark,
                   border: OutlineInputBorder(
@@ -133,12 +139,70 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+                  ),
+                ),
+                validator: (v) {
+                  if (v?.isEmpty ?? true) return 'Full name is required';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Email Address',
+                  labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
+                  prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.primaryColor),
+                  filled: true,
+                  fillColor: AppTheme.cardDark,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
                   ),
                 ),
                 validator: (v) {
                   if (v?.isEmpty ?? true) return 'Email is required';
                   if (!v!.contains('@')) return 'Enter a valid email';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phoneController,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
+                  prefixIcon: const Icon(Icons.phone_outlined, color: AppTheme.primaryColor),
+                  filled: true,
+                  fillColor: AppTheme.cardDark,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+                  ),
+                ),
+                validator: (v) {
+                  if (v?.isEmpty ?? true) return 'Phone number is required';
                   return null;
                 },
               ),
@@ -150,7 +214,7 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
                 decoration: InputDecoration(
                   labelText: 'Password',
                   labelStyle: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6)),
-                  prefixIcon: Icon(Icons.lock_outline, color: AppTheme.primaryColor),
+                  prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primaryColor),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -170,7 +234,7 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
                   ),
                 ),
                 validator: (v) {
@@ -189,7 +253,7 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: const Color(0xFF10B981), size: 20),
+                    const Icon(Icons.info_outline, color: Color(0xFF10B981), size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(

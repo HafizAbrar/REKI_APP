@@ -28,8 +28,8 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
         backgroundColor: Color(0xFFF8FAFC),
         body: Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6))),
       ),
-      error: (error, _) => Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+      error: (error, _) => const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
         body: Center(child: Text('Error loading data', style: TextStyle(color: Colors.red))),
       ),
     );
@@ -45,11 +45,11 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
+            const DrawerHeader(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [Color(0xFF14B8A6), Color(0xFF0F766E)]),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

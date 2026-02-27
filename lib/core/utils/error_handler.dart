@@ -4,6 +4,20 @@ import 'package:flutter/material.dart';
 class ErrorHandler {
   static String getErrorMessage(dynamic error) {
     if (error is DioException) {
+      // Network errors
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.type == DioExceptionType.sendTimeout) {
+        return 'Connection timeout. Please check your internet connection and try again.';
+      }
+      if (error.type == DioExceptionType.connectionError) {
+        return 'Unable to connect. Please check your internet connection.';
+      }
+      if (error.type == DioExceptionType.unknown) {
+        return 'Network error. Please check your internet connection and try again.';
+      }
+
+      // HTTP errors
       switch (error.response?.statusCode) {
         case 400:
           final data = error.response?.data;
@@ -19,13 +33,13 @@ class ErrorHandler {
           }
           return data?['message']?.toString() ?? 'Invalid request. Please check your input.';
         case 401:
-          return 'Session expired. Please login again.';
+          return 'Invalid email or password. Please try again.';
         case 403:
           return 'Access denied. You don\'t have permission.';
         case 404:
           return 'Resource not found.';
         case 409:
-          return error.response?.data['message'] ?? 'Conflict occurred.';
+          return error.response?.data['message'] ?? 'This email is already registered.';
         case 422:
           return 'Validation failed. Please check your input.';
         case 500:
@@ -33,19 +47,10 @@ class ErrorHandler {
         case 503:
           return 'Service unavailable. Please try again later.';
         default:
-          if (error.type == DioExceptionType.connectionTimeout ||
-              error.type == DioExceptionType.receiveTimeout) {
-            return 'Connection timeout. Please check your internet.';
-          }
-          if (error.type == DioExceptionType.connectionError) {
-            return 'No internet connection.';
-          }
-          return error.response?.data['message'] ?? 'Something went wrong.';
+          return error.response?.data['message'] ?? 'Something went wrong. Please try again.';
       }
     }
-    return error.toString().contains('Exception') 
-        ? 'An error occurred. Please try again.' 
-        : error.toString();
+    return 'An error occurred. Please try again.';
   }
 
   static void showError(BuildContext context, dynamic error) {

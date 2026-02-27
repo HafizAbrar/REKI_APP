@@ -283,9 +283,7 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
     if (mounted) {
       result.when(
         success: (_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Offer redeemed successfully!')),
-          );
+          context.push('/offer-redeemed?offerId=${widget.offerId}');
         },
         failure: (error) {
           ScaffoldMessenger.of(context).showSnackBar(
