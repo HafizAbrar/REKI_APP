@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
 import '../network/user_api_service.dart';
+import '../utils/error_handler.dart';
 import '../utils/result.dart';
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
@@ -17,7 +18,7 @@ class UserRepository {
       final users = await _apiService.getAllUsers();
       return Result.success(users);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -26,7 +27,7 @@ class UserRepository {
       final user = await _apiService.getUserById(id);
       return Result.success(user);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -35,7 +36,7 @@ class UserRepository {
       final user = await _apiService.updateUser(id, updates);
       return Result.success(user);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -44,7 +45,7 @@ class UserRepository {
       await _apiService.deleteUser(id);
       return Result.success(null);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -53,7 +54,7 @@ class UserRepository {
       final user = await _apiService.updatePreferences(preferences);
       return Result.success(user);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 }

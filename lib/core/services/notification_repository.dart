@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/notification.dart';
 import '../network/notification_api_service.dart';
+import '../utils/error_handler.dart';
 import '../utils/result.dart';
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
@@ -17,7 +18,7 @@ class NotificationRepository {
       final notifications = await _apiService.getAllNotifications();
       return Result.success(notifications);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -26,7 +27,7 @@ class NotificationRepository {
       final data = await _apiService.getUnreadCount();
       return Result.success(data['count'] ?? 0);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -35,7 +36,7 @@ class NotificationRepository {
       final notification = await _apiService.markAsRead(id);
       return Result.success(notification);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -44,7 +45,7 @@ class NotificationRepository {
       await _apiService.markAllAsRead();
       return Result.success(null);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -53,7 +54,7 @@ class NotificationRepository {
       await _apiService.deleteNotification(id);
       return Result.success(null);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -62,7 +63,7 @@ class NotificationRepository {
       final notification = await _apiService.testNotification(data);
       return Result.success(notification);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 }

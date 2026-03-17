@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/city.dart';
 import '../network/city_api_service.dart';
+import '../utils/error_handler.dart';
 import '../utils/result.dart';
 
 final cityRepositoryProvider = Provider<CityRepository>((ref) {
@@ -17,7 +18,7 @@ class CityRepository {
       final cities = await _apiService.getCities();
       return Result.success(cities);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -26,7 +27,7 @@ class CityRepository {
       final city = await _apiService.createCity(cityData);
       return Result.success(city);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -35,7 +36,7 @@ class CityRepository {
       final city = await _apiService.getCityById(id);
       return Result.success(city);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -44,7 +45,7 @@ class CityRepository {
       final city = await _apiService.getCityByName(name);
       return Result.success(city);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 }

@@ -294,7 +294,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Explore as Guest',
+                            'Continue as New User',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,

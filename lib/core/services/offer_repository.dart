@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/offer.dart';
 import '../network/offer_api_service.dart';
+import '../utils/error_handler.dart';
 import '../utils/result.dart';
 
 final offerRepositoryProvider = Provider<OfferRepository>((ref) {
@@ -17,7 +18,7 @@ class OfferRepository {
       final offers = await _apiService.getAllOffers();
       return Result.success(offers);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -26,7 +27,7 @@ class OfferRepository {
       final offer = await _apiService.createOffer(offerData);
       return Result.success(offer);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -35,7 +36,7 @@ class OfferRepository {
       final offers = await _apiService.getOffersByVenue(venueId);
       return Result.success(offers);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -44,7 +45,7 @@ class OfferRepository {
       final offer = await _apiService.getOfferById(id);
       return Result.success(offer);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -53,7 +54,7 @@ class OfferRepository {
       final result = await _apiService.redeemOffer(offerId);
       return Result.success(result);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -62,7 +63,7 @@ class OfferRepository {
       final offer = await _apiService.markOfferViewed(id);
       return Result.success(offer);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -71,7 +72,7 @@ class OfferRepository {
       final offer = await _apiService.markOfferClicked(id);
       return Result.success(offer);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -80,7 +81,7 @@ class OfferRepository {
       final stats = await _apiService.getOfferStats(id);
       return Result.success(stats);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -89,7 +90,7 @@ class OfferRepository {
       final offer = await _apiService.updateOfferStatus(id, isActive);
       return Result.success(offer);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 }

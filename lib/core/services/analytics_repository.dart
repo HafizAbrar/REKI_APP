@@ -4,6 +4,7 @@ import '../models/venue_analytics.dart';
 import '../models/offer_analytics.dart';
 import '../models/platform_engagement.dart';
 import '../network/analytics_api_service.dart';
+import '../utils/error_handler.dart';
 import '../utils/result.dart';
 
 final analyticsRepositoryProvider = Provider<AnalyticsRepository>((ref) {
@@ -20,7 +21,7 @@ class AnalyticsRepository {
       final dashboard = await _apiService.getOwnerDashboard();
       return Result.success(dashboard);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -29,7 +30,7 @@ class AnalyticsRepository {
       final analytics = await _apiService.getVenueAnalytics(venueId);
       return Result.success(analytics);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -38,7 +39,7 @@ class AnalyticsRepository {
       final analytics = await _apiService.getOfferAnalytics(offerId);
       return Result.success(analytics);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -47,7 +48,7 @@ class AnalyticsRepository {
       final engagement = await _apiService.getPlatformEngagement();
       return Result.success(engagement);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 }

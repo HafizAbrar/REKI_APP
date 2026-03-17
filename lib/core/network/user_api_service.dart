@@ -28,7 +28,8 @@ class UserApiService {
   // PATCH /users/{id} - Update user
   Future<User> updateUser(String id, Map<String, dynamic> updates) async {
     final data = <String, dynamic>{};
-    if (updates.containsKey('phone')) data['phone'] = updates['phone'];
+    if (updates.containsKey('email')) data['email'] = updates['email'];
+    if (updates.containsKey('isActive')) data['isActive'] = updates['isActive'];
     final response = await _dio.patch('/users/$id', data: data);
     return User.fromJson(response.data);
   }

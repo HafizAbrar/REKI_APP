@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/venue.dart';
 import '../network/venue_api_service.dart';
+import '../utils/error_handler.dart';
 import '../utils/result.dart';
 
 final venueRepositoryProvider = Provider<VenueRepository>((ref) {
@@ -17,7 +18,7 @@ class VenueRepository {
       final venues = await _apiService.getAllVenues();
       return Result.success(venues);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -26,7 +27,7 @@ class VenueRepository {
       final venue = await _apiService.createVenue(venueData);
       return Result.success(venue);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -35,7 +36,7 @@ class VenueRepository {
       final venue = await _apiService.getVenueById(id);
       return Result.success(venue);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -44,7 +45,7 @@ class VenueRepository {
       final venue = await _apiService.updateLiveState(id, busyness: busyness, currentVibe: currentVibe);
       return Result.success(venue);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -53,7 +54,7 @@ class VenueRepository {
       final result = await _apiService.createVibeSchedule(id, schedule);
       return Result.success(result);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -62,7 +63,7 @@ class VenueRepository {
       final schedules = await _apiService.getVibeSchedules(id);
       return Result.success(schedules);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -71,7 +72,7 @@ class VenueRepository {
       final vibe = await _apiService.getCurrentVibe(id);
       return Result.success(vibe);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 }
