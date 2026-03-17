@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/network/auth_api_service.dart';
@@ -25,6 +26,42 @@ class AuthNotifier extends StateNotifier<AuthState> {
   bool get isLoading => state is AuthStateLoading;
   bool get isAuthenticated => state is AuthStateAuthenticated;
 
+  String _parseError(Object e) {
+    if (e is DioException) {
+      final statusCode = e.response?.statusCode;
+      final serverMessage = e.response?.data is Map
+          ? e.response?.data['message'] as String?
+          : null;
+      switch (statusCode) {
+        case 400:
+          return serverMessage ?? 'Invalid request. Please check your details and try again.';
+        case 401:
+          return 'Incorrect email or password. Please try again.';
+        case 404:
+          return serverMessage ?? 'Account not found. Please check your email or sign up.';
+        case 409:
+          return serverMessage ?? 'An account with this email already exists.';
+        case 422:
+          return serverMessage ?? 'Please fill in all required fields correctly.';
+        case 429:
+          return 'Too many attempts. Please wait a moment and try again.';
+        case 500:
+        case 502:
+        case 503:
+          return 'Something went wrong on our end. Please try again later.';
+        default:
+          if (e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.receiveTimeout) {
+            return 'Connection timed out. Please check your internet and try again.';
+          }
+          if (e.type == DioExceptionType.connectionError) {
+            return 'No internet connection. Please check your network and try again.';
+          }
+      }
+    }
+    return 'Something went wrong. Please try again.';
+  }
+
   Future<void> register({
     required String email,
     required String password,
@@ -44,7 +81,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _authService.fetchCurrentUser();
       state = const AuthStateRegisterSuccess();
     } catch (e) {
-      state = AuthStateError(e.toString());
+      state = AuthStateError(_parseError(e));
     }
   }
 
@@ -58,11 +95,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _storeTokens(response);
       await _authService.login(email, password);
       await _authService.fetchCurrentUser();
-      print('DEBUG: Login complete, user: ${_authService.currentUser?.email}, role: ${_authService.currentUser?.role}');
       state = const AuthStateLoginSuccess();
     } catch (e) {
-      print('DEBUG: Login failed: $e');
-      state = AuthStateError(e.toString());
+      state = AuthStateError(_parseError(e));
     }
   }
 
@@ -72,7 +107,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _apiService.forgotPassword(email);
       state = const AuthStateForgotPasswordSuccess();
     } catch (e) {
-      state = AuthStateError(e.toString());
+      state = AuthStateError(_parseError(e));
     }
   }
 
@@ -82,7 +117,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _apiService.resetPassword(token: token, newPassword: newPassword);
       state = const AuthStateResetPasswordSuccess();
     } catch (e) {
-      state = AuthStateError(e.toString());
+      state = AuthStateError(_parseError(e));
     }
   }
 
@@ -95,7 +130,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       state = const AuthStateChangePasswordSuccess();
     } catch (e) {
-      state = AuthStateError(e.toString());
+      state = AuthStateError(_parseError(e));
     }
   }
 

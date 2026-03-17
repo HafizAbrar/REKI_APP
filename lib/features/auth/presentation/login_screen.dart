@@ -16,6 +16,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void dispose() {
@@ -25,9 +27,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    setState(() {
+      _emailError = email.isEmpty ? 'Please enter your email or phone number.' : null;
+      _passwordError = password.isEmpty ? 'Please enter your password.' : null;
+    });
+
+    if (_emailError != null || _passwordError != null) return;
+
     await ref.read(authStateProvider.notifier).login(
-      email: _emailController.text,
-      password: _passwordController.text,
+      email: email,
+      password: password,
     );
   }
 
@@ -61,6 +73,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authStateProvider);
     final isLoading = authState is AuthStateLoading;
 
+    return ValueListenableBuilder(
+      valueListenable: _emailController,
+      builder: (context, _, __) => ValueListenableBuilder(
+        valueListenable: _passwordController,
+        builder: (context, _, __) {
+          final canSubmit = _emailController.text.trim().isNotEmpty &&
+              _passwordController.text.isNotEmpty;
+          return _buildScaffold(context, isLoading, canSubmit);
+        },
+      ),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, bool isLoading, bool canSubmit) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
@@ -143,6 +169,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     controller: _emailController,
                     hint: 'Email or Phone Number',
                     icon: Icons.mail,
+                    errorText: _emailError,
+                    onChanged: (_) => setState(() => _emailError = null),
                   ),
                   const SizedBox(height: 20),
                   // Password input
@@ -153,6 +181,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     isPassword: true,
                     obscureText: _obscurePassword,
                     onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
+                    errorText: _passwordError,
+                    onChanged: (_) => setState(() => _passwordError = null),
                   ),
                   const SizedBox(height: 8),
                   Align(
@@ -195,7 +225,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           elevation: 0,
                         ),
-                        onPressed: isLoading ? null : _login,
+                        onPressed: isLoading || !canSubmit ? null : _login,
                         child: isLoading
                             ? const SizedBox(
                                 height: 20,
@@ -239,9 +269,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _socialButton(Icons.apple),
+                      _socialButton(Icons.apple, label: 'Apple'),
                       const SizedBox(width: 24),
-                      _socialButton(Icons.g_mobiledata),
+                      _socialButton(Icons.g_mobiledata, label: 'Google'),
                     ],
                   ),
                   const SizedBox(height: 60),
@@ -277,19 +307,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // Token input link
-                  TextButton(
-                    onPressed: () => context.push('/token-input'),
-                    child: const Text(
-                      'Login with Token',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+
                   const SizedBox(height: 24),
                   // Terms text
                   const Text.rich(
@@ -339,61 +357,117 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     bool isPassword = false,
     bool obscureText = false,
     VoidCallback? onToggleVisibility,
+    String? errorText,
+    ValueChanged<String>? onChanged,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(9999),
-        border: Border.all(
-          color: const Color(0xFF334155),
-          width: 1,
+    final hasError = errorText != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(
+              color: hasError ? const Color(0xFFEF4444) : const Color(0xFF334155),
+              width: 1,
+            ),
+          ),
+          child: TextField(
+            controller: controller,
+            obscureText: obscureText,
+            onChanged: onChanged,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: const TextStyle(color: Color(0xFF64748B)),
+              prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
+              suffixIcon: isPassword
+                  ? IconButton(
+                      icon: Icon(
+                        obscureText ? Icons.visibility_off : Icons.visibility,
+                        color: const Color(0xFF64748B),
+                        size: 20,
+                      ),
+                      onPressed: onToggleVisibility,
+                    )
+                  : null,
+              filled: true,
+              fillColor: const Color(0xFF1E293B),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(9999),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(9999),
+                borderSide: BorderSide(
+                  color: hasError ? const Color(0xFFEF4444) : AppTheme.primaryColor,
+                  width: 1,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+            ),
+          ),
         ),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Color(0xFF64748B)),
-          prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
-          suffixIcon: isPassword
-              ? IconButton(
-                  icon: Icon(
-                    obscureText ? Icons.visibility_off : Icons.visibility,
-                    color: const Color(0xFF64748B),
-                    size: 20,
+        if (hasError)
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 6),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 13),
+                const SizedBox(width: 4),
+                Text(
+                  errorText,
+                  style: const TextStyle(
+                    color: Color(0xFFEF4444),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
                   ),
-                  onPressed: onToggleVisibility,
-                )
-              : null,
-          filled: true,
-          fillColor: const Color(0xFF1E293B),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(9999),
-            borderSide: BorderSide.none,
+                ),
+              ],
+            ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(9999),
-            borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1),
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-        ),
-      ),
+      ],
     );
   }
 
-  Widget _socialButton(IconData icon) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF334155), width: 1),
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: const Color(0xFFCCCCCC), size: 24),
-        onPressed: () {},
+  Widget _socialButton(IconData icon, {required String label}) {
+    return Tooltip(
+      message: 'Coming Soon',
+      triggerMode: TooltipTriggerMode.manual,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF334155), width: 1),
+            ),
+            child: IconButton(
+              icon: Icon(icon, color: const Color(0xFFCCCCCC), size: 24),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('$label sign-in coming soon!'),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Coming Soon',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 10,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
       ),
     );
   }

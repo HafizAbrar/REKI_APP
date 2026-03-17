@@ -141,33 +141,37 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             ],
                           ),
                           child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(Icons.equalizer, size: 64, color: AppTheme.primaryColor),
                               const SizedBox(height: 16),
-                              Text(
-                                'REKI',
-                                style: TextStyle(
-                                  fontSize: 64,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 12,
-                                  color: Colors.white,
-                                  shadows: [
-                                    Shadow(
-                                      color: AppTheme.primaryColor.withOpacity(0.8),
-                                      blurRadius: 15,
-                                    ),
-                                  ],
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'REKI',
+                                  style: TextStyle(
+                                    fontSize: 64,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 12,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(
+                                        color: AppTheme.primaryColor.withOpacity(0.8),
+                                        blurRadius: 15,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
                         Text(
                           'Discover the vibe before you go out.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: AppTheme.iceBlue.withOpacity(0.8),
                             height: 1.5,

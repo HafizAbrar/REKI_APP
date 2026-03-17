@@ -29,9 +29,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   Future<void> _registerUser() async {
     await ref.read(authStateProvider.notifier).register(
-      email: _emailController.text,
+      email: _emailController.text.trim(),
       password: _passwordController.text,
-      name: _fullNameController.text,
+      name: _fullNameController.text.trim(),
       phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
     );
   }
@@ -60,6 +60,24 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final authState = ref.watch(authStateProvider);
     final isLoading = authState is AuthStateLoading;
 
+    return ValueListenableBuilder(
+      valueListenable: _fullNameController,
+      builder: (context, _, __) => ValueListenableBuilder(
+        valueListenable: _emailController,
+        builder: (context, _, __) => ValueListenableBuilder(
+          valueListenable: _passwordController,
+          builder: (context, _, __) {
+            final canSubmit = _fullNameController.text.trim().isNotEmpty &&
+                _emailController.text.trim().isNotEmpty &&
+                _passwordController.text.isNotEmpty;
+            return _buildScaffold(context, isLoading, canSubmit);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, bool isLoading, bool canSubmit) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
@@ -190,7 +208,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           ),
                           elevation: 0,
                         ),
-                        onPressed: isLoading ? null : _registerUser,
+                        onPressed: isLoading || !canSubmit ? null : _registerUser,
                         child: isLoading
                             ? const SizedBox(
                                 height: 20,

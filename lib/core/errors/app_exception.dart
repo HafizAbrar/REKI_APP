@@ -20,6 +20,10 @@ class UnauthorizedException extends AppException {
   UnauthorizedException() : super('Unauthorized', statusCode: 401);
 }
 
+class NotFoundException extends AppException {
+  NotFoundException(super.message) : super(statusCode: 404);
+}
+
 class ServerException extends AppException {
   ServerException(super.message) : super(statusCode: 500);
 }
