@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/network/admin_api_service.dart';
+import '../../../core/network/venue_api_service.dart';
+import '../../../core/services/business_repository.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../auth/presentation/auth_provider.dart';
 
 final userVenuesProvider = FutureProvider<List<dynamic>>((ref) async {
-  final authService = ref.watch(authNotifierProvider);
-  final user = authService.currentUser;
-  if (user == null) return [];
-  
-  final apiService = ref.watch(adminApiServiceProvider);
-  return await apiService.getUserVenues(user.id);
+  final venues = await ref.read(venueApiServiceProvider).getAllVenuesList();
+  return venues.map((v) => {'id': v.id, 'name': v.name}).toList();
 });
 
 class CreateOfferScreen extends ConsumerStatefulWidget {
@@ -101,8 +98,8 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final apiService = ref.read(adminApiServiceProvider);
-      await apiService.createOffer({
+      final repository = ref.read(businessRepositoryProvider);
+      await repository.createOffer({
         'venueId': _selectedVenueId,
         'title': _titleController.text,
         'description': _descriptionController.text,

@@ -13,19 +13,21 @@ class NotificationRepository {
 
   NotificationRepository(this._apiService);
 
-  Future<Result<List<AppNotification>>> getAllNotifications() async {
+  Future<Result<Map<String, List<AppNotification>>>> getAllNotifications() async {
     try {
-      final notifications = await _apiService.getAllNotifications();
-      return Result.success(notifications);
-    } catch (e) {
-      return Result.failure(ErrorHandler.getErrorMessage(e));
-    }
-  }
-
-  Future<Result<int>> getUnreadCount() async {
-    try {
-      final data = await _apiService.getUnreadCount();
-      return Result.success(data['count'] ?? 0);
+      final data = await _apiService.getAllNotifications();
+      // API returns { today: [...], yesterday: [...], earlier: [...] }
+      final grouped = <String, List<AppNotification>>{};
+      for (final key in ['today', 'yesterday', 'earlier']) {
+        if (data[key] != null) {
+          grouped[key] = (data[key] as List)
+              .map((json) => AppNotification.fromJson(json as Map<String, dynamic>))
+              .toList();
+        } else {
+          grouped[key] = [];
+        }
+      }
+      return Result.success(grouped);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }

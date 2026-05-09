@@ -16,13 +16,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(notificationManagementProvider.notifier).loadNotifications());
+    // Provider auto-loads on creation, no manual call needed
   }
 
   @override
   Widget build(BuildContext context) {
     final notificationsAsync = ref.watch(notificationManagementProvider);
-    final unreadCountAsync = ref.watch(unreadCountProvider);
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: Column(
@@ -87,54 +86,28 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           // Notifications list
           Expanded(
             child: notificationsAsync.when(
-              data: (notifications) => SingleChildScrollView(
-                child: Column(
-                  children: [
-                    ...notifications.map((notification) => _buildNotificationItem(
-                      notification: notification,
-                      onTap: () => ref.read(notificationManagementProvider.notifier).markAsRead(notification.id),
-                      onDelete: () => ref.read(notificationManagementProvider.notifier).deleteNotification(notification.id),
-                    )),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 4,
-                            height: 4,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF6B7280),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            "YOU'RE ALL CAUGHT UP",
-                            style: TextStyle(
-                              color: Color(0xFF6B7280),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 2,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 4,
-                            height: 4,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF6B7280),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 100),
-                  ],
-                ),
-              ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              data: (grouped) {
+                final today = grouped['today'] ?? [];
+                final yesterday = grouped['yesterday'] ?? [];
+                final earlier = grouped['earlier'] ?? [];
+                if (today.isEmpty && yesterday.isEmpty && earlier.isEmpty) {
+                  return const Center(
+                    child: Text('No notifications', style: TextStyle(color: Color(0xFF94A3B8))),
+                  );
+                }
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (today.isNotEmpty) ...[_buildSectionHeader('TODAY'), ...today.map(_buildNotificationTile)],
+                      if (yesterday.isNotEmpty) ...[_buildSectionHeader('YESTERDAY'), ...yesterday.map(_buildNotificationTile)],
+                      if (earlier.isNotEmpty) ...[_buildSectionHeader('EARLIER'), ...earlier.map(_buildNotificationTile)],
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
               error: (error, _) => Center(
                 child: Text('Error: $error', style: const TextStyle(color: Colors.white)),
               ),
@@ -142,6 +115,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNotificationTile(AppNotification notification) {
+    return _buildNotificationItem(
+      notification: notification,
+      onTap: () => ref.read(notificationManagementProvider.notifier).markAsRead(notification.id),
+      onDelete: () => ref.read(notificationManagementProvider.notifier).deleteNotification(notification.id),
     );
   }
 

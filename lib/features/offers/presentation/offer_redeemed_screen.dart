@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../data/offer_detail_provider.dart';
 
 class OfferRedeemedScreen extends ConsumerWidget {
-  const OfferRedeemedScreen({super.key});
+  final String offerId;
+  final Map<String, dynamic>? claimData;
+
+  const OfferRedeemedScreen({super.key, required this.offerId, this.claimData});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final voucherCode = claimData?['voucherCode'] ?? claimData?['code'] ?? '#REKI-0000-VIP';
+    final qrData = claimData?['qrCode'] ?? claimData?['qr'] ?? voucherCode;
+    final actionState = ref.watch(offerActionProvider(offerId));
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
@@ -357,9 +364,9 @@ class OfferRedeemedScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              const Text(
-                                '#REKI-8829-VIP',
-                                style: TextStyle(
+                              Text(
+                                voucherCode,
+                                style: const TextStyle(
                                   color: Color(0xFF64748B),
                                   fontSize: 12,
                                   fontFamily: 'monospace',
@@ -422,20 +429,39 @@ class OfferRedeemedScreen extends ConsumerWidget {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(24),
-                            onTap: () {},
-                            child: const Row(
+                            onTap: actionState.isLoading
+                                ? null
+                                : () async {
+                                    final success = await ref
+                                        .read(offerActionProvider(offerId).notifier)
+                                        .generateWalletPass();
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                        content: Text(success
+                                            ? 'Wallet pass generated!'
+                                            : 'Failed to generate wallet pass'),
+                                      ));
+                                    }
+                                  },
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  'View in Wallet',
-                                  style: TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+                                if (actionState.isLoading)
+                                  const SizedBox(
+                                    height: 18, width: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF94A3B8)),
+                                  )
+                                else
+                                  const Text(
+                                    'Add to Wallet',
+                                    style: TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                                SizedBox(width: 8),
-                                Icon(Icons.account_balance_wallet, color: Color(0xFF94A3B8), size: 18),
+                                const SizedBox(width: 8),
+                                const Icon(Icons.account_balance_wallet, color: Color(0xFF94A3B8), size: 18),
                               ],
                             ),
                           ),

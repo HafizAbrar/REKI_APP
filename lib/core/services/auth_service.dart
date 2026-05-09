@@ -44,12 +44,16 @@ class AuthService {
 
     try {
       final response = await _apiService!.login(email: email, password: password);
-      _accessToken = response['access_token'];
-      _refreshToken = response['refresh_token'];
+      final tokens = response['tokens'] as Map<String, dynamic>;
+      _accessToken = tokens['accessToken'];
+      _refreshToken = tokens['refreshToken'];
       await _storage.write(key: 'access_token', value: _accessToken);
       await _storage.write(key: 'refresh_token', value: _refreshToken);
-      print('DEBUG: Tokens stored, calling fetchCurrentUser');
-      await fetchCurrentUser();
+      if (response['user'] != null) {
+        _currentUser = User.fromJson(response['user'] as Map<String, dynamic>);
+      } else {
+        await fetchCurrentUser();
+      }
       return true;
     } catch (e) {
       print('DEBUG: Login error: $e');
@@ -111,8 +115,14 @@ class AuthService {
         password: password,
         name: name,
       );
-      _accessToken = response['access_token'];
-      _refreshToken = response['refresh_token'];
+      final tokens = response['tokens'] as Map<String, dynamic>;
+      _accessToken = tokens['accessToken'];
+      _refreshToken = tokens['refreshToken'];
+      await _storage.write(key: 'access_token', value: _accessToken);
+      await _storage.write(key: 'refresh_token', value: _refreshToken);
+      if (response['user'] != null) {
+        _currentUser = User.fromJson(response['user'] as Map<String, dynamic>);
+      }
       return true;
     } catch (e) {
       return false;
@@ -166,6 +176,85 @@ class AuthService {
 
   Future<User?> getCurrentUser() async {
     return _currentUser;
+  }
+
+  Future<bool> loginWithGoogle(String idToken) async {
+    if (useMockData || _apiService == null) {
+      await Future.delayed(const Duration(seconds: 1));
+      _currentUser = MockDataService.getDemoUser();
+      return true;
+    }
+    try {
+      final response = await _apiService!.loginWithGoogle(idToken);
+      final tokens = response['tokens'] as Map<String, dynamic>;
+      _accessToken = tokens['accessToken'];
+      _refreshToken = tokens['refreshToken'];
+      await _storage.write(key: 'access_token', value: _accessToken);
+      await _storage.write(key: 'refresh_token', value: _refreshToken);
+      if (response['user'] != null) {
+        _currentUser = User.fromJson(response['user'] as Map<String, dynamic>);
+      } else {
+        await fetchCurrentUser();
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> loginWithApple({required String identityToken, String? fullName}) async {
+    if (useMockData || _apiService == null) {
+      await Future.delayed(const Duration(seconds: 1));
+      _currentUser = MockDataService.getDemoUser();
+      return true;
+    }
+    try {
+      final response = await _apiService!.loginWithApple(
+        identityToken: identityToken,
+        fullName: fullName,
+      );
+      final tokens = response['tokens'] as Map<String, dynamic>;
+      _accessToken = tokens['accessToken'];
+      _refreshToken = tokens['refreshToken'];
+      await _storage.write(key: 'access_token', value: _accessToken);
+      await _storage.write(key: 'refresh_token', value: _refreshToken);
+      if (response['user'] != null) {
+        _currentUser = User.fromJson(response['user'] as Map<String, dynamic>);
+      } else {
+        await fetchCurrentUser();
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> loginAsGuest() async {
+    if (useMockData || _apiService == null) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      _currentUser = User(
+        id: 'guest_${DateTime.now().millisecondsSinceEpoch}',
+        email: 'guest@reki.app',
+        name: 'Guest',
+        type: UserType.customer,
+        role: UserRole.USER,
+        preferences: [],
+      );
+      return true;
+    }
+    try {
+      final response = await _apiService!.loginAsGuest();
+      if (response['access_token'] != null) {
+        _accessToken = response['access_token'];
+        await _storage.write(key: 'access_token', value: _accessToken);
+      }
+      if (response['user'] != null) {
+        _currentUser = User.fromJson(response['user'] as Map<String, dynamic>);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<bool> refreshAccessToken() async {

@@ -13,10 +13,68 @@ class VenueRepository {
 
   VenueRepository(this._apiService);
 
-  Future<Result<List<Venue>>> getAllVenues() async {
+  Future<Result<List<Venue>>> getAllVenues({
+    String? category,
+    String? busyness,
+    String? vibe,
+    String? cityId,
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
-      final venues = await _apiService.getAllVenues();
+      final venues = await _apiService.getAllVenuesList();
       return Result.success(venues);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<List<Venue>>> searchVenues(String query, {String? cityId}) async {
+    try {
+      final venues = await _apiService.searchVenues(query, cityId: cityId);
+      return Result.success(venues);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> getFilterOptions({String? cityId}) async {
+    try {
+      final options = await _apiService.getFilterOptions(cityId: cityId);
+      return Result.success(options);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<List<Venue>>> getTrendingVenues({String? cityId}) async {
+    try {
+      final venues = await _apiService.getTrendingVenues(cityId: cityId);
+      return Result.success(venues);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<List<Map<String, dynamic>>>> getMapMarkers({
+    String? cityId,
+    double? swLat, double? swLng,
+    double? neLat, double? neLng,
+  }) async {
+    try {
+      final markers = await _apiService.getMapMarkers(
+        cityId: cityId, swLat: swLat, swLng: swLng, neLat: neLat, neLng: neLng,
+      );
+      return Result.success(markers);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<void>> trackVenueView(String id) async {
+    try {
+      await _apiService.trackVenueView(id);
+      return Result.success(null);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }

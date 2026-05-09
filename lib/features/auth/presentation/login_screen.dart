@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user.dart';
@@ -24,6 +27,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      final googleUser = await GoogleSignIn(
+        serverClientId: '835379339220-l1og46s294v65tc1dgo2o67o55lb91em.apps.googleusercontent.com', // TODO: replace with Web Client ID from Google Cloud Console
+        scopes: ['email', 'profile'],
+      ).signIn();
+      if (googleUser == null) return; // user cancelled
+      final auth = await googleUser.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) return;
+      await ref.read(authStateProvider.notifier).loginWithGoogle(idToken);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google sign-in failed: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+      );
+      final identityToken = credential.identityToken;
+      if (identityToken == null) return;
+      final fullName = [credential.givenName, credential.familyName]
+          .where((s) => s != null && s.isNotEmpty)
+          .join(' ');
+      await ref.read(authStateProvider.notifier).loginWithApple(
+        identityToken: identityToken,
+        fullName: fullName.isNotEmpty ? fullName : null,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Apple sign-in failed: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _login() async {
@@ -269,8 +315,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _socialButton(Icons.apple, label: 'Apple'),
-                      const SizedBox(width: 24),
+                      if (Platform.isIOS) ...
+                        [
+                          _socialButton(Icons.apple, label: 'Apple'),
+                          const SizedBox(width: 24),
+                        ],
                       _socialButton(Icons.g_mobiledata, label: 'Google'),
                     ],
                   ),
@@ -282,19 +331,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF475569), width: 1), // slate-600
+                        side: const BorderSide(color: Color(0xFF475569), width: 1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(9999),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                         backgroundColor: Colors.transparent,
                       ),
-                      onPressed: () => context.push('/signup'),
+                      onPressed: isLoading ? null : () => ref.read(authStateProvider.notifier).loginAsGuest(),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Continue as New User',
+                            'Explore as Guest',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -431,44 +480,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _socialButton(IconData icon, {required String label}) {
-    return Tooltip(
-      message: 'Coming Soon',
-      triggerMode: TooltipTriggerMode.manual,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF334155), width: 1),
-            ),
-            child: IconButton(
-              icon: Icon(icon, color: const Color(0xFFCCCCCC), size: 24),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('$label sign-in coming soon!'),
-                    duration: const Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFF334155), width: 1),
           ),
-          const SizedBox(height: 6),
-          const Text(
-            'Coming Soon',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 10,
-              fontWeight: FontWeight.w400,
-            ),
+          child: IconButton(
+            icon: Icon(icon, color: const Color(0xFFCCCCCC), size: 24),
+            onPressed: () async {
+              if (label == 'Google') {
+                await _signInWithGoogle();
+              } else if (label == 'Apple') {
+                await _signInWithApple();
+              }
+            },
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF64748B),
+            fontSize: 10,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
     );
   }
 }

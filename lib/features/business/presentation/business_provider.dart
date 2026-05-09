@@ -1,79 +1,125 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/models/venue.dart';
-import '../../../core/models/offer.dart';
-import '../../../core/services/venue_service.dart';
-import '../../../core/services/auth_service.dart';
+import '../../../core/services/business_repository.dart';
 
-final businessProvider = StateNotifierProvider<BusinessNotifier, BusinessState>((ref) {
-  return BusinessNotifier();
+// GET /business/dashboard/{venueId}
+final businessDashboardProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, venueId) async {
+  final result = await ref.read(businessRepositoryProvider).getDashboard(venueId);
+  return result.when(success: (data) => data, failure: (e) => throw Exception(e));
 });
 
-class BusinessNotifier extends StateNotifier<BusinessState> {
-  final VenueService _venueService = VenueService();
-  final _authService = AuthService();
-  
-  BusinessNotifier() : super(BusinessState(
-    managedVenue: null,
-    isLoading: false,
-  ));
+// GET /business/analytics/{venueId}
+final businessAnalyticsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, venueId) async {
+  final result = await ref.read(businessRepositoryProvider).getAnalytics(venueId);
+  return result.when(success: (data) => data, failure: (e) => throw Exception(e));
+});
 
-  void initialize() {
-    // For demo, business user manages The Alchemist
-    final venue = _venueService.getVenueById('1');
-    state = state.copyWith(managedVenue: venue);
+// GET /business/venues/{id}/status
+final venueStatusProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, venueId) async {
+  final result = await ref.read(businessRepositoryProvider).getVenueStatus(venueId);
+  return result.when(success: (data) => data, failure: (e) => throw Exception(e));
+});
+
+// GET /business/venues/{id}/offers
+final businessVenueOffersProvider = StateNotifierProvider.family<BusinessOffersNotifier, AsyncValue<List<Map<String, dynamic>>>, String>((ref, venueId) {
+  return BusinessOffersNotifier(ref.read(businessRepositoryProvider), venueId);
+});
+
+class BusinessOffersNotifier extends StateNotifier<AsyncValue<List<Map<String, dynamic>>>> {
+  final BusinessRepository _repository;
+  final String _venueId;
+
+  BusinessOffersNotifier(this._repository, this._venueId) : super(const AsyncValue.loading()) {
+    load();
   }
 
-  void updateBusyness(String busyness) {
-    if (state.managedVenue != null) {
-      _venueService.updateVenueBusyness(state.managedVenue!.id, busyness);
-      final updatedVenue = state.managedVenue!;
-      updatedVenue.busyness = busyness;
-      state = state.copyWith(managedVenue: updatedVenue);
-    }
+  Future<void> load() async {
+    state = const AsyncValue.loading();
+    final result = await _repository.getVenueOffers(_venueId);
+    state = result.when(
+      success: (data) => AsyncValue.data(data),
+      failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
   }
 
-  void updateVibe(String vibe) {
-    if (state.managedVenue != null) {
-      _venueService.updateVenueVibe(state.managedVenue!.id, vibe);
-      final updatedVenue = state.managedVenue!;
-      updatedVenue.currentVibe = vibe;
-      state = state.copyWith(managedVenue: updatedVenue);
-    }
+  // POST /business/offers
+  Future<bool> createOffer(Map<String, dynamic> data) async {
+    final result = await _repository.createOffer(data);
+    return result.when(success: (_) { load(); return true; }, failure: (_) => false);
   }
 
-  void addOffer(Offer offer) {
-    if (state.managedVenue != null) {
-      final updatedVenue = state.managedVenue!;
-      updatedVenue.offers.add(offer);
-      state = state.copyWith(managedVenue: updatedVenue);
-    }
+  // PUT /business/offers/{id}
+  Future<bool> updateOffer(String id, Map<String, dynamic> data) async {
+    final result = await _repository.updateOffer(id, data);
+    return result.when(success: (_) { load(); return true; }, failure: (_) => false);
   }
 
-  void removeOffer(String offerId) {
-    if (state.managedVenue != null) {
-      final updatedVenue = state.managedVenue!;
-      updatedVenue.offers.removeWhere((o) => o.id == offerId);
-      state = state.copyWith(managedVenue: updatedVenue);
-    }
+  // DELETE /business/offers/{id}
+  Future<bool> deleteOffer(String id) async {
+    final result = await _repository.deleteOffer(id);
+    return result.when(success: (_) { load(); return true; }, failure: (_) => false);
+  }
+
+  // PUT /business/offers/{id}/toggle
+  Future<bool> toggleOffer(String id) async {
+    final result = await _repository.toggleOffer(id);
+    return result.when(success: (_) { load(); return true; }, failure: (_) => false);
   }
 }
 
-class BusinessState {
-  final Venue? managedVenue;
-  final bool isLoading;
+// PUT /business/venues/{id}/status notifier
+final venueStatusNotifierProvider = StateNotifierProvider.family<VenueStatusNotifier, AsyncValue<Map<String, dynamic>?>, String>((ref, venueId) {
+  return VenueStatusNotifier(ref.read(businessRepositoryProvider), venueId);
+});
 
-  BusinessState({
-    required this.managedVenue,
-    required this.isLoading,
-  });
+class VenueStatusNotifier extends StateNotifier<AsyncValue<Map<String, dynamic>?>> {
+  final BusinessRepository _repository;
+  final String _venueId;
 
-  BusinessState copyWith({
-    Venue? managedVenue,
-    bool? isLoading,
-  }) {
-    return BusinessState(
-      managedVenue: managedVenue ?? this.managedVenue,
-      isLoading: isLoading ?? this.isLoading,
+  VenueStatusNotifier(this._repository, this._venueId) : super(const AsyncValue.data(null));
+
+  Future<bool> updateStatus({String? busyness, String? vibe}) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.updateVenueStatus(_venueId, busyness: busyness, vibe: vibe);
+    return result.when(
+      success: (data) { state = AsyncValue.data(data); return true; },
+      failure: (e) { state = AsyncValue.error(e, StackTrace.current); return false; },
+    );
+  }
+}
+
+// POST /auth/business/login + register + forgot-password notifier
+final businessAuthProvider = StateNotifierProvider<BusinessAuthNotifier, AsyncValue<Map<String, dynamic>?>>((ref) {
+  return BusinessAuthNotifier(ref.read(businessRepositoryProvider));
+});
+
+class BusinessAuthNotifier extends StateNotifier<AsyncValue<Map<String, dynamic>?>> {
+  final BusinessRepository _repository;
+  BusinessAuthNotifier(this._repository) : super(const AsyncValue.data(null));
+
+  Future<bool> login(String email, String password) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.businessLogin(email, password);
+    return result.when(
+      success: (data) { state = AsyncValue.data(data); return true; },
+      failure: (e) { state = AsyncValue.error(e, StackTrace.current); return false; },
+    );
+  }
+
+  Future<bool> register(Map<String, dynamic> data) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.businessRegister(data);
+    return result.when(
+      success: (data) { state = AsyncValue.data(data); return true; },
+      failure: (e) { state = AsyncValue.error(e, StackTrace.current); return false; },
+    );
+  }
+
+  Future<bool> forgotPassword(String email) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.businessForgotPassword(email);
+    return result.when(
+      success: (_) { state = const AsyncValue.data(null); return true; },
+      failure: (e) { state = AsyncValue.error(e, StackTrace.current); return false; },
     );
   }
 }

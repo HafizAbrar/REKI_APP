@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../offers/data/offer_management_provider.dart';
+import 'business_provider.dart';
 import '../../../core/utils/error_handler.dart';
+
+const _kDemoVenueId = 'c5051a16-8cc7-41e6-ac9a-8d2f4087f0d0';
 
 class ManageOffersScreen extends ConsumerStatefulWidget {
   const ManageOffersScreen({super.key});
@@ -15,12 +17,12 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(offerManagementProvider.notifier).loadOffers());
+    // Provider auto-loads on creation
   }
 
   @override
   Widget build(BuildContext context) {
-    final offersAsync = ref.watch(offerManagementProvider);
+    final offersAsync = ref.watch(businessVenueOffersProvider(_kDemoVenueId));
     return Scaffold(
       backgroundColor: const Color(0xFF0A1214),
       body: Stack(
@@ -356,7 +358,7 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
                             child: _buildOfferCard(offer),
                           )).toList(),
                         ),
-                        loading: () => const Center(child: CircularProgressIndicator()),
+                        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF5EEAD4))),
                         error: (error, _) => Text('Error: $error', style: const TextStyle(color: Colors.white)),
                       ),
                       const SizedBox(height: 120),
@@ -429,14 +431,18 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
     );
   }
 
-  Widget _buildOfferCard(offer) {
+  Widget _buildOfferCard(Map<String, dynamic> offer) {
+    final isActive = offer['isActive'] ?? false;
+    final title = offer['title']?.toString() ?? '';
+    final description = offer['description']?.toString() ?? '';
+    final id = offer['id']?.toString() ?? '';
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: const Color(0xFF131F22),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: offer.isActive ? const Color(0xFF5EEAD4).withOpacity(0.3) : Colors.white.withOpacity(0.05),
+          color: isActive ? const Color(0xFF5EEAD4).withOpacity(0.3) : Colors.white.withOpacity(0.05),
         ),
       ),
       child: Row(
@@ -445,12 +451,12 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: offer.isActive ? const Color(0xFF008080).withOpacity(0.1) : Colors.white.withOpacity(0.05),
+              color: isActive ? const Color(0xFF008080).withOpacity(0.1) : Colors.white.withOpacity(0.05),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.local_activity,
-              color: offer.isActive ? const Color(0xFF5EEAD4) : const Color(0xFF6B7280),
+              color: isActive ? const Color(0xFF5EEAD4) : const Color(0xFF6B7280),
               size: 24,
             ),
           ),
@@ -459,28 +465,15 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  offer.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
-                Text(
-                  offer.description,
-                  style: const TextStyle(
-                    color: Color(0xFF9CA3AF),
-                    fontSize: 14,
-                  ),
-                ),
+                Text(description, style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14)),
               ],
             ),
           ),
           Switch(
-            value: offer.isActive,
-            onChanged: (value) => _toggleOffer(offer.id, value),
+            value: isActive,
+            onChanged: (value) => _toggleOffer(id, value),
             activeColor: const Color(0xFF5EEAD4),
           ),
         ],
@@ -489,13 +482,10 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen> {
   }
 
   Future<void> _toggleOffer(String id, bool isActive) async {
-    try {
-      final success = await ref.read(offerManagementProvider.notifier).updateOfferStatus(id, isActive);
-      if (!success && mounted) {
-        ErrorHandler.showError(context, 'Failed to update offer status');
-      }
-    } catch (e) {
-      if (mounted) ErrorHandler.showError(context, e);
+    // Use PUT /business/offers/{id}/toggle
+    final success = await ref.read(businessVenueOffersProvider(_kDemoVenueId).notifier).toggleOffer(id);
+    if (!success && mounted) {
+      ErrorHandler.showError(context, 'Failed to toggle offer');
     }
   }
 

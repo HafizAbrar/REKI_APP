@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/network/city_api_service.dart';
 import '../../../core/utils/error_handler.dart';
-import '../../../core/network/admin_api_service.dart';
 import '../data/venue_management_provider.dart';
 
 final citiesProvider = FutureProvider<List<dynamic>>((ref) async {
-  final apiService = ref.watch(adminApiServiceProvider);
-  return await apiService.getCities();
+  final cities = await ref.read(cityApiServiceProvider).getCities();
+  return cities.map((c) => {'id': c.id, 'name': c.name}).toList();
 });
 
 class CreateVenueScreen extends ConsumerStatefulWidget {

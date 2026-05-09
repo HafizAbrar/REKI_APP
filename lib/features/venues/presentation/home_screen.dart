@@ -27,7 +27,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final venuesAsync = ref.watch(venueManagementProvider);
-    final preferencesAsync = ref.watch(currentUserPreferencesProvider);
+    final preferencesAsync = ref.watch(userPreferencesProvider);
     final authService = AuthService();
     final user = authService.currentUser;
     

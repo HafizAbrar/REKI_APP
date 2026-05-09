@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/network/admin_api_service.dart';
+import '../../../core/network/analytics_api_service.dart';
 import '../../../core/utils/error_handler.dart';
 
 final venueAnalyticsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, venueId) async {
-  final apiService = ref.watch(adminApiServiceProvider);
-  return await apiService.getVenueAnalytics(venueId);
+  final apiService = ref.watch(analyticsApiServiceProvider);
+  return await apiService.getVenueAnalyticsRaw(venueId);
 });
 
 class VenueAnalyticsScreen extends ConsumerWidget {

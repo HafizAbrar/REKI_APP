@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/network/admin_api_service.dart';
+import 'business_provider.dart';
 
-final businessDashboardProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final apiService = ref.watch(adminApiServiceProvider);
-  return await apiService.getDashboardStats();
-});
+// venueId for the logged-in business user — in production read from auth token
+const _kDemoVenueId = 'c5051a16-8cc7-41e6-ac9a-8d2f4087f0d0';
 
 class BusinessDashboardScreen extends ConsumerStatefulWidget {
   const BusinessDashboardScreen({super.key});
@@ -17,10 +15,13 @@ class BusinessDashboardScreen extends ConsumerStatefulWidget {
 
 class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScreen> {
   int _selectedVibe = 0;
+  final List<String> vibes = ['Party', 'Events', 'Social', 'Dining'];
+  final List<IconData> vibeIcons = [Icons.celebration, Icons.theater_comedy, Icons.local_bar, Icons.dinner_dining];
 
   @override
   Widget build(BuildContext context) {
-    final dashboardAsync = ref.watch(businessDashboardProvider);
+    final dashboardAsync = ref.watch(businessDashboardProvider(_kDemoVenueId));
+    final statusNotifier = ref.read(venueStatusNotifierProvider(_kDemoVenueId).notifier);
     
     return dashboardAsync.when(
       data: (data) => _buildDashboard(context, data),
@@ -511,15 +512,17 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Row(
-                          children: [
-                            _buildVibeButton('Party', Icons.celebration, 0, true),
-                            const SizedBox(width: 12),
-                            _buildVibeButton('Events', Icons.theater_comedy, 1, false),
-                            const SizedBox(width: 12),
-                            _buildVibeButton('Social', Icons.local_bar, 2, false),
-                            const SizedBox(width: 12),
-                            _buildVibeButton('Dining', Icons.dinner_dining, 3, false),
-                          ],
+                          children: List.generate(vibes.length, (i) => Padding(
+                            padding: EdgeInsets.only(right: i < vibes.length - 1 ? 12 : 0),
+                            child: _buildVibeButton(
+                              vibes[i], vibeIcons[i], i, _selectedVibe == i,
+                              onTap: () {
+                                setState(() => _selectedVibe = i);
+                                ref.read(venueStatusNotifierProvider(_kDemoVenueId).notifier)
+                                    .updateStatus(vibe: vibes[i].toUpperCase());
+                              },
+                            ),
+                          )),
                         ),
                       ),
                     ],
@@ -699,9 +702,9 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
     );
   }
 
-  Widget _buildVibeButton(String label, IconData icon, int index, bool isSelected) {
+  Widget _buildVibeButton(String label, IconData icon, int index, bool isSelected, {VoidCallback? onTap}) {
     return GestureDetector(
-      onTap: () => setState(() => _selectedVibe = index),
+      onTap: onTap ?? () => setState(() => _selectedVibe = index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         decoration: BoxDecoration(

@@ -49,10 +49,64 @@ class UserRepository {
     }
   }
 
-  Future<Result<User>> updatePreferences(Map<String, dynamic> preferences) async {
+  Future<Result<Map<String, dynamic>>> getPreferences() async {
     try {
-      final user = await _apiService.updatePreferences(preferences);
-      return Result.success(user);
+      final prefs = await _apiService.getPreferences();
+      return Result.success(prefs);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> savePreferences(Map<String, dynamic> preferences) async {
+    try {
+      final prefs = await _apiService.savePreferences(preferences);
+      return Result.success(prefs);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> updatePreferences(Map<String, dynamic> preferences) async {
+    try {
+      final prefs = await _apiService.updatePreferences(preferences);
+      return Result.success(prefs);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<List<Map<String, dynamic>>>> getSavedVenues() async {
+    try {
+      final venues = await _apiService.getSavedVenues();
+      return Result.success(venues);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> saveVenue(String venueId) async {
+    try {
+      final result = await _apiService.saveVenue(venueId);
+      return Result.success(result);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<void>> unsaveVenue(String venueId) async {
+    try {
+      await _apiService.unsaveVenue(venueId);
+      return Result.success(null);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<List<Map<String, dynamic>>>> getRedemptions() async {
+    try {
+      final redemptions = await _apiService.getRedemptions();
+      return Result.success(redemptions);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }

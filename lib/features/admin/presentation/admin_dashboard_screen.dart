@@ -4,13 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/network/admin_api_service.dart';
 import '../../../core/utils/error_handler.dart';
+import '../data/admin_provider.dart';
 
-final adminDashboardProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final apiService = ref.watch(adminApiServiceProvider);
-  return await apiService.getDashboardStats();
-});
+// Keep old provider alias pointing to new adminStatsProvider for backward compat
+final adminDashboardProvider = adminStatsProvider;
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -99,6 +97,38 @@ class AdminDashboardScreen extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(context);
                 context.push('/venues');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.local_offer, color: Colors.white),
+              title: const Text('All Offers', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/offers');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications, color: Colors.white),
+              title: const Text('Notification Logs', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                _showAdminList(context, ref, adminNotificationsProvider, 'Notification Logs', 'title');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history, color: Colors.white),
+              title: const Text('Activity Logs', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                _showAdminList(context, ref, adminActivityLogsProvider, 'Activity Logs', 'action');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.send, color: Colors.white),
+              title: const Text('Test Push Notification', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                _showTestPushDialog(context, ref);
               },
             ),
             const Divider(color: Colors.white24),
@@ -402,8 +432,15 @@ class AdminDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildVenueCard(BuildContext context, Map<String, dynamic> venue) {
-    return GestureDetector(
+    return Consumer(
+      builder: (context, ref, _) => GestureDetector(
       onTap: () => context.go('/admin/venue-analytics/${venue['id']}'),
+      onLongPress: () => _showAdminList(
+        context, ref,
+        adminVenueLogsProvider(venue['id']?.toString() ?? ''),
+        'Venue Logs: ${venue['name']}',
+        'action',
+      ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -465,6 +502,112 @@ class AdminDashboardScreen extends ConsumerWidget {
             const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 16),
           ],
         ),
+      ),
+    ),
+    );
+  }
+
+  void _showAdminList(
+    BuildContext context,
+    WidgetRef ref,
+    FutureProvider<List<Map<String, dynamic>>> provider,
+    String title,
+    String labelKey,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.cardDark,
+      isScrollControlled: true,
+      builder: (_) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.6,
+        builder: (_, controller) => Consumer(
+          builder: (context, ref, _) {
+            final async = ref.watch(provider);
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+                Expanded(
+                  child: async.when(
+                    loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+                    error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+                    data: (items) => ListView.builder(
+                      controller: controller,
+                      itemCount: items.length,
+                      itemBuilder: (_, i) => ListTile(
+                        title: Text(items[i][labelKey]?.toString() ?? items[i].values.first.toString(),
+                            style: const TextStyle(color: Colors.white)),
+                        subtitle: Text(items[i]['createdAt']?.toString() ?? '',
+                            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showTestPushDialog(BuildContext context, WidgetRef ref) {
+    final userIdCtrl = TextEditingController();
+    final titleCtrl = TextEditingController();
+    final bodyCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppTheme.cardDark,
+        title: const Text('Test Push Notification', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _dialogField(userIdCtrl, 'User ID'),
+            const SizedBox(height: 8),
+            _dialogField(titleCtrl, 'Title'),
+            const SizedBox(height: 8),
+            _dialogField(bodyCtrl, 'Body'),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+            onPressed: () async {
+              Navigator.pop(context);
+              final success = await ref.read(adminTestPushProvider.notifier).send(
+                userId: userIdCtrl.text.trim(),
+                title: titleCtrl.text.trim(),
+                body: bodyCtrl.text.trim(),
+              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(success ? 'Push sent!' : 'Failed to send push'),
+                  backgroundColor: success ? Colors.green : Colors.red,
+                ));
+              }
+            },
+            child: const Text('Send'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dialogField(TextEditingController ctrl, String hint) {
+    return TextField(
+      controller: ctrl,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white38),
+        filled: true,
+        fillColor: Colors.white10,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
       ),
     );
   }

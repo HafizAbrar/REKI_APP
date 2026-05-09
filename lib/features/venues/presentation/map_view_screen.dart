@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
+import '../data/location_provider.dart';
 import '../../../core/config/env.dart';
 
 class MapViewScreen extends ConsumerStatefulWidget {
@@ -21,7 +22,11 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
   void initState() {
     super.initState();
     _selectedVenueId = widget.venueId;
-    Future.microtask(() => ref.read(venueManagementProvider.notifier).loadVenues());
+    Future.microtask(() {
+      ref.read(venueManagementProvider.notifier).loadVenues();
+      // Start GPS tracking → POST /users/location + POST /geofence/check
+      ref.read(locationProvider.notifier).startTracking();
+    });
   }
 
   @override
@@ -218,7 +223,38 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white.withOpacity(0.1)),
                           ),
-                          child: const Icon(Icons.my_location, color: Color(0xFF2DD4BF), size: 20),
+                          child: Consumer(
+                            builder: (context, ref, _) {
+                              final locState = ref.watch(locationProvider);
+                              return Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Icon(
+                                    locState.isTracking ? Icons.my_location : Icons.location_disabled,
+                                    color: locState.isTracking ? const Color(0xFF2DD4BF) : const Color(0xFF94A3B8),
+                                    size: 20,
+                                  ),
+                                  if (locState.nearbyVenues.isNotEmpty)
+                                    Positioned(
+                                      top: 4, right: 4,
+                                      child: Container(
+                                        width: 14, height: 14,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF2DD4BF),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${locState.nearbyVenues.length}',
+                                            style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),

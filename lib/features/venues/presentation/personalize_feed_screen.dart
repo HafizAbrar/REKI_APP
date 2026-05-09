@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/services/user_repository.dart';
+import '../../../features/users/data/user_preferences_provider.dart';
 
 class PersonalizeFeedScreen extends ConsumerStatefulWidget {
   const PersonalizeFeedScreen({super.key});
@@ -16,8 +16,7 @@ class _PersonalizeFeedScreenState extends ConsumerState<PersonalizeFeedScreen> {
   Set<String> selectedCategories = {'BAR', 'CLUB'};
 
   Future<void> _saveAndContinue() async {
-    final repository = ref.read(userRepositoryProvider);
-    await repository.updatePreferences({
+    await ref.read(userPreferencesNotifierProvider.notifier).savePreferences({
       'preferredCategories': selectedCategories.toList(),
       'minBusyness': selectedBusyness,
       'preferredVibes': selectedVibes.toList(),

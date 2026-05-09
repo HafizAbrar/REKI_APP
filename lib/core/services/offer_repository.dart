@@ -49,9 +49,27 @@ class OfferRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> redeemOffer(String offerId) async {
+  Future<Result<Map<String, dynamic>>> claimOffer(String id) async {
     try {
-      final result = await _apiService.redeemOffer(offerId);
+      final result = await _apiService.claimOffer(id);
+      return Result.success(result);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> redeemOffer(String id) async {
+    try {
+      final result = await _apiService.redeemOffer(id);
+      return Result.success(result);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> generateWalletPass(String id) async {
+    try {
+      final result = await _apiService.generateWalletPass(id);
       return Result.success(result);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));

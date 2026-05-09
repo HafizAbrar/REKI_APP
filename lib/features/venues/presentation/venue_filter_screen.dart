@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../data/tag_provider.dart';
 
 class VenueFilterScreen extends ConsumerStatefulWidget {
   const VenueFilterScreen({super.key});
@@ -11,7 +12,7 @@ class VenueFilterScreen extends ConsumerStatefulWidget {
 
 class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
   String selectedBusyness = 'Moderate';
-  Set<String> selectedVibes = {'Cocktails 🍸', 'Rooftop 🌇'};
+  Set<String> selectedVibes = {};
   bool offersOnly = false;
   String selectedSort = 'Distance (Nearest)';
 
@@ -131,18 +132,19 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            _buildVibeChip('Cocktails 🍸'),
-                            _buildVibeChip('Date Night ❤️'),
-                            _buildVibeChip('Pub 🍺'),
-                            _buildVibeChip('Rooftop 🌇'),
-                            _buildVibeChip('Live Music 🎸'),
-                            _buildVibeChip('Chill ☕'),
-                            _buildVibeChip('Industrial 🏭'),
-                          ],
+                        ref.watch(vibeTagsProvider).when(
+                          data: (tags) => Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: tags.map(_buildVibeChip).toList(),
+                          ),
+                          loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6), strokeWidth: 2)),
+                          error: (_, __) => Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: ['Cocktails', 'Date Night', 'Pub', 'Rooftop', 'Live Music', 'Chill']
+                                .map(_buildVibeChip).toList(),
+                          ),
                         ),
                       ],
                     ),
@@ -426,7 +428,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
   void _resetFilters() {
     setState(() {
       selectedBusyness = 'Moderate';
-      selectedVibes = {'Cocktails 🍸', 'Rooftop 🌇'};
+      selectedVibes = {};
       offersOnly = false;
       selectedSort = 'Distance (Nearest)';
     });

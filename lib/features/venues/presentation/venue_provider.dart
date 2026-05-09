@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/venue_service.dart';
+import '../../../core/services/venue_repository.dart';
 import '../../../core/models/venue.dart';
 
 class VenueState {
@@ -121,4 +122,67 @@ final venuesByTypeProvider = Provider.family<List<Venue>, String>((ref, type) {
 final venuesWithOffersProvider = Provider<List<Venue>>((ref) {
   final venueService = ref.watch(venueServiceProvider);
   return venueService.getVenuesWithOffers();
+});
+
+// GET /venues with filters + pagination
+final venueListProvider = StateNotifierProvider<VenueListNotifier, AsyncValue<List<Venue>>>((ref) {
+  return VenueListNotifier(ref.read(venueRepositoryProvider));
+});
+
+class VenueListNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
+  final VenueRepository _repository;
+
+  VenueListNotifier(this._repository) : super(const AsyncValue.loading()) {
+    load();
+  }
+
+  Future<void> load({String? category, String? busyness, String? vibe, String? cityId}) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.getAllVenues(
+      category: category, busyness: busyness, vibe: vibe, cityId: cityId,
+    );
+    state = result.when(
+      success: (data) => AsyncValue.data(data),
+      failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
+  }
+}
+
+// GET /venues/search
+final venueSearchProvider = StateNotifierProvider<VenueSearchNotifier, AsyncValue<List<Venue>>>((ref) {
+  return VenueSearchNotifier(ref.read(venueRepositoryProvider));
+});
+
+class VenueSearchNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
+  final VenueRepository _repository;
+
+  VenueSearchNotifier(this._repository) : super(const AsyncValue.data([]));
+
+  Future<void> search(String query, {String? cityId}) async {
+    if (query.isEmpty) { state = const AsyncValue.data([]); return; }
+    state = const AsyncValue.loading();
+    final result = await _repository.searchVenues(query, cityId: cityId);
+    state = result.when(
+      success: (data) => AsyncValue.data(data),
+      failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
+  }
+}
+
+// GET /venues/filter-options
+final venueFilterOptionsProvider = FutureProvider.family<Map<String, dynamic>, String?>((ref, cityId) async {
+  final result = await ref.read(venueRepositoryProvider).getFilterOptions(cityId: cityId);
+  return result.when(success: (data) => data, failure: (_) => {});
+});
+
+// GET /venues/trending
+final trendingVenuesProvider = FutureProvider.family<List<Venue>, String?>((ref, cityId) async {
+  final result = await ref.read(venueRepositoryProvider).getTrendingVenues(cityId: cityId);
+  return result.when(success: (data) => data, failure: (_) => []);
+});
+
+// GET /venues/map-markers
+final mapMarkersProvider = FutureProvider.family<List<Map<String, dynamic>>, String?>((ref, cityId) async {
+  final result = await ref.read(venueRepositoryProvider).getMapMarkers(cityId: cityId);
+  return result.when(success: (data) => data, failure: (_) => []);
 });

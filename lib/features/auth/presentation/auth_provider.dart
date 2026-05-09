@@ -101,6 +101,45 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> loginWithGoogle(String idToken) async {
+    state = const AuthStateLoading();
+    try {
+      final response = await _apiService.loginWithGoogle(idToken);
+      await _storeTokens(response);
+      await _authService.fetchCurrentUser();
+      state = const AuthStateLoginSuccess();
+    } catch (e) {
+      state = AuthStateError(_parseError(e));
+    }
+  }
+
+  Future<void> loginWithApple({required String identityToken, String? fullName}) async {
+    state = const AuthStateLoading();
+    try {
+      final response = await _apiService.loginWithApple(
+        identityToken: identityToken,
+        fullName: fullName,
+      );
+      await _storeTokens(response);
+      await _authService.fetchCurrentUser();
+      state = const AuthStateLoginSuccess();
+    } catch (e) {
+      state = AuthStateError(_parseError(e));
+    }
+  }
+
+  Future<void> loginAsGuest() async {
+    state = const AuthStateLoading();
+    try {
+      final response = await _apiService.loginAsGuest();
+      await _storeTokens(response);
+      await _authService.fetchCurrentUser();
+      state = const AuthStateLoginSuccess();
+    } catch (e) {
+      state = AuthStateError(_parseError(e));
+    }
+  }
+
   Future<void> forgotPassword(String email) async {
     state = const AuthStateLoading();
     try {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/services/user_repository.dart';
+import '../data/user_preferences_provider.dart';
 
 class UserPreferencesScreen extends ConsumerStatefulWidget {
   const UserPreferencesScreen({super.key});
@@ -105,40 +105,17 @@ class _UserPreferencesScreenState extends ConsumerState<UserPreferencesScreen> {
   }
 
   Future<void> _savePreferences() async {
-    final repository = ref.read(userRepositoryProvider);
-    try {
-      final result = await repository.updatePreferences({
-        'preferredCategories': selectedCategories.toList(),
-      });
-
-      if (mounted) {
-        result.when(
-          success: (_) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Preferences saved'), backgroundColor: Colors.green),
-            );
-            context.go('/home');
-          },
-          failure: (error) {
-            if (error.contains('401') || error.contains('Unauthorized')) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Session expired. Please login again.'), backgroundColor: Colors.red),
-              );
-              context.go('/login');
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red),
-              );
-            }
-          },
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
+    final success = await ref.read(userPreferencesNotifierProvider.notifier).updatePreferences({
+      'preferredCategories': selectedCategories.toList(),
+      'preferredVibes': [selectedVibe.toUpperCase()],
+      'minBusyness': selectedBusyness.toUpperCase(),
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(success ? 'Preferences saved' : 'Failed to save preferences'),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ));
+      if (success) context.go('/home');
     }
   }
 }

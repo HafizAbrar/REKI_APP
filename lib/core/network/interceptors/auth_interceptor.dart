@@ -10,9 +10,12 @@ class AuthInterceptor extends Interceptor {
   static const _publicPaths = [
     '/auth/login',
     '/auth/register',
-    '/auth/refresh',
+    '/auth/refresh-token',
     '/auth/forgot-password',
     '/auth/reset-password',
+    '/auth/google',
+    '/auth/apple',
+    '/auth/guest',
   ];
 
   @override
@@ -35,7 +38,7 @@ class AuthInterceptor extends Interceptor {
     }
 
     // Don't retry refresh calls themselves
-    if (err.requestOptions.path.contains('/auth/refresh')) {
+    if (err.requestOptions.path.contains('/auth/refresh-token')) {
       await _clearTokens();
       handler.next(err);
       return;
@@ -63,7 +66,7 @@ class AuthInterceptor extends Interceptor {
       ));
 
       final refreshResponse = await refreshDio.post(
-        '/auth/refresh',
+        '/auth/refresh-token',
         data: {'refreshToken': refreshToken},
       );
 

@@ -21,9 +21,8 @@ class AuthApiService {
     final response = await _dio.post('/auth/register', data: {
       'email': email,
       'password': password,
-      'fullName': name,
-      'phone': phone,
-      'role': 'USER',
+      'name': name,
+      if (phone != null) 'phone': phone,
     });
     return response.data;
   }
@@ -40,10 +39,34 @@ class AuthApiService {
     return response.data;
   }
 
-  // POST /auth/refresh - Refresh access token
+  // POST /auth/google - Login/Register with Google OAuth
+  Future<Map<String, dynamic>> loginWithGoogle(String idToken) async {
+    final response = await _dio.post('/auth/google', data: {'idToken': idToken});
+    return response.data;
+  }
+
+  // POST /auth/apple - Login/Register with Apple Sign-In
+  Future<Map<String, dynamic>> loginWithApple({
+    required String identityToken,
+    String? fullName,
+  }) async {
+    final response = await _dio.post('/auth/apple', data: {
+      'identityToken': identityToken,
+      if (fullName != null) 'fullName': fullName,
+    });
+    return response.data;
+  }
+
+  // POST /auth/guest - Login as guest
+  Future<Map<String, dynamic>> loginAsGuest() async {
+    final response = await _dio.post('/auth/guest');
+    return response.data;
+  }
+
+  // POST /auth/refresh-token - Refresh access token
   Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
-    final response = await _dio.post('/auth/refresh', data: {
-      'refresh_token': refreshToken,
+    final response = await _dio.post('/auth/refresh-token', data: {
+      'refreshToken': refreshToken,
     });
     return response.data;
   }

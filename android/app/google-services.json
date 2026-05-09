@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "268435917845",
+    "project_id": "reki-ef1b7",
+    "storage_bucket": "reki-ef1b7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:268435917845:android:94f1f664cdb9ab82cf521c",
+        "android_client_info": {
+          "package_name": "com.example.reki_mvp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZ0xz4d8EolD4cvktlSE3k-LohAd1SNF4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

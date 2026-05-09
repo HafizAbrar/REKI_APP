@@ -5,6 +5,8 @@ import '../data/venue_management_provider.dart';
 import '../../../core/network/vibe_schedule_api_service.dart';
 import '../../../core/models/vibe_schedule.dart';
 import '../../../core/config/env.dart';
+import '../../../core/services/venue_repository.dart';
+import '../../../features/users/data/user_preferences_provider.dart';
 
 class VenueDetailScreen extends ConsumerStatefulWidget {
   final String venueId;
@@ -23,6 +25,10 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
   void initState() {
     super.initState();
     _loadVibeSchedules();
+    // POST /venues/{id}/view - track view
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(venueRepositoryProvider).trackVenueView(widget.venueId);
+    });
   }
 
   Future<void> _loadVibeSchedules() async {
@@ -103,7 +109,15 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                             _buildHeaderButton(Icons.arrow_back, () => Navigator.pop(context)),
                             _buildHeaderButton(
                               _isFavorite ? Icons.favorite : Icons.favorite_border,
-                              () => setState(() => _isFavorite = !_isFavorite),
+                              () async {
+                                final notifier = ref.read(savedVenuesProvider.notifier);
+                                if (_isFavorite) {
+                                  await notifier.unsaveVenue(widget.venueId);
+                                } else {
+                                  await notifier.saveVenue(widget.venueId);
+                                }
+                                setState(() => _isFavorite = !_isFavorite);
+                              },
                               isFavorite: _isFavorite,
                             ),
                           ],

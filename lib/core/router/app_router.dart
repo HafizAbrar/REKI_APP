@@ -90,6 +90,13 @@ final appRouter = GoRouter(
       builder: (context, state) => const PersonalizeFeedScreen(),
     ),
     GoRoute(
+      path: '/venue/:id',
+      builder: (context, state) {
+        final venueId = state.pathParameters['id'] ?? '';
+        return VenueDetailScreen(venueId: venueId);
+      },
+    ),
+    GoRoute(
       path: '/venue-detail',
       builder: (context, state) {
         final venueId = state.uri.queryParameters['id'] ?? '1';
@@ -116,7 +123,11 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/offer-redeemed',
-      builder: (context, state) => const OfferRedeemedScreen(),
+      builder: (context, state) {
+        final offerId = state.uri.queryParameters['offerId'] ?? '';
+        final claimData = state.extra as Map<String, dynamic>?;
+        return OfferRedeemedScreen(offerId: offerId, claimData: claimData);
+      },
     ),
     GoRoute(
       path: '/notifications',

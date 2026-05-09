@@ -223,8 +223,15 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(28),
-                        onTap: _redeemOffer,
-                        child: const Row(
+                        onTap: ref.watch(offerActionProvider(widget.offerId)).isLoading
+                            ? null
+                            : _redeemOffer,
+                        child: ref.watch(offerActionProvider(widget.offerId)).isLoading
+                            ? const SizedBox(
+                                height: 24, width: 24,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.local_activity, color: Colors.white),
@@ -276,21 +283,33 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
   }
 
   Future<void> _redeemOffer() async {
-    final repository = ref.read(offerRepositoryProvider);
-    await repository.markOfferClicked(widget.offerId);
-    final result = await repository.redeemOffer(widget.offerId);
-    
+    final notifier = ref.read(offerActionProvider(widget.offerId).notifier);
+
+    // Step 1: claim — generates voucher code + QR
+    final claimed = await notifier.claim();
+    if (!claimed) {
+      final error = ref.read(offerActionProvider(widget.offerId)).error;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Claim failed: $error')),
+        );
+      }
+      return;
+    }
+
+    // Step 2: redeem the claimed offer
+    final redeemed = await notifier.redeem();
     if (mounted) {
-      result.when(
-        success: (_) {
-          context.push('/offer-redeemed?offerId=${widget.offerId}');
-        },
-        failure: (error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $error')),
-          );
-        },
-      );
+      if (redeemed) {
+        final claimData = ref.read(offerActionProvider(widget.offerId)).claimData;
+        context.push('/offer-redeemed?offerId=${widget.offerId}',
+            extra: claimData);
+      } else {
+        final error = ref.read(offerActionProvider(widget.offerId)).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Redeem failed: $error')),
+        );
+      }
     }
   }
 

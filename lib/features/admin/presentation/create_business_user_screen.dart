@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/network/admin_api_service.dart';
+import '../../../core/network/auth_api_service.dart';
 import '../../../core/utils/error_handler.dart';
 
 class CreateBusinessUserScreen extends ConsumerStatefulWidget {
@@ -36,14 +36,13 @@ class _CreateBusinessUserScreenState extends ConsumerState<CreateBusinessUserScr
     setState(() => _isLoading = true);
 
     try {
-      final apiService = ref.read(adminApiServiceProvider);
-      await apiService.createBusinessUser({
-        'email': _emailController.text,
-        'password': _passwordController.text,
-        'fullName': _fullNameController.text,
-        'phone': _phoneController.text,
-        'role': 'BUSINESS',
-      });
+      final apiService = ref.read(authApiServiceProvider);
+      await apiService.register(
+        email: _emailController.text,
+        password: _passwordController.text,
+        name: _fullNameController.text,
+        phone: _phoneController.text,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

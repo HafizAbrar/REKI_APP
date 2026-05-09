@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/auth_service.dart';
+import '../data/user_preferences_provider.dart';
 
 class UserProfileScreen extends ConsumerWidget {
   const UserProfileScreen({super.key});
@@ -62,6 +63,18 @@ class UserProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 32),
                   _buildMenuItem(
                     context,
+                    icon: Icons.bookmark,
+                    title: 'Saved Venues',
+                    onTap: () => _showSavedVenues(context, ref),
+                  ),
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.receipt_long,
+                    title: 'Redemption History',
+                    onTap: () => _showRedemptions(context, ref),
+                  ),
+                  _buildMenuItem(
+                    context,
                     icon: Icons.person,
                     title: 'Edit Profile',
                     onTap: () => context.push('/user-detail?id=${currentUser.id}'),
@@ -86,6 +99,55 @@ class UserProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
+    );
+  }
+
+  void _showSavedVenues(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      builder: (_) => Consumer(builder: (context, ref, _) {
+        final state = ref.watch(savedVenuesProvider);
+        return state.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+          data: (venues) => venues.isEmpty
+              ? const Center(child: Text('No saved venues', style: TextStyle(color: Colors.white)))
+              : ListView.builder(
+                  itemCount: venues.length,
+                  itemBuilder: (_, i) => ListTile(
+                    title: Text(venues[i]['name']?.toString() ?? '', style: const TextStyle(color: Colors.white)),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.bookmark_remove, color: Color(0xFF2DD4BF)),
+                      onPressed: () => ref.read(savedVenuesProvider.notifier).unsaveVenue(venues[i]['id'].toString()),
+                    ),
+                  ),
+                ),
+        );
+      }),
+    );
+  }
+
+  void _showRedemptions(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      builder: (_) => Consumer(builder: (context, ref, _) {
+        final state = ref.watch(redemptionsProvider);
+        return state.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+          data: (redemptions) => redemptions.isEmpty
+              ? const Center(child: Text('No redemptions yet', style: TextStyle(color: Colors.white)))
+              : ListView.builder(
+                  itemCount: redemptions.length,
+                  itemBuilder: (_, i) => ListTile(
+                    title: Text(redemptions[i]['offer']?['title']?.toString() ?? 'Offer', style: const TextStyle(color: Colors.white)),
+                    subtitle: Text(redemptions[i]['redeemedAt']?.toString() ?? '', style: const TextStyle(color: Color(0xFF94A3B8))),
+                  ),
+                ),
+        );
+      }),
     );
   }
 

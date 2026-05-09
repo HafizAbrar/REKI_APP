@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/models/venue.dart';
+import 'venue_provider.dart';
 
 class VenueFeedScreen extends ConsumerStatefulWidget {
   const VenueFeedScreen({super.key});
@@ -12,6 +15,13 @@ class VenueFeedScreen extends ConsumerStatefulWidget {
 class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
   int _selectedTab = 0;
   int _selectedNavIndex = 0;
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,70 +33,57 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
             _buildHeader(),
             _buildFilterTabs(),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildVenueCard(
-                    name: 'The Alchemist',
-                    subtitle: 'Molecular Mixology • Spinningfields',
-                    imageUrl: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800',
-                    statusLabel: '90% Full',
-                    statusColor: Colors.red,
-                    vibeLabel: 'Glamorous',
-                    waitTime: '~25m',
-                    offerTitle: 'ACTIVE OFFER',
-                    offerDescription: '2-for-1 Cocktails until 7pm',
-                    isBookmarked: true,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildVenueCard(
-                    name: 'Albert\'s Schloss',
-                    subtitle: 'Bier Halle • Peter Street',
-                    imageUrl: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800',
-                    statusLabel: 'Line at Door',
-                    statusColor: Colors.orange,
-                    statusIcon: Icons.groups,
-                    vibeLabel: 'Live Music',
-                    vibeIcon: Icons.music_note,
-                    vibeScore: '9.8/10',
-                    vibeTags: ['Loud', 'Energetic', 'Table Dancing'],
-                    isBookmarked: false,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildVenueCard(
-                    name: 'Northern Monk',
-                    subtitle: 'Taproom • Northern Quarter',
-                    imageUrl: 'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=800',
-                    statusLabel: 'Plenty of Space',
-                    statusColor: Colors.green,
-                    statusIcon: Icons.chair,
-                    vibeLabel: 'Chill',
-                    noiseLevel: 'Low',
-                    offerTitle: 'UPCOMING',
-                    offerDescription: 'Quiz Night starts at 8pm',
-                    offerIcon: Icons.calendar_month,
-                    offerColor: const Color(0xFFBAE6FD),
-                    isBookmarked: false,
-                  ),
-                  const SizedBox(height: 24),
-                  Center(
-                    child: Container(
-                      height: 4,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
+              child: _buildVenueList(),
             ),
           ],
         ),
       ),
       bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildVenueList() {
+    final AsyncValue<List<Venue>> venuesAsync;
+    if (_selectedTab == 0) {
+      venuesAsync = ref.watch(trendingVenuesProvider(null));
+    } else {
+      venuesAsync = ref.watch(venueListProvider);
+    }
+    return venuesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
+      error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+      data: (venues) {
+        final filtered = _selectedTab == 1
+            ? venues.where((v) => v.type.toUpperCase().contains('BAR')).toList()
+            : _selectedTab == 2
+                ? venues.where((v) => v.type.toUpperCase().contains('RESTAURANT')).toList()
+                : _selectedTab == 3
+                    ? venues.where((v) => v.type.toUpperCase().contains('CLUB')).toList()
+                    : venues;
+        if (filtered.isEmpty) {
+          return const Center(child: Text('No venues found', style: TextStyle(color: Color(0xFF94A3B8))));
+        }
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: filtered.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 16),
+          itemBuilder: (_, i) {
+            final v = filtered[i];
+            return GestureDetector(
+              onTap: () => context.push('/venue/${v.id}'),
+              child: _buildVenueCard(
+                name: v.name,
+                subtitle: '${v.type} • ${v.address}',
+                imageUrl: v.coverImageUrl ?? '',
+                statusLabel: v.busyness,
+                statusColor: v.busyness == 'BUSY' ? Colors.red : v.busyness == 'MODERATE' ? Colors.orange : Colors.green,
+                vibeLabel: v.currentVibe,
+                isBookmarked: false,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -220,7 +217,14 @@ class _VenueFeedScreenState extends ConsumerState<VenueFeedScreen> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: InkWell(
-        onTap: () => setState(() => _selectedTab = index),
+        onTap: () {
+          setState(() => _selectedTab = index);
+          if (index != 0) {
+            ref.read(venueListProvider.notifier).load(
+              category: index == 1 ? 'BAR' : index == 2 ? 'RESTAURANT' : 'CLUB',
+            );
+          }
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(

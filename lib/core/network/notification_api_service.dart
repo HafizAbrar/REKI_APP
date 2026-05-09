@@ -12,23 +12,24 @@ class NotificationApiService {
 
   NotificationApiService(this._dio);
 
-  Future<List<AppNotification>> getAllNotifications() async {
+  // GET /notifications - Get notifications grouped by Today/Yesterday/Earlier
+  Future<Map<String, dynamic>> getAllNotifications() async {
     final response = await _dio.get('/notifications');
-    return (response.data as List).map((json) => AppNotification.fromJson(json)).toList();
+    return response.data as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> getUnreadCount() async {
-    final response = await _dio.get('/notifications/unread-count');
-    return response.data;
-  }
-
+  // PUT /notifications/{id}/read - Mark a notification as read
   Future<AppNotification> markAsRead(String id) async {
-    final response = await _dio.patch('/notifications/$id/read');
-    return AppNotification.fromJson(response.data);
+    final response = await _dio.put('/notifications/$id/read');
+    final data = response.data is Map && response.data['data'] != null
+        ? response.data['data']
+        : response.data;
+    return AppNotification.fromJson(data);
   }
 
+  // PUT /notifications/read-all - Mark all notifications as read
   Future<void> markAllAsRead() async {
-    await _dio.patch('/notifications/mark-all-read');
+    await _dio.put('/notifications/read-all');
   }
 
   Future<void> deleteNotification(String id) async {

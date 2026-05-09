@@ -28,14 +28,31 @@ class OfferApiService {
     return (response.data as List).map((json) => Offer.fromJson(json)).toList();
   }
 
+  // GET /offers/{id} - Get offer detail by ID
   Future<Offer> getOfferById(String id) async {
     final response = await _dio.get('/offers/$id');
-    return Offer.fromJson(response.data);
+    final data = response.data is Map && response.data['data'] != null
+        ? response.data['data']
+        : response.data;
+    return Offer.fromJson(data);
   }
 
-  Future<Map<String, dynamic>> redeemOffer(String offerId) async {
-    final response = await _dio.post('/offers/redeem', data: {'offerId': offerId});
-    return response.data;
+  // POST /offers/{id}/claim - Claim offer, generates voucher code + QR
+  Future<Map<String, dynamic>> claimOffer(String id) async {
+    final response = await _dio.post('/offers/$id/claim');
+    return response.data as Map<String, dynamic>;
+  }
+
+  // POST /offers/{id}/redeem - Redeem a claimed offer
+  Future<Map<String, dynamic>> redeemOffer(String id) async {
+    final response = await _dio.post('/offers/$id/redeem');
+    return response.data as Map<String, dynamic>;
+  }
+
+  // POST /offers/{id}/wallet-pass - Generate Apple Wallet pass
+  Future<Map<String, dynamic>> generateWalletPass(String id) async {
+    final response = await _dio.post('/offers/$id/wallet-pass');
+    return response.data as Map<String, dynamic>;
   }
 
   Future<Offer> markOfferViewed(String id) async {

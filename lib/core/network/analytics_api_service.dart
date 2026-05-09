@@ -25,6 +25,11 @@ class AnalyticsApiService {
     return VenueAnalytics.fromJson(response.data);
   }
 
+  Future<Map<String, dynamic>> getVenueAnalyticsRaw(String venueId) async {
+    final response = await _dio.get('/analytics/venues/$venueId');
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<OfferAnalytics> getOfferAnalytics(String offerId) async {
     final response = await _dio.get('/analytics/offers/$offerId');
     return OfferAnalytics.fromJson(response.data);

@@ -3,16 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/network/vibe_schedule_api_service.dart';
-import '../../../core/network/admin_api_service.dart';
+import '../../../core/network/venue_api_service.dart';
 import '../../../core/utils/error_handler.dart';
-import '../../auth/presentation/auth_provider.dart';
 
 final userVenuesProvider = FutureProvider<List<dynamic>>((ref) async {
-  final authService = ref.watch(authNotifierProvider);
-  final userId = authService.currentUser?.id;
-  if (userId == null) return [];
-  final apiService = ref.watch(adminApiServiceProvider);
-  return await apiService.getUserVenues(userId);
+  final venues = await ref.read(venueApiServiceProvider).getAllVenuesList();
+  return venues.map((v) => {'id': v.id, 'name': v.name}).toList();
 });
 
 class VibeSchedulesScreen extends ConsumerStatefulWidget {
