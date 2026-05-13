@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/network/city_api_service.dart';
 import '../../../core/utils/error_handler.dart';
 import '../data/venue_management_provider.dart';
 
-final citiesProvider = FutureProvider<List<dynamic>>((ref) async {
-  final cities = await ref.read(cityApiServiceProvider).getCities();
-  return cities.map((c) => {'id': c.id, 'name': c.name}).toList();
-});
+// Cities are hardcoded to Manchester for MVP scope
+const _mcrCityId = 'manchester';
 
 class CreateVenueScreen extends ConsumerStatefulWidget {
   const CreateVenueScreen({super.key});
@@ -52,7 +49,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final citiesAsync = ref.watch(citiesProvider);
+    final citiesAsync = AsyncData([{'id': _mcrCityId, 'name': 'Manchester'}]);
     
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,

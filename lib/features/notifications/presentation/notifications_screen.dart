@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../data/notification_management_provider.dart';
 import '../../../core/models/notification.dart';
+import '../../../core/models/user.dart';
+import '../../../core/services/auth_service.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -21,6 +24,59 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = AuthService().currentUser;
+    if (user == null || user.isGuest) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0F172A),
+        appBar: AppBar(backgroundColor: const Color(0xFF1E293B), title: const Text('Notifications'), elevation: 0),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.notifications_none, color: Color(0xFF2DD4BF), size: 64),
+                const SizedBox(height: 24),
+                const Text('Sign in to see notifications',
+                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                const Text('Get notified about venue updates, new offers, and more.',
+                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, height: 1.5),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity, height: 52,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2DD4BF),
+                      foregroundColor: const Color(0xFF0F172A),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                      elevation: 0,
+                    ),
+                    onPressed: () => context.go('/signup'),
+                    child: const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity, height: 52,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF334155)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                    ),
+                    onPressed: () => context.go('/login'),
+                    child: const Text('Log In', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final notificationsAsync = ref.watch(notificationManagementProvider);
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),

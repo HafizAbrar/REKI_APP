@@ -27,6 +27,40 @@ class AuthApiService {
     return response.data;
   }
 
+  // POST /auth/business/register - Register new business user
+  Future<Map<String, dynamic>> registerBusiness({
+    required String email,
+    required String password,
+    required String name,
+    required String venueName,
+    required String venueAddress,
+    required String venueCategory,
+    String? phone,
+  }) async {
+    final response = await _dio.post('/auth/business/register', data: {
+      'email': email,
+      'password': password,
+      'name': name,
+      'venueName': venueName,
+      'venueAddress': venueAddress,
+      'venueCategory': venueCategory.toLowerCase(),
+      if (phone != null && phone.isNotEmpty) 'phone': phone,
+    });
+    return response.data;
+  }
+
+  // POST /auth/business/login - Business login
+  Future<Map<String, dynamic>> businessLogin({
+    required String email,
+    required String password,
+  }) async {
+    final response = await _dio.post('/auth/business/login', data: {
+      'email': email,
+      'password': password,
+    });
+    return response.data;
+  }
+
   // POST /auth/login - User login
   Future<Map<String, dynamic>> login({
     required String email,

@@ -70,6 +70,12 @@ class OfferApiService {
     return response.data;
   }
 
+  // POST /offers/redeem-by-code - Worker scans customer QR (Phase 6)
+  Future<Map<String, dynamic>> redeemByCode(String code) async {
+    final response = await _dio.post('/offers/redeem-by-code', data: {'code': code});
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<Offer> updateOfferStatus(String id, bool isActive) async {
     final response = await _dio.patch('/offers/$id/status', data: {'isActive': isActive});
     return Offer.fromJson(response.data);

@@ -7,6 +7,16 @@ final businessDashboardProvider = FutureProvider.family<Map<String, dynamic>, St
   return result.when(success: (data) => data, failure: (e) => throw Exception(e));
 });
 
+// Auto-refreshing dashboard stream (polls every 30s)
+final liveDashboardProvider = StreamProvider.family<Map<String, dynamic>, String>((ref, venueId) async* {
+  final repo = ref.read(businessRepositoryProvider);
+  while (true) {
+    final result = await repo.getDashboard(venueId);
+    yield result.when(success: (d) => d, failure: (_) => {});
+    await Future.delayed(const Duration(seconds: 30));
+  }
+});
+
 // GET /business/analytics/{venueId}
 final businessAnalyticsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, venueId) async {
   final result = await ref.read(businessRepositoryProvider).getAnalytics(venueId);
@@ -77,9 +87,15 @@ class VenueStatusNotifier extends StateNotifier<AsyncValue<Map<String, dynamic>?
 
   VenueStatusNotifier(this._repository, this._venueId) : super(const AsyncValue.data(null));
 
-  Future<bool> updateStatus({String? busyness, String? vibe}) async {
+  // Phase 6: added liveInfo for Worker "What's On" updates
+  Future<bool> updateStatus({String? busyness, String? vibe, String? liveInfo}) async {
     state = const AsyncValue.loading();
-    final result = await _repository.updateVenueStatus(_venueId, busyness: busyness, vibe: vibe);
+    final result = await _repository.updateVenueStatus(
+      _venueId,
+      busyness: busyness,
+      vibe: vibe,
+      liveInfo: liveInfo,
+    );
     return result.when(
       success: (data) { state = AsyncValue.data(data); return true; },
       failure: (e) { state = AsyncValue.error(e, StackTrace.current); return false; },
@@ -114,9 +130,24 @@ class BusinessAuthNotifier extends StateNotifier<AsyncValue<Map<String, dynamic>
     );
   }
 
-  Future<bool> forgotPassword(String email) async {
+  Future<String?> forgotPassword(String email) async {
     state = const AsyncValue.loading();
     final result = await _repository.businessForgotPassword(email);
+    return result.when(
+      success: (data) {
+        state = AsyncValue.data(data);
+        // Extract token from response if backend returns it
+        return data['token']?.toString() ??
+               data['data']?['token']?.toString() ??
+               data['resetToken']?.toString();
+      },
+      failure: (e) { state = AsyncValue.error(e, StackTrace.current); return null; },
+    );
+  }
+
+  Future<bool> resetPassword({required String token, required String newPassword}) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.businessResetPassword(token: token, newPassword: newPassword);
     return result.when(
       success: (_) { state = const AsyncValue.data(null); return true; },
       failure: (e) { state = AsyncValue.error(e, StackTrace.current); return false; },

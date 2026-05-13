@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/offer_detail_provider.dart';
 import '../../../core/services/offer_repository.dart';
+import '../../../core/models/user.dart';
+import '../../../core/services/auth_service.dart';
 
 class OfferDetailScreen extends ConsumerStatefulWidget {
   final String offerId;
@@ -283,6 +285,66 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
   }
 
   Future<void> _redeemOffer() async {
+    // Block guests
+    final user = AuthService().currentUser;
+    if (user == null || user.isGuest) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: const Color(0xFF1E293B),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        builder: (_) => Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 40, height: 4,
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 24),
+              const Icon(Icons.lock_outline, color: Color(0xFF2DD4BF), size: 36),
+              const SizedBox(height: 16),
+              const Text('Sign in to redeem offers',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              const Text('Create a free account to claim and redeem exclusive offers.',
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, height: 1.5),
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF334155)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () { Navigator.pop(context); context.go('/login'); },
+                      child: const Text('Log In', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2DD4BF),
+                        foregroundColor: const Color(0xFF0F172A),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
+                      ),
+                      onPressed: () { Navigator.pop(context); context.go('/signup'); },
+                      child: const Text('Sign Up', style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+      return;
+    }
     final notifier = ref.read(offerActionProvider(widget.offerId).notifier);
 
     // Step 1: claim — generates voucher code + QR

@@ -1,758 +1,267 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fl_chart/fl_chart.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/services/auth_service.dart';
-import '../../../core/utils/error_handler.dart';
 import '../data/admin_provider.dart';
 
-// Keep old provider alias pointing to new adminStatsProvider for backward compat
-final adminDashboardProvider = adminStatsProvider;
-
-class AdminDashboardScreen extends ConsumerWidget {
+class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authService = AuthService();
-    final user = authService.currentUser;
-    final dashboardAsync = ref.watch(adminDashboardProvider);
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 7, vsync: this);
+    Future.microtask(() => ref.read(adminProvider.notifier).loadAll());
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final adminState = ref.watch(adminProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundDark,
+      backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        backgroundColor: AppTheme.backgroundDark,
-        elevation: 0,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: const Text('Admin Dashboard', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () async {
-              await authService.logout();
-              if (context.mounted) context.go('/login');
-            },
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        backgroundColor: AppTheme.cardDark,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: AppTheme.primaryColor),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const Icon(Icons.admin_panel_settings, color: Colors.white, size: 48),
-                  const SizedBox(height: 8),
-                  Text(user?.email ?? 'Admin', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-                  const Text('Administrator', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.dashboard, color: Colors.white),
-              title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/admin-dashboard');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.add_business, color: Colors.white),
-              title: const Text('Create Venue', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/admin/create-venue');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person_add, color: Colors.white),
-              title: const Text('Create Business User', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/admin/create-business-user');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.people, color: Colors.white),
-              title: const Text('Manage Users', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/users');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.store, color: Colors.white),
-              title: const Text('Manage Venues', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/venues');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.local_offer, color: Colors.white),
-              title: const Text('All Offers', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/offers');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications, color: Colors.white),
-              title: const Text('Notification Logs', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                _showAdminList(context, ref, adminNotificationsProvider, 'Notification Logs', 'title');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.history, color: Colors.white),
-              title: const Text('Activity Logs', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                _showAdminList(context, ref, adminActivityLogsProvider, 'Activity Logs', 'action');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.send, color: Colors.white),
-              title: const Text('Test Push Notification', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                _showTestPushDialog(context, ref);
-              },
-            ),
-            const Divider(color: Colors.white24),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout', style: TextStyle(color: Colors.red)),
-              onTap: () async {
-                Navigator.pop(context);
-                await authService.logout();
-                if (context.mounted) context.go('/login');
-              },
-            ),
+        backgroundColor: const Color(0xFF1E293B),
+        title: const Text('Admin Dashboard', style: TextStyle(color: Colors.white)),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabs: const [
+            Tab(text: 'Stats'),
+            Tab(text: 'Users'),
+            Tab(text: 'Venues'),
+            Tab(text: 'Offers'),
+            Tab(text: 'Redemptions'),
+            Tab(text: 'Activity'),
+            Tab(text: 'Notifications'),
           ],
         ),
       ),
-      body: dashboardAsync.when(
-        data: (data) => _buildDashboard(context, user, data),
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
-        error: (error, stack) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.error_outline, color: Colors.red, size: 64),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Error Loading Dashboard',
-                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  ErrorHandler.getErrorMessage(error),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton.icon(
-                  onPressed: () => ref.refresh(adminDashboardProvider),
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Retry'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDashboard(BuildContext context, dynamic user, Map<String, dynamic> data) {
-    final summary = data['summary'] ?? {};
-    final venues = data['venues'] ?? [];
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppTheme.primaryColor.withOpacity(0.2), AppTheme.primaryColor.withOpacity(0.05)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.admin_panel_settings,
-                    color: AppTheme.backgroundDark,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user?.email ?? 'Admin',
-                        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Administrator',
-                        style: TextStyle(color: AppTheme.primaryColor, fontSize: 14, fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 28),
-          const Text(
-            'Platform Overview',
-            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'Total Venues',
-                  summary['totalVenues']?.toString() ?? '0',
-                  Icons.store_rounded,
-                  const Color(0xFF3B82F6),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'Total Offers',
-                  summary['totalOffers']?.toString() ?? '0',
-                  Icons.local_offer_rounded,
-                  const Color(0xFF10B981),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'Total Views',
-                  summary['totalViews']?.toString() ?? '0',
-                  Icons.visibility_rounded,
-                  const Color(0xFFF59E0B),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'Redemptions',
-                  summary['totalRedemptions']?.toString() ?? '0',
-                  Icons.check_circle_rounded,
-                  const Color(0xFF8B5CF6),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildConversionCard(summary['overallConversionRate'] ?? 0),
-          const SizedBox(height: 28),
-          const Text(
-            'Venue Performance',
-            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 16),
-          _buildVenuePerformanceChart(venues),
-          const SizedBox(height: 28),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Venues',
-                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
-              ),
-              Text(
-                '${venues.length} total',
-                style: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6), fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (venues.isEmpty)
-            Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: AppTheme.cardDark,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
-              ),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(Icons.store_outlined, color: Colors.white.withOpacity(0.3), size: 48),
-                    const SizedBox(height: 12),
-                    Text(
-                      'No venues yet',
-                      style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 16, fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            ...venues.map((venue) => _buildVenueCard(context, venue)).toList(),
+          _buildStatsTab(adminState),
+          _buildUsersTab(adminState),
+          _buildVenuesTab(adminState),
+          _buildOffersTab(adminState),
+          _buildRedemptionsTab(adminState),
+          _buildActivityTab(adminState),
+          _buildNotificationsTab(adminState),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6), fontSize: 13, fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConversionCard(dynamic conversionRate) {
-    final rate = conversionRate is num ? conversionRate.toDouble() : 0.0;
-    final percentage = (rate * 100).toStringAsFixed(1);
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFEC4899).withOpacity(0.2),
-            const Color(0xFF8B5CF6).withOpacity(0.2),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEC4899).withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEC4899).withOpacity(0.3),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.trending_up_rounded, color: Color(0xFFEC4899), size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$percentage%',
-                  style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Overall Conversion Rate',
-                  style: TextStyle(color: AppTheme.iceBlue.withOpacity(0.7), fontSize: 14, fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVenueCard(BuildContext context, Map<String, dynamic> venue) {
-    return Consumer(
-      builder: (context, ref, _) => GestureDetector(
-      onTap: () => context.go('/admin/venue-analytics/${venue['id']}'),
-      onLongPress: () => _showAdminList(
-        context, ref,
-        adminVenueLogsProvider(venue['id']?.toString() ?? ''),
-        'Venue Logs: ${venue['name']}',
-        'action',
-      ),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+  Widget _buildStatsTab(AdminState state) {
+    return state.stats.when(
+      data: (stats) => SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.cardDark,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        child: Column(
+          children: [
+            _buildStatCard('Total Users', stats.totalUsers.toString()),
+            _buildStatCard('Total Venues', stats.totalVenues.toString()),
+            _buildStatCard('Total Offers', stats.totalOffers.toString()),
+            _buildStatCard('Total Redemptions', stats.totalRedemptions.toString()),
+            _buildStatCard('Active Venues', stats.activeVenues.toString()),
+            _buildStatCard('Active Offers', stats.activeOffers.toString()),
+          ],
         ),
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text('Error: $err')),
+    );
+  }
+
+  Widget _buildUsersTab(AdminState state) {
+    return state.users.when(
+      data: (users) => ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: users.length,
+        itemBuilder: (_, i) {
+          final u = users[i];
+          return Card(
+            color: const Color(0xFF1E293B),
+            child: ListTile(
+              title: Text(u.name, style: const TextStyle(color: Colors.white)),
+              subtitle: Text(u.email, style: const TextStyle(color: Color(0xFF94A3B8))),
+              trailing: Chip(
+                label: Text(u.role),
+                backgroundColor: u.isActive ? Colors.green : Colors.red,
+              ),
+            ),
+          );
+        },
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text('Error: $err')),
+    );
+  }
+
+  Widget _buildVenuesTab(AdminState state) {
+    return state.venues.when(
+      data: (venues) => ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: venues.length,
+        itemBuilder: (_, i) {
+          final v = venues[i];
+          return Card(
+            color: const Color(0xFF1E293B),
+            child: ListTile(
+              title: Text(v.name, style: const TextStyle(color: Colors.white)),
+              subtitle: Text('${v.category} • ${v.busyness}',
+                  style: const TextStyle(color: Color(0xFF94A3B8))),
+              trailing: Text('${v.activeOffersCount} offers',
+                  style: const TextStyle(color: Color(0xFF2DD4BF))),
+            ),
+          );
+        },
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text('Error: $err')),
+    );
+  }
+
+  Widget _buildOffersTab(AdminState state) {
+    return state.offers.when(
+      data: (offers) => ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: offers.length,
+        itemBuilder: (_, i) {
+          final o = offers[i];
+          return Card(
+            color: const Color(0xFF1E293B),
+            child: ListTile(
+              title: Text(o.title, style: const TextStyle(color: Colors.white)),
+              subtitle: Text(o.venueName, style: const TextStyle(color: Color(0xFF94A3B8))),
+              trailing: Chip(
+                label: Text('${o.redemptionCount} redeemed'),
+                backgroundColor: o.isActive ? Colors.green : Colors.grey,
+              ),
+            ),
+          );
+        },
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text('Error: $err')),
+    );
+  }
+
+  Widget _buildRedemptionsTab(AdminState state) {
+    return state.redemptions.when(
+      data: (redemptions) => ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: redemptions.length,
+        itemBuilder: (_, i) {
+          final r = redemptions[i];
+          return Card(
+            color: const Color(0xFF1E293B),
+            child: ListTile(
+              title: Text(r.offerTitle, style: const TextStyle(color: Colors.white)),
+              subtitle: Text('${r.userName} @ ${r.venueName}',
+                  style: const TextStyle(color: Color(0xFF94A3B8))),
+              trailing: Text(
+                _formatDate(r.redeemedAt),
+                style: const TextStyle(color: Color(0xFF2DD4BF), fontSize: 12),
+              ),
+            ),
+          );
+        },
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text('Error: $err')),
+    );
+  }
+
+  Widget _buildActivityTab(AdminState state) {
+    return state.activityLogs.when(
+      data: (logs) => ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: logs.length,
+        itemBuilder: (_, i) {
+          final log = logs[i];
+          return Card(
+            color: const Color(0xFF1E293B),
+            child: ListTile(
+              title: Text(log.action, style: const TextStyle(color: Colors.white)),
+              subtitle: Text(log.details ?? 'No details',
+                  style: const TextStyle(color: Color(0xFF94A3B8))),
+              trailing: Text(
+                _formatDate(log.createdAt),
+                style: const TextStyle(color: Color(0xFF2DD4BF), fontSize: 12),
+              ),
+            ),
+          );
+        },
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text('Error: $err')),
+    );
+  }
+
+  Widget _buildNotificationsTab(AdminState state) {
+    return state.notificationLogs.when(
+      data: (logs) => ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: logs.length,
+        itemBuilder: (_, i) {
+          final log = logs[i];
+          return Card(
+            color: const Color(0xFF1E293B),
+            child: ListTile(
+              title: Text(log['title'] ?? 'Notification',
+                  style: const TextStyle(color: Colors.white)),
+              subtitle: Text(log['message'] ?? '',
+                  style: const TextStyle(color: Color(0xFF94A3B8))),
+              trailing: Text(
+                log['timestamp'] != null
+                    ? _formatDate(DateTime.parse(log['timestamp']))
+                    : 'N/A',
+                style: const TextStyle(color: Color(0xFF2DD4BF), fontSize: 12),
+              ),
+            ),
+          );
+        },
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text('Error: $err')),
+    );
+  }
+
+  Widget _buildStatCard(String label, String value) {
+    return Card(
+      color: const Color(0xFF1E293B),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.store_rounded, color: AppTheme.primaryColor, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    venue['name'] ?? 'Unknown Venue',
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        venue['category'] ?? 'N/A',
-                        style: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6), fontSize: 13),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '${venue['activeOffers'] ?? 0} offers',
-                        style: const TextStyle(color: AppTheme.primaryColor, fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${venue['totalViews'] ?? 0}',
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
-                ),
-                Text(
-                  'views',
-                  style: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6), fontSize: 11),
-                ),
-              ],
-            ),
-            const SizedBox(width: 12),
-            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 16),
+            Text(label, style: const TextStyle(color: Color(0xFF94A3B8))),
+            Text(value,
+                style: const TextStyle(
+                    color: Color(0xFF2DD4BF),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
       ),
-    ),
     );
   }
 
-  void _showAdminList(
-    BuildContext context,
-    WidgetRef ref,
-    FutureProvider<List<Map<String, dynamic>>> provider,
-    String title,
-    String labelKey,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.cardDark,
-      isScrollControlled: true,
-      builder: (_) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        builder: (_, controller) => Consumer(
-          builder: (context, ref, _) {
-            final async = ref.watch(provider);
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                ),
-                Expanded(
-                  child: async.when(
-                    loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
-                    error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
-                    data: (items) => ListView.builder(
-                      controller: controller,
-                      itemCount: items.length,
-                      itemBuilder: (_, i) => ListTile(
-                        title: Text(items[i][labelKey]?.toString() ?? items[i].values.first.toString(),
-                            style: const TextStyle(color: Colors.white)),
-                        subtitle: Text(items[i]['createdAt']?.toString() ?? '',
-                            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  void _showTestPushDialog(BuildContext context, WidgetRef ref) {
-    final userIdCtrl = TextEditingController();
-    final titleCtrl = TextEditingController();
-    final bodyCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppTheme.cardDark,
-        title: const Text('Test Push Notification', style: TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _dialogField(userIdCtrl, 'User ID'),
-            const SizedBox(height: 8),
-            _dialogField(titleCtrl, 'Title'),
-            const SizedBox(height: 8),
-            _dialogField(bodyCtrl, 'Body'),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
-            onPressed: () async {
-              Navigator.pop(context);
-              final success = await ref.read(adminTestPushProvider.notifier).send(
-                userId: userIdCtrl.text.trim(),
-                title: titleCtrl.text.trim(),
-                body: bodyCtrl.text.trim(),
-              );
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(success ? 'Push sent!' : 'Failed to send push'),
-                  backgroundColor: success ? Colors.green : Colors.red,
-                ));
-              }
-            },
-            child: const Text('Send'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _dialogField(TextEditingController ctrl, String hint) {
-    return TextField(
-      controller: ctrl,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white38),
-        filled: true,
-        fillColor: Colors.white10,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-      ),
-    );
-  }
-
-  Widget _buildVenuePerformanceChart(List venues) {
-    final topVenues = venues.where((v) => (v['totalViews'] ?? 0) > 0).take(8).toList();
-    
-    if (topVenues.isEmpty) {
-      return Container(
-        height: 200,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppTheme.cardDark,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        child: Center(
-          child: Text(
-            'No venue data available',
-            style: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6), fontSize: 14),
-          ),
-        ),
-      );
-    }
-    
-    final maxViews = topVenues.map((v) => (v['totalViews'] ?? 0) as num).reduce((a, b) => a > b ? a : b).toDouble();
-    
-    return Container(
-      height: 350,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Top Venues by Views',
-                style: TextStyle(color: AppTheme.iceBlue.withOpacity(0.8), fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${topVenues.length} venues',
-                  style: const TextStyle(color: AppTheme.primaryColor, fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: maxViews * 1.2,
-                barTouchData: BarTouchData(
-                  enabled: true,
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (group) => AppTheme.primaryColor,
-                    tooltipRoundedRadius: 8,
-                    tooltipPadding: const EdgeInsets.all(8),
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      return BarTooltipItem(
-                        '${topVenues[group.x.toInt()]['name']}\n${rod.toY.toInt()} views',
-                        const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-                      );
-                    },
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        if (value.toInt() >= 0 && value.toInt() < topVenues.length) {
-                          final name = topVenues[value.toInt()]['name'] ?? '';
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              name.length > 10 ? '${name.substring(0, 10)}...' : name,
-                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500),
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        }
-                        return const Text('');
-                      },
-                      reservedSize: 50,
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      interval: maxViews > 5 ? (maxViews / 5).ceilToDouble() : 1,
-                      getTitlesWidget: (value, meta) => Text(
-                        value.toInt().toString(),
-                        style: TextStyle(color: AppTheme.iceBlue.withOpacity(0.6), fontSize: 12),
-                      ),
-                    ),
-                  ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: maxViews > 5 ? (maxViews / 5).ceilToDouble() : 1,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.white.withOpacity(0.05),
-                    strokeWidth: 1,
-                  ),
-                ),
-                borderData: FlBorderData(show: false),
-                barGroups: topVenues.asMap().entries.map((entry) {
-                  return BarChartGroupData(
-                    x: entry.key,
-                    barRods: [
-                      BarChartRodData(
-                        toY: (entry.value['totalViews'] ?? 0).toDouble(),
-                        gradient: LinearGradient(
-                          colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.7)],
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                        ),
-                        width: 24,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
-                      ),
-                    ],
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  String _formatDate(DateTime dt) {
+    return '${dt.month}/${dt.day} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }

@@ -5,10 +5,24 @@ import '../data/venue_management_provider.dart';
 import '../data/location_provider.dart';
 import '../../../core/config/env.dart';
 
+// RAG colour constants — strict spec from client brief
+const _ragGreen = Color(0xFF22C55E);  // QUIET
+const _ragAmber = Color(0xFFF59E0B);  // MODERATE
+const _ragRed   = Color(0xFFEF4444);  // BUSY
+
+Color _ragColor(String busyness) {
+  switch (busyness.toUpperCase()) {
+    case 'QUIET':    return _ragGreen;
+    case 'MODERATE': return _ragAmber;
+    case 'BUSY':     return _ragRed;
+    default:         return const Color(0xFF94A3B8);
+  }
+}
+
 class MapViewScreen extends ConsumerStatefulWidget {
   final String? venueId;
   const MapViewScreen({super.key, this.venueId});
-  
+
   @override
   ConsumerState<MapViewScreen> createState() => _MapViewScreenState();
 }
@@ -24,7 +38,6 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
     _selectedVenueId = widget.venueId;
     Future.microtask(() {
       ref.read(venueManagementProvider.notifier).loadVenues();
-      // Start GPS tracking → POST /users/location + POST /geofence/check
       ref.read(locationProvider.notifier).startTracking();
     });
   }
@@ -32,32 +45,29 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
   @override
   Widget build(BuildContext context) {
     final venuesAsync = ref.watch(venueManagementProvider);
+    final locState = ref.watch(locationProvider);
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
+      body: SizedBox.expand(
         child: Stack(
           children: [
-            // Map Background with exact styling
+            // Map background
             GestureDetector(
-              onScaleUpdate: (details) {
-                setState(() {
-                  _scale = (_scale * details.scale).clamp(4000.0, 16000.0);
-                });
-              },
+              onScaleUpdate: (d) => setState(
+                  () => _scale = (_scale * d.scale).clamp(4000.0, 16000.0)),
               child: Container(
-                width: double.infinity,
-                height: double.infinity,
                 decoration: const BoxDecoration(
                   color: Color(0xFF334155),
                   image: DecorationImage(
-                    image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuADhzm8lWPGb7TipwGJX4Ls1SLwHuj6L8RtO3u72yLx2v9vV38ulG_1454dOG8lUuYxKNdgEBz0RiCq0Zqb_rEC-wyBzFs1HsnrM7V8BQh__9ZBQbg-IgkUPB-qKhXwSkgjlYSp20fSAvJYjoLs4ORpNf8wKExp4GuxT0lz-PStkyKnVoYU0sxgw4paMzbViNDwUjLjdc_P2WiEz_AKXwAKryxZw28TqR1GhQMGVxRvCA5WXwW_k4neVoeq8cHuYi_fmYAjywTOGxQF'),
+                    image: NetworkImage(
+                        'https://lh3.googleusercontent.com/aida-public/AB6AXuADhzm8lWPGb7TipwGJX4Ls1SLwHuj6L8RtO3u72yLx2v9vV38ulG_1454dOG8lUuYxKNdgEBz0RiCq0Zqb_rEC-wyBzFs1HsnrM7V8BQh__9ZBQbg-IgkUPB-qKhXwSkgjlYSp20fSAvJYjoLs4ORpNf8wKExp4GuxT0lz-PStkyKnVoYU0sxgw4paMzbViNDwUjLjdc_P2WiEz_AKXwAKryxZw28TqR1GhQMGVxRvCA5WXwW_k4neVoeq8cHuYi_fmYAjywTOGxQF'),
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
             ),
+
             // Top gradient
             Container(
               height: 160,
@@ -69,11 +79,10 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                 ),
               ),
             ),
+
             // Bottom gradient
             Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
+              bottom: 0, left: 0, right: 0,
               child: Container(
                 height: 256,
                 decoration: const BoxDecoration(
@@ -85,59 +94,115 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                 ),
               ),
             ),
-            // Map Pins - Real venues with actual coordinates
+
+            // Venue pins with RAG colours
             ...venuesAsync.maybeWhen(
               data: (venues) {
-                final filteredVenues = widget.venueId != null
-                  ? venues.where((v) => v.id == widget.venueId).toList()
-                  : (_selectedCategory == 'ALL' 
-                    ? venues 
-                    : venues.where((v) => v.type.toUpperCase() == _selectedCategory).toList());
-                return filteredVenues.map((venue) {
-                  final isSelected = _selectedVenueId == venue.id;
-                  // Convert lat/lng to screen coordinates
+                final filtered = widget.venueId != null
+                    ? venues.where((v) => v.id == widget.venueId).toList()
+                    : _selectedCategory == 'ALL'
+                        ? venues
+                        : venues
+                            .where((v) =>
+                                v.type.toUpperCase() == _selectedCategory)
+                            .toList();
+
+                return filtered.map((venue) {
                   const centerLat = 53.4808;
                   const centerLng = -2.2426;
-                  final screenWidth = MediaQuery.of(context).size.width;
-                  final screenHeight = MediaQuery.of(context).size.height;
-                  
-                  final x = screenWidth / 2 + (venue.longitude - centerLng) * _scale;
-                  final y = screenHeight / 2 - (venue.latitude - centerLat) * _scale;
-                  
-                  return _buildVenuePin(
-                    venue: venue,
+                  final size = MediaQuery.of(context).size;
+                  final x = size.width / 2 +
+                      (venue.longitude - centerLng) * _scale;
+                  final y = size.height / 2 -
+                      (venue.latitude - centerLat) * _scale;
+                  final isSelected = _selectedVenueId == venue.id;
+
+                  return Positioned(
                     top: y,
                     left: x,
-                    isSelected: isSelected,
-                    onTap: () => setState(() => _selectedVenueId = venue.id),
+                    child: GestureDetector(
+                      onTap: () =>
+                          setState(() => _selectedVenueId = venue.id),
+                      child: Column(
+                        children: [
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              if (isSelected)
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _ragColor(venue.busyness)
+                                        .withOpacity(0.25),
+                                  ),
+                                ),
+                              Container(
+                                width: isSelected ? 34 : 26,
+                                height: isSelected ? 34 : 26,
+                                decoration: BoxDecoration(
+                                  // RAG colour = busyness level
+                                  color: _ragColor(venue.busyness),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                      color: Colors.white,
+                                      width: isSelected ? 3 : 2),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _ragColor(venue.busyness)
+                                          .withOpacity(0.6),
+                                      blurRadius: isSelected ? 20 : 10,
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  _venueIcon(venue.type),
+                                  color: Colors.white,
+                                  size: isSelected ? 16 : 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (isSelected) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B).withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color: Colors.white.withOpacity(0.1)),
+                              ),
+                              child: Text(
+                                venue.name,
+                                style: const TextStyle(
+                                    color: Color(0xFFCFFAFE),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   );
                 }).toList();
               },
               orElse: () => [],
             ),
-            // Top Content
+
+            // Top UI: back + search + filters
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // Search Bar and Filter Button
                     Row(
                       children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B).withOpacity(0.85),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white.withOpacity(0.1)),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-                            onPressed: () => context.pop(),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ),
+                        _circleButton(
+                            Icons.arrow_back, () => context.pop()),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Container(
@@ -145,21 +210,26 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E293B).withOpacity(0.85),
                               borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.1)),
                             ),
                             child: const Row(
                               children: [
                                 SizedBox(width: 16),
-                                Icon(Icons.search, color: Color(0xFF94A3B8), size: 20),
+                                Icon(Icons.search,
+                                    color: Color(0xFF94A3B8), size: 20),
                                 SizedBox(width: 12),
                                 Expanded(
                                   child: TextField(
                                     decoration: InputDecoration(
                                       hintText: 'Find vibes in MCR...',
-                                      hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                                      hintStyle: TextStyle(
+                                          color: Color(0xFF94A3B8),
+                                          fontSize: 14),
                                       border: InputBorder.none,
                                     ),
-                                    style: TextStyle(color: Colors.white, fontSize: 14),
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 14),
                                   ),
                                 ),
                               ],
@@ -167,33 +237,23 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B).withOpacity(0.85),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white.withOpacity(0.1)),
-                          ),
-                          child: const Icon(Icons.tune, color: Color(0xFFCFFAFE), size: 20),
-                        ),
+                        _circleButton(Icons.tune, () {}),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    // Filter Tabs
+                    const SizedBox(height: 12),
+                    // Category filter tabs
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          _buildFilterTab('All', Icons.grid_view, 'ALL'),
+                          _filterTab('All', Icons.grid_view, 'ALL'),
                           const SizedBox(width: 8),
-                          _buildFilterTab('Bars', Icons.local_bar, 'BAR'),
+                          _filterTab('Bars', Icons.local_bar, 'BAR'),
                           const SizedBox(width: 8),
-                          _buildFilterTab('Clubs', Icons.music_note, 'CLUB'),
+                          _filterTab('Clubs', Icons.music_note, 'CLUB'),
                           const SizedBox(width: 8),
-                          _buildFilterTab('Restaurants', Icons.restaurant, 'RESTAURANT'),
-                          const SizedBox(width: 8),
-                          _buildFilterTab('Casinos', Icons.casino, 'CASINO'),
+                          _filterTab('Restaurants', Icons.restaurant,
+                              'RESTAURANT'),
                         ],
                       ),
                     ),
@@ -201,184 +261,185 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                 ),
               ),
             ),
-            // Bottom Content
+
+            // RAG legend (Week 8 client requirement)
+            Positioned(
+              top: 160,
+              right: 16,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B).withOpacity(0.92),
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      Border.all(color: Colors.white.withOpacity(0.1)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _ragLegendRow(_ragGreen, 'Quiet'),
+                    const SizedBox(height: 6),
+                    _ragLegendRow(_ragAmber, 'Moderate'),
+                    const SizedBox(height: 6),
+                    _ragLegendRow(_ragRed, 'Busy'),
+                  ],
+                ),
+              ),
+            ),
+
+            // Bottom: GPS button + selected venue card
             Positioned(
               bottom: 20,
               left: 0,
               right: 0,
               child: Column(
                 children: [
-                  // Action Buttons
+                  // GPS / Near Me button
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
+                    padding: const EdgeInsets.only(right: 16, bottom: 12),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () =>
+                            ref.read(locationProvider.notifier).startTracking(),
+                        child: Container(
                           width: 48,
                           height: 48,
-                          margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1E293B).withOpacity(0.85),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white.withOpacity(0.1)),
+                            border: Border.all(
+                                color: Colors.white.withOpacity(0.1)),
                           ),
-                          child: Consumer(
-                            builder: (context, ref, _) {
-                              final locState = ref.watch(locationProvider);
-                              return Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Icon(
-                                    locState.isTracking ? Icons.my_location : Icons.location_disabled,
-                                    color: locState.isTracking ? const Color(0xFF2DD4BF) : const Color(0xFF94A3B8),
-                                    size: 20,
-                                  ),
-                                  if (locState.nearbyVenues.isNotEmpty)
-                                    Positioned(
-                                      top: 4, right: 4,
-                                      child: Container(
-                                        width: 14, height: 14,
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFF2DD4BF),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            '${locState.nearbyVenues.length}',
-                                            style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Icon(
+                                locState.isTracking
+                                    ? Icons.my_location
+                                    : Icons.location_disabled,
+                                color: locState.isTracking
+                                    ? const Color(0xFF2DD4BF)
+                                    : const Color(0xFF94A3B8),
+                                size: 22,
+                              ),
+                              if (locState.nearbyVenues.isNotEmpty)
+                                Positioned(
+                                  top: 6,
+                                  right: 6,
+                                  child: Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF2DD4BF),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '${locState.nearbyVenues.length}',
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 8,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ),
-                                ],
-                              );
-                            },
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                  // Venue Card - Real data
+
+                  // Selected venue card
                   if (_selectedVenueId != null)
                     venuesAsync.maybeWhen(
                       data: (venues) {
-                        final venue = venues.firstWhere((v) => v.id == _selectedVenueId);
+                        final matches =
+                            venues.where((v) => v.id == _selectedVenueId);
+                        if (matches.isEmpty) return const SizedBox.shrink();
+                        final venue = matches.first;
                         return GestureDetector(
-                          onTap: () => context.push('/venue-detail?id=${venue.id}'),
+                          onTap: () =>
+                              context.push('/venue-detail?id=${venue.id}'),
                           child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            margin:
+                                const EdgeInsets.symmetric(horizontal: 16),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B).withOpacity(0.85),
-                              borderRadius: BorderRadius.circular(32),
-                              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              color:
+                                  const Color(0xFF1E293B).withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.1)),
                             ),
-                            child: Column(
+                            child: Row(
                               children: [
-                                Row(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Image.network(
-                                        venue.coverImageUrl != null ? '${Env.apiBaseUrl}${venue.coverImageUrl}' : 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200',
-                                        width: 96,
-                                        height: 96,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Container(
-                                          width: 96,
-                                          height: 96,
-                                          color: const Color(0xFF334155),
-                                          child: const Icon(Icons.image, color: Color(0xFF64748B)),
-                                        ),
-                                      ),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    venue.coverImageUrl != null
+                                        ? '${Env.apiBaseUrl}${venue.coverImageUrl}'
+                                        : 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200',
+                                    width: 72,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 72,
+                                      height: 72,
+                                      color: const Color(0xFF334155),
+                                      child: const Icon(Icons.image,
+                                          color: Color(0xFF64748B)),
                                     ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            venue.name,
-                                            style: const TextStyle(
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(venue.name,
+                                          style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                _getBusynessIcon(venue.busyness),
-                                                color: const Color(0xFF2DD4BF),
-                                                size: 14,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                venue.busyness,
-                                                style: const TextStyle(
-                                                  color: Color(0xFF2DD4BF),
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            venue.address,
-                                            style: const TextStyle(
-                                              color: Color(0xFF94A3B8),
-                                              fontSize: 12,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              _buildTag(venue.type),
-                                              const SizedBox(width: 6),
-                                              _buildTag(venue.currentVibe),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Container(
-                                  width: double.infinity,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF2DD4BF),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(12),
-                                      onTap: () => context.push('/venue-detail?id=${venue.id}'),
-                                      child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 4),
+                                      Row(
                                         children: [
+                                          Container(
+                                            width: 8,
+                                            height: 8,
+                                            decoration: BoxDecoration(
+                                              color: _ragColor(venue.busyness),
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
                                           Text(
-                                            'View Details',
+                                            venue.busyness,
                                             style: TextStyle(
-                                              color: Color(0xFF0F172A),
-                                              fontSize: 14,
+                                              color: _ragColor(venue.busyness),
+                                              fontSize: 12,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          SizedBox(width: 8),
-                                          Icon(Icons.arrow_forward, color: Color(0xFF0F172A), size: 18),
                                         ],
                                       ),
-                                    ),
+                                      const SizedBox(height: 2),
+                                      Text(venue.address,
+                                          style: const TextStyle(
+                                              color: Color(0xFF94A3B8),
+                                              fontSize: 11),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis),
+                                    ],
                                   ),
                                 ),
+                                const Icon(Icons.arrow_forward_ios,
+                                    color: Color(0xFF94A3B8), size: 14),
                               ],
                             ),
                           ),
@@ -395,210 +456,79 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
     );
   }
 
-  Widget _buildVenuePin({
-    required venue,
-    required double top,
-    required double left,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return Positioned(
-      top: top,
-      left: left,
-      child: GestureDetector(
+  Widget _circleButton(IconData icon, VoidCallback onTap) => GestureDetector(
         onTap: onTap,
-        child: Column(
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                if (isSelected)
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF2DD4BF).withOpacity(0.3),
-                    ),
-                  ),
-                Container(
-                  width: isSelected ? 32 : 24,
-                  height: isSelected ? 32 : 24,
-                  decoration: BoxDecoration(
-                    color: _getVenueTypeColor(venue.type),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: isSelected ? 3 : 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _getVenueTypeColor(venue.type).withOpacity(0.5),
-                        blurRadius: isSelected ? 20 : 10,
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    _getVenueTypeIcon(venue.type),
-                    color: Colors.white,
-                    size: isSelected ? 16 : 12,
-                  ),
-                ),
-              ],
-            ),
-            if (isSelected) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B).withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                ),
-                child: Text(
-                  venue.name,
-                  style: const TextStyle(
-                    color: Color(0xFFCFFAFE),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ],
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B).withOpacity(0.85),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: Icon(icon, color: Colors.white, size: 20),
         ),
-      ),
-    );
-  }
+      );
 
-  Color _getBusynessColor(String busyness) {
-    switch (busyness.toUpperCase()) {
-      case 'QUIET': return Colors.green;
-      case 'MODERATE': return Colors.orange;
-      case 'BUSY': return Colors.red;
-      default: return const Color(0xFF2DD4BF);
-    }
-  }
-
-  Color _getVenueTypeColor(String type) {
-    switch (type.toUpperCase()) {
-      case 'BAR': return const Color(0xFFFF6B6B);
-      case 'RESTAURANT': return const Color(0xFF4ECDC4);
-      case 'CLUB': return const Color(0xFFFFBE0B);
-      case 'CASINO': return const Color(0xFF9B59B6);
-      default: return const Color(0xFF2DD4BF);
-    }
-  }
-
-  IconData _getBusynessIcon(String busyness) {
-    switch (busyness.toUpperCase()) {
-      case 'QUIET': return Icons.check_circle;
-      case 'MODERATE': return Icons.people;
-      case 'BUSY': return Icons.local_fire_department;
-      default: return Icons.location_on;
-    }
-  }
-
-  IconData _getVenueTypeIcon(String type) {
-    switch (type.toUpperCase()) {
-      case 'BAR': return Icons.local_bar;
-      case 'RESTAURANT': return Icons.restaurant;
-      case 'CLUB': return Icons.music_note;
-      case 'CASINO': return Icons.casino;
-      default: return Icons.location_on;
-    }
-  }
-
-  Widget _buildFilterTab(String label, IconData icon, String category) {
+  Widget _filterTab(String label, IconData icon, String category) {
     final isSelected = _selectedCategory == category;
     return GestureDetector(
       onTap: () => setState(() => _selectedCategory = category),
       child: Container(
         height: 36,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2DD4BF) : const Color(0xFF1E293B).withOpacity(0.85),
+          color: isSelected
+              ? const Color(0xFF2DD4BF)
+              : const Color(0xFF1E293B).withOpacity(0.85),
           borderRadius: BorderRadius.circular(18),
-          border: isSelected ? null : Border.all(color: Colors.white.withOpacity(0.1)),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: const Color(0xFF2DD4BF).withOpacity(0.3),
-              blurRadius: 10,
-            ),
-          ] : [],
+          border: isSelected
+              ? null
+              : Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFCFFAFE),
-              size: 16,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFCFFAFE),
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Icon(icon,
+                color: isSelected
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFCFFAFE),
+                size: 15),
+            const SizedBox(width: 5),
+            Text(label,
+                style: TextStyle(
+                    color: isSelected
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFFCFFAFE),
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTag(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: const Color(0xFFCFFAFE).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: const Color(0xFFCFFAFE).withOpacity(0.2)),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Color(0xFFCFFAFE),
-          fontSize: 10,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return GestureDetector(
-      onTap: () {
-        if (label == 'Feed') {
-          context.go('/home');
-        }
-      },
-      child: Column(
+  Widget _ragLegendRow(Color color, String label) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 64,
-            height: 32,
-            decoration: BoxDecoration(
-              color: isActive ? const Color(0xFF2DD4BF).withOpacity(0.2) : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: isActive ? const Color(0xFF2DD4BF) : const Color(0xFF94A3B8),
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isActive ? Colors.white : const Color(0xFF94A3B8),
-              fontSize: 10,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
+              width: 10,
+              height: 10,
+              decoration:
+                  BoxDecoration(color: color, shape: BoxShape.circle)),
+          const SizedBox(width: 7),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 11)),
         ],
-      ),
-    );
+      );
+
+  IconData _venueIcon(String type) {
+    switch (type.toUpperCase()) {
+      case 'BAR':        return Icons.local_bar;
+      case 'RESTAURANT': return Icons.restaurant;
+      case 'CLUB':       return Icons.music_note;
+      case 'CASINO':     return Icons.casino;
+      default:           return Icons.location_on;
+    }
   }
 }

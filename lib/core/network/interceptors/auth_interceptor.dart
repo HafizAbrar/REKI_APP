@@ -1,6 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:async';
 import '../../config/env.dart';
+
+/// Fires when a 401 cannot be recovered via refresh — app should redirect to login.
+final sessionExpiredStream = StreamController<void>.broadcast();
 
 class AuthInterceptor extends Interceptor {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -40,6 +44,7 @@ class AuthInterceptor extends Interceptor {
     // Don't retry refresh calls themselves
     if (err.requestOptions.path.contains('/auth/refresh-token')) {
       await _clearTokens();
+      sessionExpiredStream.add(null);
       handler.next(err);
       return;
     }
@@ -56,6 +61,7 @@ class AuthInterceptor extends Interceptor {
       final refreshToken = await _storage.read(key: 'refresh_token');
       if (refreshToken == null) {
         await _clearTokens();
+        sessionExpiredStream.add(null);
         handler.next(err);
         return;
       }
@@ -78,6 +84,7 @@ class AuthInterceptor extends Interceptor {
 
       if (newAccessToken == null) {
         await _clearTokens();
+        sessionExpiredStream.add(null);
         handler.next(err);
         return;
       }
@@ -102,6 +109,7 @@ class AuthInterceptor extends Interceptor {
       }
     } catch (_) {
       await _clearTokens();
+      sessionExpiredStream.add(null);
       // Reject all pending requests
       for (final pending in _pendingRequests) {
         pending.handler.next(err);

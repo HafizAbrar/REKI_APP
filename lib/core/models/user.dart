@@ -6,6 +6,9 @@ class User {
   final UserRole role;
   final List<String> preferences;
   final bool isActive;
+  final String? venueId;
+  final String? venueName;
+  final String? profilePicture;
 
   User({
     required this.id,
@@ -15,6 +18,9 @@ class User {
     required this.role,
     required this.preferences,
     this.isActive = true,
+    this.venueId,
+    this.venueName,
+    this.profilePicture,
   });
 
   Map<String, dynamic> toJson() => {
@@ -55,9 +61,16 @@ class User {
       role: role,
       preferences: preferencesList,
       isActive: json['isActive'] ?? true,
+      venueId: json['venue']?['id']?.toString() ?? json['venueId']?.toString(),
+      venueName: json['venue']?['name']?.toString() ?? json['venueName']?.toString(),
+      profilePicture: json['profilePicture']?.toString() ?? json['picture']?.toString() ?? json['photoURL']?.toString() ?? json['avatar']?.toString() ?? json['photo']?.toString() ?? json['imageUrl']?.toString() ?? json['image']?.toString(),
     );
   }
 }
 
 enum UserType { customer, business }
 enum UserRole { USER, BUSINESS, ADMIN }
+
+extension UserGuest on User {
+  bool get isGuest => email == 'guest@reki.app' || id.startsWith('guest_');
+}

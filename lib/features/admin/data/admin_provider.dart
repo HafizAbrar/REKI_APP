@@ -1,94 +1,115 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/services/admin_repository.dart';
+import '../../../core/models/admin_models.dart';
+import '../../../core/network/admin_api_service.dart';
 
-// GET /admin/stats
-final adminStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getStats();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
+class AdminState {
+  final AsyncValue<AdminStats> stats;
+  final AsyncValue<List<AdminUser>> users;
+  final AsyncValue<List<AdminVenue>> venues;
+  final AsyncValue<List<AdminOffer>> offers;
+  final AsyncValue<List<AdminRedemption>> redemptions;
+  final AsyncValue<List<ActivityLog>> activityLogs;
+  final AsyncValue<List<Map<String, dynamic>>> notificationLogs;
 
-// GET /admin/stats/location
-final adminLocationStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getLocationStats();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
+  const AdminState({
+    this.stats = const AsyncValue.loading(),
+    this.users = const AsyncValue.loading(),
+    this.venues = const AsyncValue.loading(),
+    this.offers = const AsyncValue.loading(),
+    this.redemptions = const AsyncValue.loading(),
+    this.activityLogs = const AsyncValue.loading(),
+    this.notificationLogs = const AsyncValue.loading(),
+  });
 
-// GET /admin/stats/realtime
-final adminRealtimeStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getRealtimeStats();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// GET /admin/stats/offline
-final adminOfflineStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getOfflineStats();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// GET /admin/users
-final adminUsersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getUsers();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// GET /admin/users/{id}/activity
-final adminUserActivityProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, userId) async {
-  final result = await ref.read(adminRepositoryProvider).getUserActivity(userId);
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// GET /admin/venues
-final adminVenuesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getVenues();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// GET /admin/venues/{id}/logs
-final adminVenueLogsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, venueId) async {
-  final result = await ref.read(adminRepositoryProvider).getVenueLogs(venueId);
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// GET /admin/offers
-final adminOffersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getOffers();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// GET /admin/offers/redemptions
-final adminRedemptionsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getRedemptions();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// GET /admin/activity-logs
-final adminActivityLogsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getActivityLogs();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// GET /admin/notifications
-final adminNotificationsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final result = await ref.read(adminRepositoryProvider).getNotifications();
-  return result.when(success: (d) => d, failure: (e) => throw Exception(e));
-});
-
-// POST /admin/test-push
-final adminTestPushProvider =
-    StateNotifierProvider<AdminTestPushNotifier, AsyncValue<Map<String, dynamic>?>>((ref) {
-  return AdminTestPushNotifier(ref.read(adminRepositoryProvider));
-});
-
-class AdminTestPushNotifier extends StateNotifier<AsyncValue<Map<String, dynamic>?>> {
-  final AdminRepository _repository;
-  AdminTestPushNotifier(this._repository) : super(const AsyncValue.data(null));
-
-  Future<bool> send({required String userId, required String title, required String body}) async {
-    state = const AsyncValue.loading();
-    final result = await _repository.sendTestPush(userId: userId, title: title, body: body);
-    return result.when(
-      success: (data) { state = AsyncValue.data(data); return true; },
-      failure: (e) { state = AsyncValue.error(e, StackTrace.current); return false; },
-    );
-  }
+  AdminState copyWith({
+    AsyncValue<AdminStats>? stats,
+    AsyncValue<List<AdminUser>>? users,
+    AsyncValue<List<AdminVenue>>? venues,
+    AsyncValue<List<AdminOffer>>? offers,
+    AsyncValue<List<AdminRedemption>>? redemptions,
+    AsyncValue<List<ActivityLog>>? activityLogs,
+    AsyncValue<List<Map<String, dynamic>>>? notificationLogs,
+  }) =>
+      AdminState(
+        stats: stats ?? this.stats,
+        users: users ?? this.users,
+        venues: venues ?? this.venues,
+        offers: offers ?? this.offers,
+        redemptions: redemptions ?? this.redemptions,
+        activityLogs: activityLogs ?? this.activityLogs,
+        notificationLogs: notificationLogs ?? this.notificationLogs,
+      );
 }
+
+class AdminNotifier extends StateNotifier<AdminState> {
+  final AdminApiService _api;
+  AdminNotifier(this._api) : super(const AdminState());
+
+  Future<void> loadStats() async {
+    state = state.copyWith(stats: const AsyncValue.loading());
+    state = state.copyWith(stats: await AsyncValue.guard(_api.getStats));
+  }
+
+  Future<void> loadUsers() async {
+    state = state.copyWith(users: const AsyncValue.loading());
+    state = state.copyWith(users: await AsyncValue.guard(_api.getUsers));
+  }
+
+  Future<void> loadVenues() async {
+    state = state.copyWith(venues: const AsyncValue.loading());
+    state = state.copyWith(venues: await AsyncValue.guard(_api.getVenues));
+  }
+
+  Future<void> loadOffers() async {
+    state = state.copyWith(offers: const AsyncValue.loading());
+    state = state.copyWith(offers: await AsyncValue.guard(_api.getOffers));
+  }
+
+  Future<void> loadRedemptions() async {
+    state = state.copyWith(redemptions: const AsyncValue.loading());
+    state = state.copyWith(
+        redemptions: await AsyncValue.guard(_api.getRedemptions));
+  }
+
+  Future<void> loadActivityLogs() async {
+    state = state.copyWith(activityLogs: const AsyncValue.loading());
+    state = state.copyWith(
+        activityLogs: await AsyncValue.guard(_api.getActivityLogs));
+  }
+
+  Future<void> loadNotificationLogs() async {
+    state = state.copyWith(notificationLogs: const AsyncValue.loading());
+    state = state.copyWith(
+        notificationLogs: await AsyncValue.guard(_api.getNotificationLogs));
+  }
+
+  Future<void> loadAll() async {
+    await Future.wait([
+      loadStats(),
+      loadUsers(),
+      loadVenues(),
+      loadOffers(),
+      loadRedemptions(),
+      loadActivityLogs(),
+      loadNotificationLogs(),
+    ]);
+  }
+
+  Future<void> sendTestPush({
+    required String userId,
+    required String title,
+    required String body,
+  }) =>
+      _api.sendTestPush(userId: userId, title: title, body: body);
+
+  Future<Map<String, dynamic>> getUserActivity(String userId) =>
+      _api.getUserActivity(userId);
+
+  Future<List<Map<String, dynamic>>> getVenueLogs(String venueId) =>
+      _api.getVenueLogs(venueId);
+}
+
+final adminProvider =
+    StateNotifierProvider<AdminNotifier, AdminState>((ref) {
+  return AdminNotifier(ref.read(adminApiServiceProvider));
+});

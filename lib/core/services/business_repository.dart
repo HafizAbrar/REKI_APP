@@ -35,6 +35,17 @@ class BusinessRepository {
     }
   }
 
+  Future<Result<Map<String, dynamic>>> businessResetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      return Result.success(await _api.businessResetPassword(token: token, newPassword: newPassword));
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
   Future<Result<Map<String, dynamic>>> getDashboard(String venueId) async {
     try {
       return Result.success(await _api.getDashboard(venueId));
@@ -52,9 +63,10 @@ class BusinessRepository {
   }
 
   Future<Result<Map<String, dynamic>>> updateVenueStatus(
-    String venueId, {String? busyness, String? vibe}) async {
+    String venueId, {String? busyness, String? vibe, String? liveInfo}) async {
     try {
-      return Result.success(await _api.updateVenueStatus(venueId, busyness: busyness, vibe: vibe));
+      return Result.success(await _api.updateVenueStatus(
+        venueId, busyness: busyness, vibe: vibe, liveInfo: liveInfo));
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }

@@ -85,6 +85,55 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> registerBusiness({
+    required String email,
+    required String password,
+    required String name,
+    required String venueName,
+    required String venueAddress,
+    required String venueCategory,
+    String? phone,
+  }) async {
+    state = const AuthStateLoading();
+    try {
+      // Response: {success, message, status} — no tokens returned
+      await _apiService.registerBusiness(
+        email: email,
+        password: password,
+        name: name,
+        venueName: venueName,
+        venueAddress: venueAddress,
+        venueCategory: venueCategory,
+        phone: phone,
+      );
+      state = const AuthStateRegisterSuccess();
+    } catch (e) {
+      state = AuthStateError(_parseError(e));
+    }
+  }
+
+  Future<void> businessLogin({
+    required String email,
+    required String password,
+  }) async {
+    state = const AuthStateLoading();
+    try {
+      final response = await _apiService.businessLogin(email: email, password: password);
+      // Response: { user: {...}, tokens: { accessToken, refreshToken } }
+      final tokens = response['tokens'] as Map<String, dynamic>;
+      const storage = FlutterSecureStorage();
+      await storage.write(key: 'access_token', value: tokens['accessToken']);
+      await storage.write(key: 'refresh_token', value: tokens['refreshToken']);
+      await _authService.setAccessToken(tokens['accessToken']);
+      if (response['user'] != null) {
+        _authService.setCurrentUserFromJson(response['user'] as Map<String, dynamic>);
+      }
+      state = const AuthStateLoginSuccess();
+    } catch (e) {
+      state = AuthStateError(_parseError(e));
+    }
+  }
+
   Future<void> login({
     required String email,
     required String password,
@@ -101,12 +150,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> loginWithGoogle(String idToken) async {
+  Future<void> loginWithGoogle(String idToken, {String? photoUrl}) async {
     state = const AuthStateLoading();
     try {
       final response = await _apiService.loginWithGoogle(idToken);
-      await _storeTokens(response);
-      await _authService.fetchCurrentUser();
+      await _handleTokenResponse(response, photoUrl: photoUrl);
       state = const AuthStateLoginSuccess();
     } catch (e) {
       state = AuthStateError(_parseError(e));
@@ -120,8 +168,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         identityToken: identityToken,
         fullName: fullName,
       );
-      await _storeTokens(response);
-      await _authService.fetchCurrentUser();
+      await _handleTokenResponse(response);
       state = const AuthStateLoginSuccess();
     } catch (e) {
       state = AuthStateError(_parseError(e));
@@ -134,7 +181,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final response = await _apiService.loginAsGuest();
       await _storeTokens(response);
       await _authService.fetchCurrentUser();
-      state = const AuthStateLoginSuccess();
+      state = const AuthStateGuestSuccess();
     } catch (e) {
       state = AuthStateError(_parseError(e));
     }
@@ -192,6 +239,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> _handleTokenResponse(Map<String, dynamic> response, {String? photoUrl}) async {
+    const storage = FlutterSecureStorage();
+    final tokens = response['tokens'] as Map<String, dynamic>?;
+    final accessToken = tokens?['accessToken'] ?? response['access_token'];
+    final refreshToken = tokens?['refreshToken'] ?? response['refresh_token'];
+    if (accessToken != null) {
+      await storage.write(key: 'access_token', value: accessToken);
+      await _authService.setAccessToken(accessToken);
+    }
+    if (refreshToken != null) {
+      await storage.write(key: 'refresh_token', value: refreshToken);
+    }
+    if (response['user'] != null) {
+      _authService.setCurrentUserFromJson(response['user'] as Map<String, dynamic>);
+    } else {
+      await _authService.fetchCurrentUser();
+    }
+    if (photoUrl != null) {
+      _authService.setProfilePicture(photoUrl);
+    }
+  }
+
   Future<void> _storeTokens(Map<String, dynamic> response) async {
     const storage = FlutterSecureStorage();
     if (response['access_token'] != null) {
@@ -218,6 +287,10 @@ class AuthStateLoading extends AuthState {
 class AuthStateAuthenticated extends AuthState {
   final Map<String, dynamic> user;
   const AuthStateAuthenticated(this.user);
+}
+
+class AuthStateGuestSuccess extends AuthState {
+  const AuthStateGuestSuccess();
 }
 
 class AuthStateRegisterSuccess extends AuthState {

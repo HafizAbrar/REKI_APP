@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../data/tag_provider.dart';
+
+// Static vibe tags — tag API removed from MVP scope
+const _vibeTags = [
+  'Cocktails', 'Date Night', 'Pub', 'Rooftop',
+  'Live Music', 'Chill', 'Party', 'Sports',
+];
 
 class VenueFilterScreen extends ConsumerStatefulWidget {
   const VenueFilterScreen({super.key});
@@ -132,20 +137,11 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        ref.watch(vibeTagsProvider).when(
-                          data: (tags) => Wrap(
+                        Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: tags.map(_buildVibeChip).toList(),
+                            children: _vibeTags.map(_buildVibeChip).toList(),
                           ),
-                          loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6), strokeWidth: 2)),
-                          error: (_, __) => Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: ['Cocktails', 'Date Night', 'Pub', 'Rooftop', 'Live Music', 'Chill']
-                                .map(_buildVibeChip).toList(),
-                          ),
-                        ),
                       ],
                     ),
                   ),

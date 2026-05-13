@@ -39,7 +39,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final auth = await googleUser.authentication;
       final idToken = auth.idToken;
       if (idToken == null) return;
-      await ref.read(authStateProvider.notifier).loginWithGoogle(idToken);
+      await ref.read(authStateProvider.notifier).loginWithGoogle(
+        idToken,
+        photoUrl: googleUser.photoUrl,
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -92,7 +95,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authStateProvider, (previous, next) {
-      if (next is AuthStateLoginSuccess) {
+      if (next is AuthStateGuestSuccess) {
+        context.go('/home');
+      } else if (next is AuthStateLoginSuccess) {
         final user = ref.read(authNotifierProvider).currentUser;
         if (user != null) {
           switch (user.role) {
@@ -358,14 +363,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
 
                   const SizedBox(height: 24),
-                  // Terms text
+                  // Business login link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Are you a business? ',
+                        style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                      ),
+                      GestureDetector(
+                        onTap: () => context.push('/business-login'),
+                        child: const Text(
+                          'Business Login',
+                          style: TextStyle(
+                            color: Color(0xFF2DD4BF),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  // Sign up link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Don\'t have an account? ',
+                        style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                      ),
+                      GestureDetector(
+                        onTap: () => context.push('/signup'),
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            color: Color(0xFF2DD4BF),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   const Text.rich(
                     TextSpan(
                       text: 'By continuing, you agree to our ',
-                      style: TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
                       children: [
                         TextSpan(
                           text: 'Terms',

@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/models/user.dart';
+import '../../core/services/auth_service.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/splash/presentation/loading_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/code_verification_screen.dart';
 import '../../features/auth/presentation/change_password_screen.dart';
+import '../../features/auth/presentation/business_login_screen.dart';
+import '../../features/auth/presentation/business_signup_screen.dart';
 import '../../features/venues/presentation/home_screen.dart';
 import '../../features/venues/presentation/venue_list_screen.dart';
 import '../../features/venues/presentation/venue_filter_screen.dart';
 import '../../features/venues/presentation/personalize_feed_screen.dart';
 import '../../features/venues/presentation/venue_detail_screen.dart';
 import '../../features/venues/presentation/map_view_screen.dart';
+import '../../features/venues/presentation/no_venues_found_screen.dart';
 import '../../features/venues/presentation/vibe_schedules_screen.dart';
 import '../../features/offers/presentation/offer_detail_screen.dart';
 import '../../features/offers/presentation/offer_redeemed_screen.dart';
@@ -20,183 +26,185 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/business/presentation/business_dashboard_screen.dart';
 import '../../features/business/presentation/business_update_screen.dart';
 import '../../features/business/presentation/manage_offers_screen.dart';
-import '../../features/splash/presentation/loading_screen.dart';
-import '../../features/venues/presentation/no_venues_found_screen.dart';
-import '../../features/users/presentation/user_list_screen.dart';
-import '../../features/users/presentation/user_detail_screen.dart';
+import '../../features/business/presentation/create_offer_screen.dart';
 import '../../features/users/presentation/user_preferences_screen.dart';
 import '../../features/users/presentation/user_profile_screen.dart';
+import '../../features/auth/presentation/business_forgot_password_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
-import '../../features/admin/presentation/venue_analytics_screen.dart';
-import '../../features/admin/presentation/create_business_user_screen.dart';
-import '../../features/business/presentation/create_offer_screen.dart';
-import '../../features/venues/presentation/create_venue_screen.dart';
+import '../../features/admin/presentation/create_venue_screen.dart';
+
+// Routes that require a fully logged-in (non-guest) user
+const _guestBlockedRoutes = [
+  '/personalize',
+  '/notifications',
+  '/profile',
+  '/offer-redeemed',
+  '/user-preferences',
+];
+
+// Routes only accessible to BUSINESS role
+const _businessRoutes = [
+  '/business-dashboard',
+  '/business-update',
+  '/manage-offers',
+  '/create-offer',
+  '/vibe-schedules',
+  '/admin/create-venue',
+];
+
+// Routes only accessible to ADMIN role
+const _adminRoutes = [
+  '/admin-dashboard',
+];
+
+String? _routeGuard(BuildContext context, GoRouterState state) {
+  final user = AuthService().currentUser;
+  final path = state.matchedLocation;
+
+  if (user == null) {
+    const publicPaths = [
+      '/splash', '/loading', '/login', '/signup',
+      '/forgot-password', '/code-verification',
+      '/business-login', '/business-signup', '/business-forgot-password',
+    ];
+    if (!publicPaths.any((p) => path.startsWith(p))) return '/login';
+    return null;
+  }
+
+  if (user.isGuest && _guestBlockedRoutes.any((r) => path.startsWith(r))) {
+    return '/home';
+  }
+
+  if (_businessRoutes.any((r) => path.startsWith(r)) &&
+      user.role != UserRole.BUSINESS) {
+    return '/home';
+  }
+
+  if (_adminRoutes.any((r) => path.startsWith(r)) &&
+      user.role != UserRole.ADMIN) {
+    return '/home';
+  }
+
+  return null;
+}
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
+  redirect: _routeGuard,
   errorBuilder: (context, state) => Scaffold(
-    body: Center(
-      child: Text('Page not found: ${state.uri}'),
-    ),
+    body: Center(child: Text('Page not found: ${state.uri}')),
   ),
   routes: [
+    // ── Splash & Loading ──────────────────────────────────────────────────
     GoRoute(
       path: '/splash',
-      builder: (context, state) => const SplashScreen(),
+      builder: (_, __) => const SplashScreen(),
     ),
     GoRoute(
       path: '/loading',
-      builder: (context, state) => LoadingScreen(
-        onLoadingComplete: () => context.go('/splash'),
-      ),
+      builder: (context, _) =>
+          LoadingScreen(onLoadingComplete: () => context.go('/splash')),
     ),
+
+    // ── Auth ──────────────────────────────────────────────────────────────
+    GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+    GoRoute(path: '/signup', builder: (_, __) => const SignupScreen()),
     GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/signup',
-      builder: (context, state) => const SignupScreen(),
-    ),
-    GoRoute(
-      path: '/forgot-password',
-      builder: (context, state) => const ForgotPasswordScreen(),
-    ),
+        path: '/forgot-password',
+        builder: (_, __) => const ForgotPasswordScreen()),
     GoRoute(
       path: '/code-verification',
-      builder: (context, state) {
-        final phoneNumber = state.extra as String? ?? '';
-        return CodeVerificationScreen(phoneNumber: phoneNumber);
-      },
+      builder: (_, state) => CodeVerificationScreen(
+          phoneNumber: state.extra as String? ?? ''),
     ),
     GoRoute(
-      path: '/change-password',
-      builder: (context, state) => const ChangePasswordScreen(),
-    ),
+        path: '/change-password',
+        builder: (_, __) => const ChangePasswordScreen()),
     GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
-    ),
+        path: '/business-login',
+        builder: (_, __) => const BusinessLoginScreen()),
     GoRoute(
-      path: '/venues',
-      builder: (context, state) => const VenueListScreen(),
-    ),
+        path: '/business-signup',
+        builder: (_, __) => const BusinessSignupScreen()),
     GoRoute(
-      path: '/filters',
-      builder: (context, state) => const VenueFilterScreen(),
-    ),
+        path: '/business-forgot-password',
+        builder: (_, __) => const BusinessForgotPasswordScreen()),
+
+    // ── Customer App ──────────────────────────────────────────────────────
+    GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+    GoRoute(path: '/venues', builder: (_, __) => const VenueListScreen()),
+    GoRoute(path: '/filters', builder: (_, __) => const VenueFilterScreen()),
     GoRoute(
-      path: '/personalize',
-      builder: (context, state) => const PersonalizeFeedScreen(),
-    ),
+        path: '/personalize',
+        builder: (_, __) => const PersonalizeFeedScreen()),
     GoRoute(
       path: '/venue/:id',
-      builder: (context, state) {
-        final venueId = state.pathParameters['id'] ?? '';
-        return VenueDetailScreen(venueId: venueId);
-      },
+      builder: (_, state) =>
+          VenueDetailScreen(venueId: state.pathParameters['id'] ?? ''),
     ),
     GoRoute(
       path: '/venue-detail',
-      builder: (context, state) {
-        final venueId = state.uri.queryParameters['id'] ?? '1';
-        return VenueDetailScreen(venueId: venueId);
-      },
+      builder: (_, state) => VenueDetailScreen(
+          venueId: state.uri.queryParameters['id'] ?? '1'),
     ),
     GoRoute(
       path: '/map',
-      builder: (context, state) {
-        final venueId = state.uri.queryParameters['venueId'];
-        return MapViewScreen(venueId: venueId);
-      },
+      builder: (_, state) =>
+          MapViewScreen(venueId: state.uri.queryParameters['venueId']),
     ),
-    GoRoute(
-      path: '/offers',
-      builder: (context, state) => const OffersListScreen(),
-    ),
+    GoRoute(path: '/no-venues', builder: (_, __) => const NoVenuesFoundScreen()),
+
+    // ── Offers ────────────────────────────────────────────────────────────
+    GoRoute(path: '/offers', builder: (_, __) => const OffersListScreen()),
     GoRoute(
       path: '/offer-detail',
-      builder: (context, state) {
-        final offerId = state.uri.queryParameters['id'] ?? '1';
-        return OfferDetailScreen(offerId: offerId);
-      },
+      builder: (_, state) => OfferDetailScreen(
+          offerId: state.uri.queryParameters['id'] ?? '1'),
     ),
     GoRoute(
       path: '/offer-redeemed',
-      builder: (context, state) {
-        final offerId = state.uri.queryParameters['offerId'] ?? '';
-        final claimData = state.extra as Map<String, dynamic>?;
-        return OfferRedeemedScreen(offerId: offerId, claimData: claimData);
-      },
+      builder: (_, state) => OfferRedeemedScreen(
+        offerId: state.uri.queryParameters['offerId'] ?? '',
+        claimData: state.extra as Map<String, dynamic>?,
+      ),
     ),
+
+    // ── Notifications ─────────────────────────────────────────────────────
     GoRoute(
-      path: '/notifications',
-      builder: (context, state) => const NotificationsScreen(),
-    ),
+        path: '/notifications',
+        builder: (_, __) => const NotificationsScreen()),
+
+    // ── User ──────────────────────────────────────────────────────────────
     GoRoute(
-      path: '/business-dashboard',
-      builder: (context, state) => const BusinessDashboardScreen(),
-    ),
+        path: '/user-preferences',
+        builder: (_, __) => const UserPreferencesScreen()),
+    GoRoute(path: '/profile', builder: (_, __) => const UserProfileScreen()),
+
+    // ── Business Dashboard ────────────────────────────────────────────────
     GoRoute(
-      path: '/business-update',
-      builder: (context, state) => const BusinessUpdateScreen(),
-    ),
+        path: '/business-dashboard',
+        builder: (_, __) => const BusinessDashboardScreen()),
     GoRoute(
-      path: '/manage-offers',
-      builder: (context, state) => const ManageOffersScreen(),
-    ),
+        path: '/business-update',
+        builder: (_, __) => const BusinessUpdateScreen()),
     GoRoute(
-      path: '/no-venues',
-      builder: (context, state) => const NoVenuesFoundScreen(),
-    ),
-    GoRoute(
-      path: '/users',
-      builder: (context, state) => const UserListScreen(),
-    ),
-    GoRoute(
-      path: '/user-detail',
-      builder: (context, state) {
-        final userId = state.uri.queryParameters['id'] ?? '';
-        return UserDetailScreen(userId: userId);
-      },
-    ),
-    GoRoute(
-      path: '/user-preferences',
-      builder: (context, state) => const UserPreferencesScreen(),
-    ),
-    GoRoute(
-      path: '/profile',
-      builder: (context, state) => const UserProfileScreen(),
-    ),
-    GoRoute(
-      path: '/admin-dashboard',
-      builder: (context, state) => const AdminDashboardScreen(),
-    ),
-    GoRoute(
-      path: '/admin/venue-analytics/:venueId',
-      builder: (context, state) {
-        final venueId = state.pathParameters['venueId'] ?? '';
-        return VenueAnalyticsScreen(venueId: venueId);
-      },
-    ),
-    GoRoute(
-      path: '/admin/create-business-user',
-      builder: (context, state) => const CreateBusinessUserScreen(),
-    ),
+        path: '/manage-offers',
+        builder: (_, __) => const ManageOffersScreen()),
     GoRoute(
       path: '/create-offer',
-      builder: (context, state) {
-        final venueId = state.uri.queryParameters['venueId'] ?? '';
-        return CreateOfferScreen(venueId: venueId);
-      },
+      builder: (_, state) => CreateOfferScreen(
+          venueId: state.uri.queryParameters['venueId'] ?? ''),
     ),
     GoRoute(
-      path: '/vibe-schedules',
-      builder: (context, state) => const VibeSchedulesScreen(),
-    ),
+        path: '/vibe-schedules',
+        builder: (_, __) => const VibeSchedulesScreen()),
+
+    // ── Admin Dashboard ───────────────────────────────────────────────────
     GoRoute(
-      path: '/admin/create-venue',
-      builder: (context, state) => const CreateVenueScreen(),
-    ),
+        path: '/admin-dashboard',
+        builder: (_, __) => const AdminDashboardScreen()),
+    GoRoute(
+        path: '/admin/create-venue',
+        builder: (_, __) => const CreateVenueScreen()),
   ],
 );

@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'business_provider.dart';
-
-// venueId for the logged-in business user — in production read from auth token
-const _kDemoVenueId = 'c5051a16-8cc7-41e6-ac9a-8d2f4087f0d0';
+import '../../../core/services/auth_service.dart';
 
 class BusinessDashboardScreen extends ConsumerStatefulWidget {
   const BusinessDashboardScreen({super.key});
@@ -20,24 +18,29 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
 
   @override
   Widget build(BuildContext context) {
-    final dashboardAsync = ref.watch(businessDashboardProvider(_kDemoVenueId));
-    final statusNotifier = ref.read(venueStatusNotifierProvider(_kDemoVenueId).notifier);
-    
+    final user = AuthService().currentUser;
+    final venueId = user?.venueId ?? '';
+    final venueName = user?.venueName ?? user?.name ?? 'Your Venue';
+
+    // If no venueId yet, show dashboard with venue status loading
+    if (venueId.isEmpty) {
+      return _buildDashboard(context, {}, venueId, venueName);
+    }
+
+    final dashboardAsync = ref.watch(businessDashboardProvider(venueId));
+
     return dashboardAsync.when(
-      data: (data) => _buildDashboard(context, data),
+      data: (data) => _buildDashboard(context, data, venueId, venueName),
       loading: () => const Scaffold(
         backgroundColor: Color(0xFFF8FAFC),
         body: Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6))),
       ),
-      error: (error, _) => const Scaffold(
-        backgroundColor: Color(0xFFF8FAFC),
-        body: Center(child: Text('Error loading data', style: TextStyle(color: Colors.red))),
-      ),
+      error: (_, __) => _buildDashboard(context, {}, venueId, venueName),
     );
   }
 
-  Widget _buildDashboard(BuildContext context, Map<String, dynamic> data) {
-    final summary = data['summary'] ?? {};
+  Widget _buildDashboard(BuildContext context, Map<String, dynamic> data, String venueId, String venueName) {
+    final summary = data['summary'] ?? data;
     
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -74,7 +77,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
             ListTile(
               leading: const Icon(Icons.local_offer, color: Colors.white),
               title: const Text('Create Offer', style: TextStyle(color: Colors.white)),
-              onTap: () => context.push('/create-offer?venueId='),
+              onTap: () => context.push('/create-offer?venueId=$venueId'),
             ),
             ListTile(
               leading: const Icon(Icons.list, color: Colors.white),
@@ -82,9 +85,19 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
               onTap: () => context.push('/manage-offers'),
             ),
             ListTile(
+              leading: const Icon(Icons.qr_code_scanner, color: Colors.white),
+              title: const Text('Scan QR / What\'s On', style: TextStyle(color: Colors.white)),
+              onTap: () => context.push('/worker/whats-on'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.workspace_premium, color: Colors.white),
+              title: const Text('Upgrade Plan', style: TextStyle(color: Colors.white)),
+              onTap: () => context.push('/subscription'),
+            ),
+            ListTile(
               leading: const Icon(Icons.schedule, color: Colors.white),
               title: const Text('Vibe Schedule', style: TextStyle(color: Colors.white)),
-              onTap: () => context.push('/vibe-schedules?venueId=c5051a16-8cc7-41e6-ac9a-8d2f4087f0d0'),
+              onTap: () => context.push('/vibe-schedules?venueId=$venueId'),
             ),
             ListTile(
               leading: const Icon(Icons.person, color: Colors.white),
@@ -245,19 +258,19 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                           ],
                         ),
                         const SizedBox(width: 16),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Albert's Schloss",
-                                style: TextStyle(
+                                venueName,
+                                style: const TextStyle(
                                   color: Color(0xFF1E293B),
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Row(
+                              const Row(
                                 children: [
                                   Icon(Icons.location_on, color: Color(0xFF14B8A6), size: 14),
                                   SizedBox(width: 4),
@@ -518,7 +531,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                               vibes[i], vibeIcons[i], i, _selectedVibe == i,
                               onTap: () {
                                 setState(() => _selectedVibe = i);
-                                ref.read(venueStatusNotifierProvider(_kDemoVenueId).notifier)
+                                ref.read(venueStatusNotifierProvider(venueId).notifier)
                                     .updateStatus(vibe: vibes[i].toUpperCase());
                               },
                             ),
@@ -667,7 +680,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(32),
-                  onTap: () => context.push('/vibe-schedules?venueId=c5051a16-8cc7-41e6-ac9a-8d2f4087f0d0'),
+                  onTap: () => context.push('/vibe-schedules?venueId=$venueId'),
                   child: const Icon(Icons.add, color: Colors.white, size: 32),
                 ),
               ),
@@ -690,7 +703,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
                   children: [
                     _buildNavItem(Icons.space_dashboard, 'DASH', true, () => context.go('/business-dashboard')),
                     _buildNavItem(Icons.local_offer, 'OFFERS', false, () => context.push('/manage-offers')),
-                    _buildNavItem(Icons.schedule, 'SCHEDULE', false, () => context.push('/vibe-schedules?venueId=c5051a16-8cc7-41e6-ac9a-8d2f4087f0d0')),
+                    _buildNavItem(Icons.schedule, 'SCHEDULE', false, () => context.push('/vibe-schedules?venueId=$venueId')),
                     _buildNavItem(Icons.person, 'PROFILE', false, () => context.push('/profile')),
                   ],
                 ),

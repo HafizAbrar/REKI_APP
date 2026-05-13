@@ -34,6 +34,24 @@ class BusinessApiService {
     return response.data as Map<String, dynamic>;
   }
 
+  // POST /auth/business/reset-password - Business reset password
+  Future<Map<String, dynamic>> businessResetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    final response = await _dio.post('/auth/business/reset-password', data: {
+      'token': token,
+      'newPassword': newPassword,
+    });
+    return response.data as Map<String, dynamic>;
+  }
+
+  // POST /business/venues - Create a new venue
+  Future<Map<String, dynamic>> createVenue(Map<String, dynamic> data) async {
+    final res = await _dio.post('/business/venues', data: data);
+    return res.data as Map<String, dynamic>;
+  }
+
   // GET /business/dashboard/{venueId} - Get venue dashboard (stats, vibe, weather)
   Future<Map<String, dynamic>> getDashboard(String venueId) async {
     final response = await _dio.get('/business/dashboard/$venueId');
@@ -46,15 +64,17 @@ class BusinessApiService {
     return response.data as Map<String, dynamic>;
   }
 
-  // PUT /business/venues/{id}/status - Update busyness + vibe
+  // PUT /business/venues/{id}/status - Update busyness + vibe + liveInfo (Phase 6)
   Future<Map<String, dynamic>> updateVenueStatus(
     String venueId, {
     String? busyness,
     String? vibe,
+    String? liveInfo,
   }) async {
     final response = await _dio.put('/business/venues/$venueId/status', data: {
       if (busyness != null) 'busyness': busyness,
       if (vibe != null) 'vibe': vibe,
+      if (liveInfo != null) 'liveInfo': liveInfo,
     });
     return response.data as Map<String, dynamic>;
   }

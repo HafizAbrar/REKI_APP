@@ -189,6 +189,34 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                     children: [
                       _buildVibeSection(venue),
                       const SizedBox(height: 32),
+                      // Phase 5 - Reviews & Check-in
+                      GestureDetector(
+                        onTap: () => context.push(
+                            '/venue-reviews?id=${venue.id}&name=${Uri.encodeComponent(venue.name)}'),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color: const Color(0xFF2DD4BF).withOpacity(0.3)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.star, color: Color(0xFFF59E0B), size: 20),
+                              SizedBox(width: 8),
+                              Text('Reviews & Check-in',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600)),
+                              Spacer(),
+                              Icon(Icons.arrow_forward_ios,
+                                  color: Color(0xFF94A3B8), size: 14),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
                       if (_vibeSchedules != null) _buildVibeScheduleSection(),
                       if (_vibeSchedules != null) const SizedBox(height: 32),
                       _buildAboutSection(venue),

@@ -58,18 +58,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.5), width: 2),
                               ),
                               child: ClipOval(
-                                child: Image.network(
-                                  'https://i.pravatar.cc/150?img=1',
-                                  fit: BoxFit.cover,
-                                  width: 40,
-                                  height: 40,
-                                  errorBuilder: (context, error, stackTrace) => Container(
-                                    width: 40,
-                                    height: 40,
-                                    color: const Color(0xFF2DD4BF),
-                                    child: const Icon(Icons.person, color: Colors.white),
-                                  ),
-                                ),
+                                child: user?.profilePicture != null
+                                  ? Image.network(
+                                      user!.profilePicture!,
+                                      fit: BoxFit.cover,
+                                      width: 40,
+                                      height: 40,
+                                      errorBuilder: (context, error, stackTrace) => _buildInitialsAvatar(user),
+                                    )
+                                  : _buildInitialsAvatar(user),
                               ),
                             ),
                             Positioned(
@@ -249,6 +246,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInitialsAvatar(user) {
+    final initials = user?.name.isNotEmpty == true
+        ? user!.name.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase()
+        : '?';
+    return Container(
+      width: 40,
+      height: 40,
+      color: const Color(0xFF2DD4BF),
+      child: Center(
+        child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
       ),
     );
   }

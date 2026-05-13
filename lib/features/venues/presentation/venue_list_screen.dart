@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/network/admin_api_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_handler.dart';
-
-final venuesListProvider = FutureProvider<List<dynamic>>((ref) async {
-  final apiService = ref.watch(adminApiServiceProvider);
-  return await apiService.getVenues();
-});
+import '../data/venue_management_provider.dart';
 
 class VenueListScreen extends ConsumerWidget {
   const VenueListScreen({super.key});
   
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final venuesAsync = ref.watch(venuesListProvider);
+    final venuesAsync = ref.watch(venueManagementProvider);
     
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
@@ -39,11 +34,11 @@ class VenueListScreen extends ConsumerWidget {
             ? _buildEmptyState(context)
             : RefreshIndicator(
                 color: AppTheme.primaryColor,
-                onRefresh: () async => ref.refresh(venuesListProvider),
+                onRefresh: () async => ref.refresh(venueManagementProvider),
                 child: ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: venues.length,
-                  itemBuilder: (context, index) => _buildVenueCard(context, venues[index]),
+                  itemBuilder: (context, index) => _buildVenueCard(context, venues[index].toJson()),
                 ),
               ),
         loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
@@ -71,7 +66,7 @@ class VenueListScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton.icon(
-                  onPressed: () => ref.refresh(venuesListProvider),
+                  onPressed: () => ref.refresh(venueManagementProvider),
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry'),
                   style: ElevatedButton.styleFrom(

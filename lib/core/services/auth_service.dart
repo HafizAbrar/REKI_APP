@@ -2,6 +2,7 @@ import '../models/user.dart';
 import '../network/auth_api_service.dart';
 import 'mock_data_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../utils/app_logger.dart';
 
 class AuthService {
   AuthApiService? _apiService;
@@ -30,8 +31,28 @@ class AuthService {
     await _storage.write(key: 'access_token', value: token);
   }
 
+  void setCurrentUserFromJson(Map<String, dynamic> json) {
+    _currentUser = User.fromJson(json);
+  }
+
+  void setProfilePicture(String url) {
+    if (_currentUser == null) return;
+    _currentUser = User(
+      id: _currentUser!.id,
+      email: _currentUser!.email,
+      name: _currentUser!.name,
+      type: _currentUser!.type,
+      role: _currentUser!.role,
+      preferences: _currentUser!.preferences,
+      isActive: _currentUser!.isActive,
+      venueId: _currentUser!.venueId,
+      venueName: _currentUser!.venueName,
+      profilePicture: url,
+    );
+  }
+
   Future<bool> login(String email, String password) async {
-    print('DEBUG: AuthService.login called, useMockData: $useMockData, apiService: $_apiService');
+    appLogger.d('AuthService.login called, useMockData: $useMockData, apiService: $_apiService');
     if (useMockData || _apiService == null) {
       await Future.delayed(const Duration(seconds: 1));
       if (email.contains('business')) {
@@ -56,7 +77,7 @@ class AuthService {
       }
       return true;
     } catch (e) {
-      print('DEBUG: Login error: $e');
+      appLogger.e('Login error', error: e);
       return false;
     }
   }
@@ -70,14 +91,14 @@ class AuthService {
       _accessToken ??= await _storage.read(key: 'access_token');
       if (_accessToken == null) return null;
       
-      print('DEBUG: Fetching current user from API');
+      appLogger.d('Fetching current user from API');
       final response = await _apiService!.getCurrentUser();
-      print('DEBUG: API response: $response');
+      appLogger.d('API response: $response');
       _currentUser = User.fromJson(response);
-      print('DEBUG: User set: ${_currentUser?.email}, Role: ${_currentUser?.role}');
+      appLogger.d('User set: ${_currentUser?.email}, Role: ${_currentUser?.role}');
       return _currentUser;
     } catch (e) {
-      print('DEBUG: Error fetching user: $e');
+      appLogger.e('Error fetching user', error: e);
       return null;
     }
   }
