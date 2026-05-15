@@ -338,23 +338,9 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
       return;
     }
 
-    final redeemed = await notifier.redeem();
-    if (!mounted) return;
-
-    if (redeemed) {
-      final claimData = ref.read(offerActionProvider(widget.offerId)).claimData;
-      context.push('/offer-redeemed?offerId=${widget.offerId}', extra: claimData);
-    } else {
-      final err = ref.read(offerActionProvider(widget.offerId)).error;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(err ?? 'Failed to redeem offer'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-    }
+    // Navigate to redeemed screen with claim data — user redeems from there
+    final claimData = ref.read(offerActionProvider(widget.offerId)).claimData;
+    context.push('/offer-redeemed?offerId=${widget.offerId}', extra: claimData);
   }
 
   void _showGuestSheet() {

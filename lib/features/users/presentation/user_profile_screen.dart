@@ -11,6 +11,7 @@ class UserProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = AuthService().currentUser;
+    final profileState = ref.watch(userProfileProvider);
 
     if (currentUser == null || currentUser.isGuest) {
       return Scaffold(
@@ -80,103 +81,441 @@ class UserProfileScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFF1E293B),
         title: const Text('Profile'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.read(userProfileProvider.notifier).load(),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF2DD4BF), width: 3),
+      body: profileState.when(
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
+        error: (e, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text('Error: $e', style: const TextStyle(color: Colors.white)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.read(userProfileProvider.notifier).load(),
+                child: const Text('Retry'),
               ),
-              child: ClipOval(
-                child: Image.network(
-                  'https://i.pravatar.cc/150?img=1',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: const Color(0xFF2DD4BF),
-                    child: const Icon(Icons.person, color: Colors.white, size: 50),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              currentUser.name,
-              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              currentUser.email,
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 16),
-            ),
-            const SizedBox(height: 32),
-            _buildMenuItem(context, icon: Icons.bookmark, title: 'Saved Venues',
-                onTap: () => _showSavedVenues(context, ref)),
-            _buildMenuItem(context, icon: Icons.receipt_long, title: 'Redemption History',
-                onTap: () => _showRedemptions(context, ref)),
-            _buildMenuItem(context, icon: Icons.person, title: 'Edit Profile',
-                onTap: () => context.push('/user-detail?id=${currentUser.id}')),
-            _buildMenuItem(context, icon: Icons.notifications, title: 'Notifications',
-                onTap: () => context.push('/notifications')),
-            const SizedBox(height: 16),
-            _buildMenuItem(context, icon: Icons.logout, title: 'Logout', isDestructive: true,
-                onTap: () { AuthService().logout(); context.go('/login'); }),
-          ],
+            ],
+          ),
         ),
+        data: (profile) => _buildProfileContent(context, ref, profile),
       ),
     );
+  }
+
+  Widget _buildProfileContent(BuildContext context, WidgetRef ref, Map<String, dynamic> profile) {
+    final name = profile['name']?.toString() ?? 'User';
+    final email = profile['email']?.toString() ?? '';
+    final phone = profile['phone']?.toString();
+    final authProvider = profile['authProvider']?.toString() ?? 'email';
+    final isVerified = profile['isVerified'] == true;
+    final savedVenuesCount = profile['savedVenuesCount'] ?? 0;
+    final preferences = profile['preferences'] as Map<String, dynamic>? ?? {};
+    final vibes = (preferences['vibes'] as List?)?.cast<String>() ?? [];
+    final music = (preferences['music'] as List?)?.cast<String>() ?? [];
+    final location = profile['location'] as Map<String, dynamic>? ?? {};
+    final locationEnabled = location['locationEnabled'] == true;
+    final createdAt = profile['createdAt'] != null ? DateTime.tryParse(profile['createdAt'] as String) : null;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF2DD4BF), width: 3),
+            ),
+            child: ClipOval(
+              child: Container(
+                color: const Color(0xFF2DD4BF),
+                child: const Icon(Icons.person, color: Colors.white, size: 50),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            name,
+            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            email,
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 16),
+          ),
+          if (phone != null) ...[
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.phone, color: Color(0xFF64748B), size: 14),
+                const SizedBox(width: 4),
+                Text(phone, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14)),
+              ],
+            ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildBadge(
+                icon: isVerified ? Icons.verified : Icons.warning_amber,
+                label: isVerified ? 'Verified' : 'Not Verified',
+                color: isVerified ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+              ),
+              const SizedBox(width: 8),
+              _buildBadge(
+                icon: _getAuthIcon(authProvider),
+                label: authProvider.toUpperCase(),
+                color: const Color(0xFF3B82F6),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildInfoCard(
+            title: 'Account Stats',
+            children: [
+              _buildStatRow('Saved Venues', savedVenuesCount.toString(), Icons.bookmark),
+              const Divider(color: Color(0xFF334155), height: 24),
+              _buildStatRow('Location', locationEnabled ? 'Enabled' : 'Disabled', Icons.location_on),
+              if (createdAt != null) ...[
+                const Divider(color: Color(0xFF334155), height: 24),
+                _buildStatRow('Member Since', _formatDateShort(createdAt), Icons.calendar_today),
+              ],
+            ],
+          ),
+          if (vibes.isNotEmpty || music.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _buildInfoCard(
+              title: 'Preferences',
+              children: [
+                if (vibes.isNotEmpty) ...[
+                  const Text('Vibes', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: vibes.map((v) => _buildChip(v)).toList(),
+                  ),
+                ],
+                if (vibes.isNotEmpty && music.isNotEmpty) const SizedBox(height: 12),
+                if (music.isNotEmpty) ...[
+                  const Text('Music', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: music.map((m) => _buildChip(m)).toList(),
+                  ),
+                ],
+              ],
+            ),
+          ],
+          const SizedBox(height: 24),
+          _buildMenuItem(context, icon: Icons.bookmark, title: 'Saved Venues ($savedVenuesCount)',
+              onTap: () => _showSavedVenues(context, ref)),
+          _buildMenuItem(context, icon: Icons.receipt_long, title: 'Redemption History',
+              onTap: () => _showRedemptions(context, ref)),
+          _buildMenuItem(context, icon: Icons.person, title: 'Edit Profile',
+              onTap: () => context.push('/user-detail?id=${profile['id']}')),
+          _buildMenuItem(context, icon: Icons.settings, title: 'Preferences',
+              onTap: () => context.push('/user-preferences')),
+          _buildMenuItem(context, icon: Icons.notifications, title: 'Notifications',
+              onTap: () => context.push('/notifications')),
+          const SizedBox(height: 16),
+          _buildMenuItem(context, icon: Icons.logout, title: 'Logout', isDestructive: true,
+              onTap: () { AuthService().logout(); context.go('/login'); }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard({required String title, required List<Widget> children}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatRow(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFF2DD4BF), size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14)),
+        ),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+
+  Widget _buildBadge({required IconData icon, required String label, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 14),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2DD4BF).withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(color: Color(0xFF2DD4BF), fontSize: 12, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  IconData _getAuthIcon(String provider) {
+    switch (provider.toLowerCase()) {
+      case 'google':
+        return Icons.g_mobiledata;
+      case 'apple':
+        return Icons.apple;
+      case 'facebook':
+        return Icons.facebook;
+      default:
+        return Icons.email;
+    }
+  }
+
+  String _formatDateShort(DateTime dt) {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${months[dt.month - 1]} ${dt.year}';
   }
 
   void _showSavedVenues(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1E293B),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => Consumer(builder: (context, ref, _) {
         final state = ref.watch(savedVenuesProvider);
-        return state.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
-          data: (venues) => venues.isEmpty
-              ? const Center(child: Text('No saved venues', style: TextStyle(color: Colors.white)))
-              : ListView.builder(
-                  itemCount: venues.length,
-                  itemBuilder: (_, i) => ListTile(
-                    title: Text(venues[i]['name']?.toString() ?? '', style: const TextStyle(color: Colors.white)),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.bookmark_remove, color: Color(0xFF2DD4BF)),
-                      onPressed: () => ref.read(savedVenuesProvider.notifier).unsaveVenue(venues[i]['id'].toString()),
-                    ),
-                  ),
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (_, controller) => Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2)),
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.bookmark, color: Color(0xFF2DD4BF), size: 20),
+                    SizedBox(width: 8),
+                    Text('Saved Venues',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                  ],
                 ),
+              ),
+              Expanded(
+                child: state.when(
+                  loading: () => const Center(
+                      child: CircularProgressIndicator(
+                          color: Color(0xFF2DD4BF))),
+                  error: (e, _) => Center(
+                      child: Text('Error: $e',
+                          style: const TextStyle(color: Colors.white))),
+                  data: (venues) => venues.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.bookmark_border,
+                                  color: Color(0xFF334155), size: 48),
+                              SizedBox(height: 12),
+                              Text('No saved venues yet',
+                                  style: TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontSize: 16)),
+                            ],
+                          ))
+                      : ListView.builder(
+                          controller: controller,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: venues.length,
+                          itemBuilder: (_, i) {
+                            final v = venues[i];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F172A),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                    color: Colors.white.withOpacity(0.06)),
+                              ),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 6),
+                                leading: Container(
+                                  width: 44, height: 44,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2DD4BF)
+                                        .withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.store_outlined,
+                                      color: Color(0xFF2DD4BF), size: 20),
+                                ),
+                                title: Text(v.name,
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600)),
+                                subtitle: Text(
+                                    '${v.type} · ${v.address}',
+                                    style: const TextStyle(
+                                        color: Color(0xFF64748B),
+                                        fontSize: 12),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.bookmark_remove,
+                                      color: Color(0xFF2DD4BF)),
+                                  onPressed: () => ref
+                                      .read(savedVenuesProvider.notifier)
+                                      .unsaveVenue(v.id),
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  context.push('/venue-detail?id=${v.id}');
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ),
+            ],
+          ),
         );
       }),
     );
   }
 
   void _showRedemptions(BuildContext context, WidgetRef ref) {
+    // Force fresh load every time the sheet opens
+    ref.read(redemptionsProvider.notifier).load();
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1E293B),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => Consumer(builder: (context, ref, _) {
         final state = ref.watch(redemptionsProvider);
-        return state.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
-          data: (redemptions) => redemptions.isEmpty
-              ? const Center(child: Text('No redemptions yet', style: TextStyle(color: Colors.white)))
-              : ListView.builder(
-                  itemCount: redemptions.length,
-                  itemBuilder: (_, i) => ListTile(
-                    title: Text(redemptions[i]['offer']?['title']?.toString() ?? 'Offer',
-                        style: const TextStyle(color: Colors.white)),
-                    subtitle: Text(redemptions[i]['redeemedAt']?.toString() ?? '',
-                        style: const TextStyle(color: Color(0xFF94A3B8))),
-                  ),
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (_, controller) => Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2)),
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.receipt_long, color: Color(0xFF2DD4BF), size: 20),
+                    SizedBox(width: 8),
+                    Text('Redemption History',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                  ],
                 ),
+              ),
+              Expanded(
+                child: state.when(
+                  loading: () => const Center(
+                      child: CircularProgressIndicator(
+                          color: Color(0xFF2DD4BF))),
+                  error: (e, _) => Center(
+                      child: Text('Error: $e',
+                          style: const TextStyle(color: Colors.white))),
+                  data: (redemptions) => redemptions.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.receipt_long_outlined,
+                                  color: Color(0xFF334155), size: 48),
+                              SizedBox(height: 12),
+                              Text('No redemptions yet',
+                                  style: TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontSize: 16)),
+                            ],
+                          ))
+                      : ListView.builder(
+                          controller: controller,
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                          itemCount: redemptions.length,
+                          itemBuilder: (_, i) =>
+                              _RedemptionCard(data: redemptions[i]),
+                        ),
+                ),
+              ),
+            ],
+          ),
         );
       }),
     );
@@ -206,5 +545,181 @@ class UserProfileScreen extends ConsumerWidget {
         onTap: onTap,
       ),
     );
+  }
+}
+
+class _RedemptionCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  const _RedemptionCard({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final offer = data['offer'] as Map<String, dynamic>?;
+    final venue = data['venue'] as Map<String, dynamic>?;
+    final status = data['status'] as String? ?? '';
+    final isRedeemed = status == 'redeemed';
+    final transactionId = data['transactionId'] as String? ?? '';
+    final voucherCode = data['voucherCode'] as String? ?? '';
+    final savingValue = double.tryParse(data['savingValue']?.toString() ?? '0') ?? 0;
+    final redeemedAt = data['redeemedAt'] != null
+        ? DateTime.tryParse(data['redeemedAt'] as String)
+        : null;
+    final createdAt = data['createdAt'] != null
+        ? DateTime.tryParse(data['createdAt'] as String)
+        : null;
+    final statusColor = isRedeemed ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+    final statusLabel = isRedeemed ? 'Redeemed' : 'Active';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: statusColor.withOpacity(0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.06),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isRedeemed ? Icons.check_circle_outline : Icons.confirmation_number_outlined,
+                    color: statusColor, size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    offer?['title'] as String? ?? 'Offer',
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(width: 6, height: 6,
+                          decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle)),
+                      const SizedBox(width: 5),
+                      Text(statusLabel,
+                          style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (venue != null) ...[
+                  Row(children: [
+                    const Icon(Icons.store_outlined, color: Color(0xFF64748B), size: 13),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        '${venue['name']} · ${venue['area'] ?? venue['city'] ?? ''}',
+                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: 10),
+                ],
+                Row(
+                  children: [
+                    Expanded(child: _infoItem('Voucher', voucherCode, monospace: true)),
+                    Expanded(child: _infoItem('Transaction', transactionId)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _infoItem(
+                        isRedeemed ? 'Redeemed' : 'Claimed',
+                        _formatDate(isRedeemed ? redeemedAt : createdAt),
+                      ),
+                    ),
+                    if (savingValue > 0)
+                      Expanded(
+                        child: _infoItem('Saved', '£${savingValue.toStringAsFixed(2)}',
+                            valueColor: const Color(0xFF10B981)),
+                      ),
+                  ],
+                ),
+                if (offer?['type'] != null) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      (offer!['type'] as String).replaceAll('-', ' ').toUpperCase(),
+                      style: const TextStyle(
+                          color: Color(0xFF94A3B8), fontSize: 10,
+                          fontWeight: FontWeight.w600, letterSpacing: 0.8),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoItem(String label, String value,
+      {bool monospace = false, Color? valueColor}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(color: Color(0xFF475569), fontSize: 10,
+                fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            color: valueColor ?? Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            fontFamily: monospace ? 'monospace' : null,
+            letterSpacing: monospace ? 1.5 : 0,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(DateTime? dt) {
+    if (dt == null) return '—';
+    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }

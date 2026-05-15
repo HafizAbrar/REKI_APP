@@ -49,6 +49,15 @@ class UserRepository {
     }
   }
 
+  Future<Result<Map<String, dynamic>>> getProfile() async {
+    try {
+      final profile = await _apiService.getProfile();
+      return Result.success(profile);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
   Future<Result<Map<String, dynamic>>> getPreferences() async {
     try {
       final prefs = await _apiService.getPreferences();

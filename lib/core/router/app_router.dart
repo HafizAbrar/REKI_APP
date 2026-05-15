@@ -14,10 +14,9 @@ import '../../features/auth/presentation/business_signup_screen.dart';
 import '../../features/venues/presentation/home_screen.dart';
 import '../../features/venues/presentation/venue_list_screen.dart';
 import '../../features/venues/presentation/venue_filter_screen.dart';
-import '../../features/venues/presentation/personalize_feed_screen.dart';
+
 import '../../features/venues/presentation/venue_detail_screen.dart';
 import '../../features/venues/presentation/map_view_screen.dart';
-import '../../features/venues/presentation/no_venues_found_screen.dart';
 import '../../features/venues/presentation/vibe_schedules_screen.dart';
 import '../../features/offers/presentation/offer_detail_screen.dart';
 import '../../features/offers/presentation/offer_redeemed_screen.dart';
@@ -32,7 +31,7 @@ import '../../features/users/presentation/user_preferences_screen.dart';
 import '../../features/users/presentation/user_profile_screen.dart';
 import '../../features/auth/presentation/business_forgot_password_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
-import '../../features/admin/presentation/create_venue_screen.dart';
+import '../../features/business/presentation/create_venue_screen.dart';
 
 // Routes that require a fully logged-in (non-guest) user
 const _guestBlockedRoutes = [
@@ -138,9 +137,6 @@ final appRouter = GoRouter(
     GoRoute(path: '/venues', builder: (_, __) => const VenueListScreen()),
     GoRoute(path: '/filters', builder: (_, __) => const VenueFilterScreen()),
     GoRoute(
-        path: '/personalize',
-        builder: (_, __) => const PersonalizeFeedScreen()),
-    GoRoute(
       path: '/venue/:id',
       builder: (_, state) =>
           VenueDetailScreen(venueId: state.pathParameters['id'] ?? ''),
@@ -155,10 +151,15 @@ final appRouter = GoRouter(
       builder: (_, state) =>
           MapViewScreen(venueId: state.uri.queryParameters['venueId']),
     ),
-    GoRoute(path: '/no-venues', builder: (_, __) => const NoVenuesFoundScreen()),
 
     // ── Offers ────────────────────────────────────────────────────────────
-    GoRoute(path: '/offers', builder: (_, __) => const OffersListScreen()),
+    GoRoute(
+      path: '/offers',
+      builder: (_, state) => OffersListScreen(
+        venueId: state.uri.queryParameters['venueId'],
+        venueName: state.uri.queryParameters['venueName'],
+      ),
+    ),
     GoRoute(
       path: '/offer-detail',
       builder: (_, state) => OfferDetailScreen(

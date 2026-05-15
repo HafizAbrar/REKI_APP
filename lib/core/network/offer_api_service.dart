@@ -46,8 +46,8 @@ class OfferApiService {
   }
 
   // POST /offers/{id}/redeem - Redeem a claimed offer
-  Future<Map<String, dynamic>> redeemOffer(String id) async {
-    final response = await _dio.post('/offers/$id/redeem');
+  Future<Map<String, dynamic>> redeemOffer(String id, {required String voucherCode}) async {
+    final response = await _dio.post('/offers/$id/redeem', data: {'voucherCode': voucherCode});
     return response.data as Map<String, dynamic>;
   }
 

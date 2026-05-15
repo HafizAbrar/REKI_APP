@@ -73,8 +73,13 @@ class OfferActionNotifier extends StateNotifier<OfferActionState> {
 
   // POST /offers/{id}/redeem
   Future<bool> redeem() async {
+    final voucherCode = state.claimData?['voucherCode'] as String?;
+    if (voucherCode == null) {
+      state = state.copyWith(error: 'No voucher code — claim the offer first');
+      return false;
+    }
     state = state.copyWith(isLoading: true);
-    final result = await _repository.redeemOffer(_offerId);
+    final result = await _repository.redeemOffer(_offerId, voucherCode: voucherCode);
     return result.when(
       success: (data) {
         state = state.copyWith(isLoading: false, redeemData: data);

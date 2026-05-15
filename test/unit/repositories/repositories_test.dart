@@ -71,7 +71,7 @@ class MockOfferApi implements OfferApiService {
     if (throws) throw Exception('err');
     return {'voucherCode': 'ABC123'};
   }
-  @override Future<Map<String, dynamic>> redeemOffer(String id) async {
+  @override Future<Map<String, dynamic>> redeemOffer(String id, {required String voucherCode}) async {
     if (throws) throw Exception('err');
     return {'status': 'redeemed'};
   }
@@ -133,6 +133,7 @@ class MockVenueApi implements VenueApiService {
   @override Future<List<Map<String, dynamic>>> getVibeSchedules(String id) async => [];
   @override Future<Map<String, dynamic>> getCurrentVibe(String id) async => {};
   @override Future<Map<String, dynamic>> submitVibeCheck(String venueId, int score) async => {};
+  @override Future<List<Map<String, dynamic>>> getVenueOffers(String venueId) async => [];
 }
 
 // ── Mock: UserApiService ──────────────────────────────────────────────────────
@@ -154,6 +155,28 @@ class MockUserApi implements UserApiService {
   }
   @override Future<void> deleteUser(String id) async {
     if (throws) throw Exception('err');
+  }
+  @override Future<Map<String, dynamic>> getProfile() async {
+    if (throws) throw Exception('err');
+    return {
+      'id': 'u1',
+      'name': 'Test User',
+      'email': 'test@reki.app',
+      'phone': '1234567890',
+      'authProvider': 'email',
+      'isVerified': true,
+      'preferences': {'vibes': [], 'music': []},
+      'savedVenuesCount': 0,
+      'location': {
+        'currentLat': null,
+        'currentLng': null,
+        'locationUpdatedAt': null,
+        'locationEnabled': false,
+        'backgroundLocationEnabled': false,
+      },
+      'createdAt': '2024-01-01T00:00:00.000Z',
+      'updatedAt': '2024-01-01T00:00:00.000Z',
+    };
   }
   @override Future<Map<String, dynamic>> getPreferences() async {
     if (throws) throw Exception('err');
@@ -256,7 +279,7 @@ void main() {
       expect(r.isFailure, true);
     });
     test('redeemOffer success', () async {
-      final r = await repo.redeemOffer('o1');
+      final r = await repo.redeemOffer('o1', voucherCode: 'ABC123');
       expect(r.isSuccess, true);
       expect(r.data!['status'], 'redeemed');
     });
@@ -321,6 +344,18 @@ void main() {
     test('getAllUsers failure', () async {
       api.throws = true;
       final r = await repo.getAllUsers();
+      expect(r.isFailure, true);
+    });
+    test('getProfile success', () async {
+      final r = await repo.getProfile();
+      expect(r.isSuccess, true);
+      expect(r.data!['id'], 'u1');
+      expect(r.data!['name'], 'Test User');
+      expect(r.data!['email'], 'test@reki.app');
+    });
+    test('getProfile failure', () async {
+      api.throws = true;
+      final r = await repo.getProfile();
       expect(r.isFailure, true);
     });
     test('getPreferences success', () async {

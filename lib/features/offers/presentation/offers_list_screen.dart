@@ -5,7 +5,9 @@ import '../data/offers_provider.dart';
 import '../../../core/models/offer.dart';
 
 class OffersListScreen extends ConsumerStatefulWidget {
-  const OffersListScreen({super.key});
+  final String? venueId;
+  final String? venueName;
+  const OffersListScreen({super.key, this.venueId, this.venueName});
 
   @override
   ConsumerState<OffersListScreen> createState() => _OffersListScreenState();
@@ -20,7 +22,13 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final offersAsync = ref.watch(offersProvider);
+    final isVenueMode = widget.venueId != null && widget.venueId!.isNotEmpty;
+    final offersAsync = isVenueMode
+        ? ref.watch(venueOffersProvider(widget.venueId!))
+        : ref.watch(offersProvider);
+    final title = isVenueMode && widget.venueName != null
+        ? '${widget.venueName} Offers'
+        : 'Offers';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -31,12 +39,14 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Offers',
-            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+        title: Text(title,
+            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: () => ref.invalidate(offersProvider),
+            onPressed: () => isVenueMode
+                ? ref.invalidate(venueOffersProvider(widget.venueId!))
+                : ref.invalidate(offersProvider),
           ),
         ],
       ),

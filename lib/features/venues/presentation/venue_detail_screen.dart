@@ -20,15 +20,25 @@ class VenueDetailScreen extends ConsumerStatefulWidget {
 
 class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
   bool _isFavorite = false;
+  bool _savingFavorite = false;
   List<VibeSchedule>? _vibeSchedules;
 
   @override
   void initState() {
     super.initState();
     _loadVibeSchedules();
-    // POST /venues/{id}/view - track view
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(venueRepositoryProvider).trackVenueView(widget.venueId);
+      _initFavoriteState();
+    });
+  }
+
+  void _initFavoriteState() {
+    final saved = ref.read(savedVenuesProvider);
+    saved.whenData((venues) {
+      if (mounted) {
+        setState(() => _isFavorite = venues.any((v) => v.id == widget.venueId));
+      }
     });
   }
 
@@ -112,16 +122,31 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                             _buildHeaderButton(Icons.arrow_back, () => Navigator.pop(context)),
                             _buildHeaderButton(
                               _isFavorite ? Icons.favorite : Icons.favorite_border,
-                              () async {
+                              _savingFavorite ? null : () async {
+                                setState(() => _savingFavorite = true);
                                 final notifier = ref.read(savedVenuesProvider.notifier);
-                                if (_isFavorite) {
-                                  await notifier.unsaveVenue(widget.venueId);
-                                } else {
-                                  await notifier.saveVenue(widget.venueId);
+                                final success = _isFavorite
+                                    ? await notifier.unsaveVenue(widget.venueId)
+                                    : await notifier.saveVenue(widget.venueId);
+                                if (mounted) {
+                                  setState(() {
+                                    if (success) _isFavorite = !_isFavorite;
+                                    _savingFavorite = false;
+                                  });
+                                  if (!success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(_isFavorite ? 'Failed to unsave venue' : 'Failed to save venue'),
+                                        backgroundColor: Colors.red,
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                    );
+                                  }
                                 }
-                                setState(() => _isFavorite = !_isFavorite);
                               },
                               isFavorite: _isFavorite,
+                              isLoading: _savingFavorite,
                             ),
                           ],
                         ),
@@ -221,7 +246,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     );
   }
 
-  Widget _buildHeaderButton(IconData icon, VoidCallback onTap, {bool isFavorite = false}) {
+  Widget _buildHeaderButton(IconData icon, VoidCallback? onTap, {bool isFavorite = false, bool isLoading = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -232,11 +257,19 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
-        child: Icon(
-          icon,
-          color: isFavorite ? const Color(0xFF0F172A) : Colors.white,
-          size: 22,
-        ),
+        child: isLoading
+            ? Padding(
+                padding: const EdgeInsets.all(10),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: isFavorite ? const Color(0xFF0F172A) : Colors.white,
+                ),
+              )
+            : Icon(
+                icon,
+                color: isFavorite ? const Color(0xFF0F172A) : Colors.white,
+                size: 22,
+              ),
       ),
     );
   }

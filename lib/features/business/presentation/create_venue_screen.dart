@@ -28,12 +28,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
   String _selectedCategory = 'bar';
   int _priceLevel = 2;
   final List<String> _tags = [];
-  // Uploaded image URLs (from server)
-  final List<String> _uploadedImages = [];
-  // Local files picked but not yet uploaded
   final List<XFile> _pendingFiles = [];
   bool _isLoading = false;
-  bool _isUploadingImage = false;
 
   static const _categories = [
     'bar', 'club', 'restaurant', 'lounge',
@@ -90,21 +86,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
       maxWidth: 1200,
     );
     if (file == null) return;
-
-    setState(() => _isUploadingImage = true);
-    try {
-      final url = await ref.read(businessApiServiceProvider).uploadImage(file);
-      if (url.isNotEmpty) {
-        setState(() => _uploadedImages.add(url));
-      } else {
-        setState(() => _pendingFiles.add(file));
-      }
-    } catch (_) {
-      // Upload endpoint unavailable — keep locally, upload on submit
-      setState(() => _pendingFiles.add(file));
-    } finally {
-      if (mounted) setState(() => _isUploadingImage = false);
-    }
+    setState(() => _pendingFiles.add(file));
   }
 
   void _showImageSourceSheet() {
@@ -152,14 +134,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
     );
   }
 
-  void _removeImage(int index, bool isPending) {
-    setState(() {
-      if (isPending) {
-        _pendingFiles.removeAt(index);
-      } else {
-        _uploadedImages.removeAt(index);
-      }
-    });
+  void _removeImage(int index) {
+    setState(() => _pendingFiles.removeAt(index));
   }
 
   Future<void> _submit() async {
@@ -176,31 +152,22 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
 
     setState(() => _isLoading = true);
     try {
-      // Upload any pending local files
-      for (final file in List.of(_pendingFiles)) {
-        try {
-          final url = await ref.read(businessApiServiceProvider).uploadImage(file);
-          if (url.isNotEmpty) {
-            _uploadedImages.add(url);
-            _pendingFiles.remove(file);
-          }
-        } catch (_) {}
-      }
-
-      await ref.read(businessApiServiceProvider).createVenue({
-        'name': _nameController.text.trim(),
-        'address': _addressController.text.trim(),
-        'city': _cityController.text.trim(),
-        'area': _areaController.text.trim(),
-        'category': _selectedCategory,
-        'lat': double.tryParse(_latController.text.trim()) ?? 0.0,
-        'lng': double.tryParse(_lngController.text.trim()) ?? 0.0,
-        'priceLevel': _priceLevel,
-        'openingHours': _openingHoursController.text.trim(),
-        'closingTime': _closingTimeController.text.trim(),
-        'tags': _tags,
-        'images': _uploadedImages,
-      });
+      await ref.read(businessApiServiceProvider).createVenue(
+        {
+          'name': _nameController.text.trim(),
+          'address': _addressController.text.trim(),
+          'city': _cityController.text.trim(),
+          'area': _areaController.text.trim(),
+          'category': _selectedCategory,
+          'lat': double.tryParse(_latController.text.trim()) ?? 0.0,
+          'lng': double.tryParse(_lngController.text.trim()) ?? 0.0,
+          'priceLevel': _priceLevel,
+          'openingHours': _openingHoursController.text.trim(),
+          'closingTime': _closingTimeController.text.trim(),
+          'tags': _tags,
+        },
+        images: _pendingFiles,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -224,7 +191,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final totalImages = _uploadedImages.length + _pendingFiles.length;
+    final totalImages = _pendingFiles.length;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -422,7 +389,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                 children: [
                   // Pick button
                   GestureDetector(
-                    onTap: _isUploadingImage ? null : _showImageSourceSheet,
+                    onTap: _showImageSourceSheet,
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -434,15 +401,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                           style: BorderStyle.solid,
                         ),
                       ),
-                      child: _isUploadingImage
-                          ? const Center(
-                              child: SizedBox(
-                                height: 20, width: 20,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: AppTheme.primaryColor),
-                              ),
-                            )
-                          : Column(
+                      child: Column(
                               children: [
                                 Icon(Icons.add_photo_alternate_outlined,
                                     color: AppTheme.primaryColor.withOpacity(0.7), size: 32),
@@ -467,27 +426,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                     ),
                   ),
 
-                  // Uploaded images preview
-                  if (_uploadedImages.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 90,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _uploadedImages.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (_, i) => _imageThumb(
-                          child: Image.network(_uploadedImages[i],
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  const Icon(Icons.broken_image, color: Color(0xFF64748B))),
-                          onRemove: () => _removeImage(i, false),
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  // Pending local files preview
+                  // Image files preview
                   if (_pendingFiles.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     SizedBox(
@@ -498,8 +437,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                         separatorBuilder: (_, __) => const SizedBox(width: 8),
                         itemBuilder: (_, i) => _imageThumb(
                           child: Image.file(File(_pendingFiles[i].path), fit: BoxFit.cover),
-                          onRemove: () => _removeImage(i, true),
-                          isPending: true,
+                          onRemove: () => _removeImage(i),
                         ),
                       ),
                     ),
@@ -550,7 +488,6 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
   Widget _imageThumb({
     required Widget child,
     required VoidCallback onRemove,
-    bool isPending = false,
   }) {
     return Stack(
       children: [
@@ -558,19 +495,6 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
           borderRadius: BorderRadius.circular(10),
           child: SizedBox(width: 90, height: 90, child: child),
         ),
-        if (isPending)
-          Positioned(
-            bottom: 4, left: 4,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Text('Pending',
-                  style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600)),
-            ),
-          ),
         Positioned(
           top: 4, right: 4,
           child: GestureDetector(

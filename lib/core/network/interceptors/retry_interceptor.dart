@@ -14,7 +14,11 @@ class RetryInterceptor extends Interceptor {
       DioException err, ErrorInterceptorHandler handler) async {
     final attempt = err.requestOptions.extra['_retryCount'] as int? ?? 0;
 
-    final shouldRetry = attempt < maxRetries &&
+    // Never retry multipart/form-data — stream cannot be replayed
+    final isMultipart = err.requestOptions.data is FormData;
+
+    final shouldRetry = !isMultipart &&
+        attempt < maxRetries &&
         (err.type == DioExceptionType.connectionTimeout ||
             err.type == DioExceptionType.receiveTimeout ||
             err.type == DioExceptionType.connectionError ||

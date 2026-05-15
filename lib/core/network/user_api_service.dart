@@ -39,28 +39,50 @@ class UserApiService {
     await _dio.delete('/users/$id');
   }
 
-  // GET /users/preferences - Get current user preferences
-  Future<Map<String, dynamic>> getPreferences() async {
-    final response = await _dio.get('/users/preferences');
+  // GET /users/profile - Get full user profile
+  Future<Map<String, dynamic>> getProfile() async {
+    final response = await _dio.get('/users/profile');
     return response.data as Map<String, dynamic>;
   }
 
-  // POST /users/preferences - Save user preferences (onboarding)
+  // GET /users/preferences - Get current user preferences
+  Future<Map<String, dynamic>> getPreferences() async {
+    final response = await _dio.get('/users/preferences');
+    final data = response.data as Map<String, dynamic>;
+    // Unwrap { preferences: {...}, hasPreferences: bool } envelope
+    return {
+      ...?data['preferences'] as Map<String, dynamic>?,
+      'hasPreferences': data['hasPreferences'] ?? false,
+    };
+  }
+
+  // POST /users/preferences - Save user preferences (first time)
   Future<Map<String, dynamic>> savePreferences(Map<String, dynamic> preferences) async {
-    final response = await _dio.post('/users/preferences', data: preferences);
+    final response = await _dio.post('/users/preferences', data: {
+      'vibes': preferences['vibes'] ?? [],
+      'music': preferences['music'] ?? [],
+    });
     return response.data as Map<String, dynamic>;
   }
 
   // PUT /users/preferences - Update user preferences
   Future<Map<String, dynamic>> updatePreferences(Map<String, dynamic> preferences) async {
-    final response = await _dio.put('/users/preferences', data: preferences);
+    final response = await _dio.put('/users/preferences', data: {
+      'vibes': preferences['vibes'] ?? [],
+      'music': preferences['music'] ?? [],
+    });
     return response.data as Map<String, dynamic>;
   }
 
-  // GET /users/saved-venues - Get saved venues list
+  // GET /users/saved-venues - Get saved venues list (returns array of venue IDs)
   Future<List<Map<String, dynamic>>> getSavedVenues() async {
     final response = await _dio.get('/users/saved-venues');
-    return List<Map<String, dynamic>>.from(response.data);
+    final data = response.data;
+    if (data is List) {
+      // Server returns ["venueId1", "venueId2"] — wrap each as { id }
+      return data.map((e) => e is Map<String, dynamic> ? e : {'id': e.toString()}).toList();
+    }
+    return [];
   }
 
   // POST /users/saved-venues/{venueId} - Save a venue
@@ -77,6 +99,12 @@ class UserApiService {
   // GET /users/redemptions - Get redemption history
   Future<List<Map<String, dynamic>>> getRedemptions() async {
     final response = await _dio.get('/users/redemptions');
-    return List<Map<String, dynamic>>.from(response.data);
+    final data = response.data;
+    if (data is Map) {
+      final list = data['redemptions'] ?? data['data'] ?? [];
+      return List<Map<String, dynamic>>.from(list as List);
+    }
+    if (data is List) return List<Map<String, dynamic>>.from(data);
+    return [];
   }
 }

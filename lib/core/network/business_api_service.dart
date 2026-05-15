@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import '../config/env.dart';
 import 'api_client.dart';
 
 final businessApiServiceProvider = Provider<BusinessApiService>((ref) {
@@ -47,10 +49,62 @@ class BusinessApiService {
     return response.data as Map<String, dynamic>;
   }
 
-  // POST /business/venues - Create a new venue
-  Future<Map<String, dynamic>> createVenue(Map<String, dynamic> data) async {
-    final res = await _dio.post('/business/venues', data: data);
-    return res.data as Map<String, dynamic>;
+  // POST /business/venues - Create a new venue (multipart/form-data)
+  // Uses a bare Dio instance (no retry interceptor) — FormData streams cannot be replayed.
+  Future<Map<String, dynamic>> createVenue(
+    Map<String, dynamic> data, {
+    List<XFile> images = const [],
+  }) async {
+    final token = await const FlutterSecureStorage().read(key: 'access_token');
+
+    final bareDio = Dio(BaseOptions(
+      baseUrl: Env.apiBaseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      validateStatus: (s) => s != null && s < 500,
+    ));
+
+    final formData = FormData();
+    formData.fields
+      ..add(MapEntry('name', data['name'].toString()))
+      ..add(MapEntry('address', data['address'].toString()))
+      ..add(MapEntry('city', data['city'].toString()))
+      ..add(MapEntry('area', data['area'].toString()))
+      ..add(MapEntry('category', data['category'].toString()))
+      ..add(MapEntry('lat', data['lat'].toString()))
+      ..add(MapEntry('lng', data['lng'].toString()))
+      ..add(MapEntry('openingHours', data['openingHours'].toString()))
+      ..add(MapEntry('closingTime', data['closingTime'].toString()));
+
+    if (data['priceLevel'] != null) {
+      formData.fields.add(MapEntry('priceLevel', data['priceLevel'].toString()));
+    }
+    if (data['tags'] is List && (data['tags'] as List).isNotEmpty) {
+      for (final tag in (data['tags'] as List)) {
+        formData.fields.add(MapEntry('tags[]', tag.toString()));
+      }
+    }
+    for (final img in images) {
+      formData.files.add(MapEntry(
+        'images',
+        await MultipartFile.fromFile(img.path, filename: img.name),
+      ));
+    }
+
+    final res = await bareDio.post('/business/venues', data: formData);
+
+    if (res.statusCode == 201 || res.statusCode == 200) {
+      final body = res.data;
+      if (body is Map<String, dynamic>) return body;
+      if (body is Map) return Map<String, dynamic>.from(body);
+      return {};
+    }
+    final msg = (res.data is Map) ? res.data['message']?.toString() : null;
+    throw Exception(msg ?? 'Failed to create venue (${res.statusCode})');
   }
 
   // POST /upload/image - Upload a single image, returns { url: '...' }

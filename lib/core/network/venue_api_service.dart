@@ -159,4 +159,16 @@ class VenueApiService {
     final response = await _dio.get('/venues/$id/current-vibe');
     return response.data;
   }
+
+  // GET /venues/{id}/offers - Get offers for a specific venue
+  Future<List<Map<String, dynamic>>> getVenueOffers(String venueId) async {
+    final response = await _dio.get('/venues/$venueId/offers');
+    final data = response.data;
+    if (data is List) return List<Map<String, dynamic>>.from(data);
+    if (data is Map) {
+      final list = data['offers'] ?? data['data'] ?? data['results'] ?? [];
+      return List<Map<String, dynamic>>.from(list as List);
+    }
+    return [];
+  }
 }
