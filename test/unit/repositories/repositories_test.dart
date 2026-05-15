@@ -103,7 +103,7 @@ class MockVenueApi implements VenueApiService {
     if (throws) throw Exception('err');
     return _venue(id);
   }
-  @override Future<List<Venue>> searchVenues(String q, {String? cityId}) async {
+  @override Future<List<Venue>> searchVenues(String q, {String? city}) async {
     if (throws) throw Exception('err');
     return [_venue('v1')];
   }
@@ -132,6 +132,7 @@ class MockVenueApi implements VenueApiService {
       String id, Map<String, dynamic> s) async => {};
   @override Future<List<Map<String, dynamic>>> getVibeSchedules(String id) async => [];
   @override Future<Map<String, dynamic>> getCurrentVibe(String id) async => {};
+  @override Future<Map<String, dynamic>> submitVibeCheck(String venueId, int score) async => {};
 }
 
 // ── Mock: UserApiService ──────────────────────────────────────────────────────

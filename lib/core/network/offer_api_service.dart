@@ -14,7 +14,9 @@ class OfferApiService {
 
   Future<List<Offer>> getAllOffers() async {
     final response = await _dio.get('/offers');
-    final data = response.data is Map ? response.data['data'] ?? response.data : response.data;
+    final data = response.data is Map
+        ? (response.data['offers'] ?? response.data['data'] ?? [])
+        : response.data;
     return (data as List).map((json) => Offer.fromJson(json as Map<String, dynamic>)).toList();
   }
 
@@ -31,10 +33,10 @@ class OfferApiService {
   // GET /offers/{id} - Get offer detail by ID
   Future<Offer> getOfferById(String id) async {
     final response = await _dio.get('/offers/$id');
-    final data = response.data is Map && response.data['data'] != null
-        ? response.data['data']
+    final data = response.data is Map
+        ? (response.data['offer'] ?? response.data['data'] ?? response.data)
         : response.data;
-    return Offer.fromJson(data);
+    return Offer.fromJson(data as Map<String, dynamic>);
   }
 
   // POST /offers/{id}/claim - Claim offer, generates voucher code + QR

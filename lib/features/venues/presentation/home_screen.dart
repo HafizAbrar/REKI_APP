@@ -29,6 +29,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final venuesAsync = ref.watch(venueManagementProvider);
     final searchAsync = ref.watch(venueSearchProvider);
+    final filters = ref.watch(filterProvider);
     final authService = AuthService();
     final user = authService.currentUser;
     
@@ -110,7 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         _buildHeaderButton(Icons.search, onTap: _showSearchDialog),
                         const SizedBox(width: 8),
-                        _buildHeaderButton(Icons.tune),
+                        _buildHeaderButton(Icons.tune, filterActive: filters.isActive),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -169,11 +170,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           return true;
                         }).toList();
 
+                    // Apply filter panel selections
+                    if (filters.busyness.isNotEmpty) {
+                      filteredVenues = filteredVenues
+                          .where((v) => v.busyness.toLowerCase() == filters.busyness.toLowerCase())
+                          .toList();
+                    }
+                    if (filters.vibes.isNotEmpty) {
+                      filteredVenues = filteredVenues.where((v) {
+                        final vibe = v.currentVibe.toLowerCase();
+                        return filters.vibes.any((s) => vibe.contains(s.toLowerCase()));
+                      }).toList();
+                    }
+                    if (filters.offersOnly) {
+                      filteredVenues = filteredVenues.where((v) => v.offers.isNotEmpty).toList();
+                    }
+
                     if (_searchQuery.isNotEmpty) {
                       filteredVenues = filteredVenues.where((v) =>
                         v.name.toLowerCase().contains(_searchQuery) ||
                         v.type.toLowerCase().contains(_searchQuery)
                       ).toList();
+                    }
+
+                    if (filteredVenues.isEmpty) {
+                      return _buildNoResults(filters.isActive);
                     }
 
                     return SingleChildScrollView(
@@ -262,7 +283,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildHeaderButton(IconData icon, {VoidCallback? onTap}) {
+  Widget _buildHeaderButton(IconData icon, {VoidCallback? onTap, bool filterActive = false}) {
     return Container(
       width: 40,
       height: 40,
@@ -279,7 +300,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               context.push('/filters');
             }
           },
-          child: Icon(icon, color: Colors.white, size: 20),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Center(child: Icon(icon, color: Colors.white, size: 20)),
+              if (filterActive)
+                Positioned(
+                  top: 6, right: 6,
+                  child: Container(
+                    width: 8, height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF2DD4BF),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -781,6 +818,62 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     ),
+    );
+  }
+
+  Widget _buildNoResults(bool hasFilters) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.3), width: 1.5),
+              ),
+              child: const Icon(Icons.search_off_rounded, color: Color(0xFF2DD4BF), size: 36),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'No venues found',
+              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              hasFilters
+                  ? 'No venues match your current filters.\nTry adjusting or resetting them.'
+                  : 'There are no venues available\nin this category right now.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15, height: 1.5),
+            ),
+            if (hasFilters) ...[
+              const SizedBox(height: 28),
+              GestureDetector(
+                onTap: () => ref.read(filterProvider.notifier).reset(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2DD4BF),
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(color: const Color(0xFF2DD4BF).withOpacity(0.3), blurRadius: 16),
+                    ],
+                  ),
+                  child: const Text(
+                    'Clear Filters',
+                    style: TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 

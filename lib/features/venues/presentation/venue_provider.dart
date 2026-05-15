@@ -158,10 +158,10 @@ class VenueSearchNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
 
   VenueSearchNotifier(this._repository) : super(const AsyncValue.data([]));
 
-  Future<void> search(String query, {String? cityId}) async {
+  Future<void> search(String query, {String? city}) async {
     if (query.isEmpty) { state = const AsyncValue.data([]); return; }
     state = const AsyncValue.loading();
-    final result = await _repository.searchVenues(query, cityId: cityId);
+    final result = await _repository.searchVenues(query, city: city);
     state = result.when(
       success: (data) => AsyncValue.data(data),
       failure: (e) => AsyncValue.error(e, StackTrace.current),

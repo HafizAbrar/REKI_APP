@@ -11,7 +11,9 @@ class Offer {
   final String? validTimeStart;
   final String? validTimeEnd;
   final int? maxRedemptions;
-  final int? savingValue;
+  final num? savingValue;
+  final String status;
+  final bool isAvailableNow;
 
   Offer({
     required this.id,
@@ -27,6 +29,8 @@ class Offer {
     this.validTimeEnd,
     this.maxRedemptions,
     this.savingValue,
+    this.status = 'inactive',
+    this.isAvailableNow = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -41,6 +45,8 @@ class Offer {
     if (validTimeEnd != null) 'validTimeEnd': validTimeEnd,
     if (maxRedemptions != null) 'maxRedemptions': maxRedemptions,
     if (savingValue != null) 'savingValue': savingValue,
+    'status': status,
+    'isAvailableNow': isAvailableNow,
   };
 
   factory Offer.fromJson(Map<String, dynamic> json) => Offer(
@@ -62,6 +68,8 @@ class Offer {
     validTimeStart: json['validTimeStart']?.toString(),
     validTimeEnd: json['validTimeEnd']?.toString(),
     maxRedemptions: json['maxRedemptions'] as int?,
-    savingValue: json['savingValue'] as int?,
+    savingValue: json['savingValue'] as num?,
+    status: json['status']?.toString() ?? 'inactive',
+    isAvailableNow: json['isAvailableNow'] as bool? ?? false,
   );
 }

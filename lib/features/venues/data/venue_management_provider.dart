@@ -43,6 +43,38 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   }
 }
 
+// Filter state shared between VenueFilterScreen and HomeScreen
+class FilterState {
+  final String busyness;
+  final Set<String> vibes;
+  final bool offersOnly;
+
+  const FilterState({
+    this.busyness = '',
+    this.vibes = const {},
+    this.offersOnly = false,
+  });
+
+  bool get isActive => busyness.isNotEmpty || vibes.isNotEmpty || offersOnly;
+
+  FilterState copyWith({String? busyness, Set<String>? vibes, bool? offersOnly}) => FilterState(
+    busyness: busyness ?? this.busyness,
+    vibes: vibes ?? this.vibes,
+    offersOnly: offersOnly ?? this.offersOnly,
+  );
+}
+
+class FilterNotifier extends StateNotifier<FilterState> {
+  FilterNotifier() : super(const FilterState());
+  void update({String? busyness, Set<String>? vibes, bool? offersOnly}) =>
+      state = state.copyWith(busyness: busyness, vibes: vibes, offersOnly: offersOnly);
+  void reset() => state = const FilterState();
+}
+
+final filterProvider = StateNotifierProvider<FilterNotifier, FilterState>(
+  (_) => FilterNotifier(),
+);
+
 // Search provider — calls GET /venues/search?q=&city=
 final venueSearchProvider = StateNotifierProvider<VenueSearchNotifier, AsyncValue<List<Venue>>>((ref) {
   return VenueSearchNotifier(ref.read(venueRepositoryProvider));
