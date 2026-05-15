@@ -43,7 +43,6 @@ class User {
     List<String> preferencesList = [];
     if (json['preferences'] != null) {
       if (json['preferences'] is Map) {
-        // Preferences is an object, extract relevant fields
         final prefs = json['preferences'] as Map<String, dynamic>;
         if (prefs['preferredCategories'] != null) {
           preferencesList.addAll(List<String>.from(prefs['preferredCategories']));
@@ -51,6 +50,15 @@ class User {
       } else if (json['preferences'] is List) {
         preferencesList = List<String>.from(json['preferences']);
       }
+    }
+
+    // Extract venueId/venueName from venues array or direct fields
+    String? venueId = json['venue']?['id']?.toString() ?? json['venueId']?.toString();
+    String? venueName = json['venue']?['name']?.toString() ?? json['venueName']?.toString();
+    if (venueId == null && json['venues'] is List && (json['venues'] as List).isNotEmpty) {
+      final firstVenue = (json['venues'] as List).first as Map<String, dynamic>;
+      venueId = firstVenue['id']?.toString();
+      venueName = firstVenue['name']?.toString();
     }
     
     return User(
@@ -61,8 +69,8 @@ class User {
       role: role,
       preferences: preferencesList,
       isActive: json['isActive'] ?? true,
-      venueId: json['venue']?['id']?.toString() ?? json['venueId']?.toString(),
-      venueName: json['venue']?['name']?.toString() ?? json['venueName']?.toString(),
+      venueId: venueId,
+      venueName: venueName,
       profilePicture: json['profilePicture']?.toString() ?? json['picture']?.toString() ?? json['photoURL']?.toString() ?? json['avatar']?.toString() ?? json['photo']?.toString() ?? json['imageUrl']?.toString() ?? json['image']?.toString(),
     );
   }

@@ -27,6 +27,7 @@ import '../../features/business/presentation/business_dashboard_screen.dart';
 import '../../features/business/presentation/business_update_screen.dart';
 import '../../features/business/presentation/manage_offers_screen.dart';
 import '../../features/business/presentation/create_offer_screen.dart';
+import '../../features/business/presentation/my_venues_screen.dart';
 import '../../features/users/presentation/user_preferences_screen.dart';
 import '../../features/users/presentation/user_profile_screen.dart';
 import '../../features/auth/presentation/business_forgot_password_screen.dart';
@@ -75,13 +76,15 @@ String? _routeGuard(BuildContext context, GoRouterState state) {
     return '/home';
   }
 
-  if (_businessRoutes.any((r) => path.startsWith(r)) &&
-      user.role != UserRole.BUSINESS) {
+  final isBusinessOrAdmin =
+      user.role == UserRole.BUSINESS || user.role == UserRole.ADMIN;
+  final isAdmin = user.role == UserRole.ADMIN;
+
+  if (_businessRoutes.any((r) => path.startsWith(r)) && !isBusinessOrAdmin) {
     return '/home';
   }
 
-  if (_adminRoutes.any((r) => path.startsWith(r)) &&
-      user.role != UserRole.ADMIN) {
+  if (_adminRoutes.any((r) => path.startsWith(r)) && !isAdmin) {
     return '/home';
   }
 
@@ -190,6 +193,9 @@ final appRouter = GoRouter(
     GoRoute(
         path: '/manage-offers',
         builder: (_, __) => const ManageOffersScreen()),
+    GoRoute(
+        path: '/my-venues',
+        builder: (_, __) => const MyVenuesScreen()),
     GoRoute(
       path: '/create-offer',
       builder: (_, state) => CreateOfferScreen(

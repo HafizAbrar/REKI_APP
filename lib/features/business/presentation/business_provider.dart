@@ -1,6 +1,39 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/business_repository.dart';
 
+// GET /business/venues - Get all my venues
+final myVenuesProvider = StateNotifierProvider<MyVenuesNotifier, AsyncValue<List<Map<String, dynamic>>>>((ref) {
+  return MyVenuesNotifier(ref.read(businessRepositoryProvider));
+});
+
+class MyVenuesNotifier extends StateNotifier<AsyncValue<List<Map<String, dynamic>>>> {
+  final BusinessRepository _repository;
+  MyVenuesNotifier(this._repository) : super(const AsyncValue.loading()) {
+    load();
+  }
+
+  Future<void> load() async {
+    state = const AsyncValue.loading();
+    final result = await _repository.getMyVenues();
+    state = result.when(
+      success: (data) => AsyncValue.data(data),
+      failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
+  }
+
+  // PUT /business/venues/{id}
+  Future<bool> updateVenue(String id, Map<String, dynamic> data) async {
+    final result = await _repository.updateVenue(id, data);
+    return result.when(success: (_) { load(); return true; }, failure: (_) => false);
+  }
+
+  // DELETE /business/venues/{id}
+  Future<bool> deleteVenue(String id) async {
+    final result = await _repository.deleteVenue(id);
+    return result.when(success: (_) { load(); return true; }, failure: (_) => false);
+  }
+}
+
 // GET /business/dashboard/{venueId}
 final businessDashboardProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, venueId) async {
   final result = await ref.read(businessRepositoryProvider).getDashboard(venueId);

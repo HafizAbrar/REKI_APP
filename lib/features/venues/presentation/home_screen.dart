@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
-import '../../users/data/user_preferences_provider.dart';
 import '../../../core/config/env.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/models/venue.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +17,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedTab = 0;
   int _selectedNavIndex = 0;
   String _searchQuery = '';
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -27,7 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final venuesAsync = ref.watch(venueManagementProvider);
-    final preferencesAsync = ref.watch(userPreferencesProvider);
+    final searchAsync = ref.watch(venueSearchProvider);
     final authService = AuthService();
     final user = authService.currentUser;
     
@@ -125,11 +126,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 const SizedBox(width: 8),
                                 _buildTab('Bar', Icons.local_bar, 1),
                                 const SizedBox(width: 8),
-                                _buildTab('Restaurant', Icons.restaurant, 2),
+                                _buildTab('Club', Icons.music_note, 2),
                                 const SizedBox(width: 8),
-                                _buildTab('Club', Icons.music_note, 3),
+                                _buildTab('Restaurant', Icons.restaurant, 3),
                                 const SizedBox(width: 8),
-                                _buildTab('Casino', Icons.casino, 4),
+                                _buildTab('Lounge', Icons.weekend, 4),
+                                const SizedBox(width: 8),
+                                _buildTab('Live Music', Icons.queue_music, 5),
+                                const SizedBox(width: 8),
+                                _buildTab('Pub', Icons.sports_bar, 6),
+                                const SizedBox(width: 8),
+                                _buildTab('Rooftop', Icons.roofing, 7),
+                                const SizedBox(width: 8),
+                                _buildTab('Cocktail', Icons.local_drink, 8),
                               ],
                             ),
                           ),
@@ -141,43 +150,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               // Content
               Expanded(
-                child: venuesAsync.when(
+                child: _isSearching
+                    ? _buildSearchResults(searchAsync)
+                    : venuesAsync.when(
                   data: (venues) {
-                    final preferences = preferencesAsync.value;
-                    final preferredCategories = preferences?['preferredCategories'] as List?;
-                    final preferredVibes = preferences?['preferredVibes'] as List?;
-                    
-                    var filteredVenues = _selectedTab == 0 
-                      ? venues 
+                    var filteredVenues = _selectedTab == 0
+                      ? venues
                       : venues.where((v) {
-                          final category = v.type.toUpperCase();
-                          if (_selectedTab == 1) return category == 'BAR';
-                          if (_selectedTab == 2) return category == 'RESTAURANT';
-                          if (_selectedTab == 3) return category == 'CLUB';
-                          if (_selectedTab == 4) return category == 'CASINO';
+                          final cat = v.type.toLowerCase();
+                          if (_selectedTab == 1) return cat == 'bar';
+                          if (_selectedTab == 2) return cat == 'club';
+                          if (_selectedTab == 3) return cat == 'restaurant';
+                          if (_selectedTab == 4) return cat == 'lounge';
+                          if (_selectedTab == 5) return cat == 'live_music_venue';
+                          if (_selectedTab == 6) return cat == 'pub';
+                          if (_selectedTab == 7) return cat == 'rooftop_bar';
+                          if (_selectedTab == 8) return cat == 'cocktail_bar';
                           return true;
                         }).toList();
-                    
-                    // Filter by user preferences if available
-                    if (_selectedTab == 0 && preferredCategories != null && preferredCategories.isNotEmpty) {
-                      filteredVenues = filteredVenues.where((v) => 
-                        preferredCategories.contains(v.type.toUpperCase())
-                      ).toList();
-                    }
-                    
-                    if (_selectedTab == 0 && preferredVibes != null && preferredVibes.isNotEmpty) {
-                      filteredVenues = filteredVenues.where((v) => 
-                        preferredVibes.contains(v.currentVibe.toUpperCase())
-                      ).toList();
-                    }
-                    
+
                     if (_searchQuery.isNotEmpty) {
-                      filteredVenues = filteredVenues.where((v) => 
+                      filteredVenues = filteredVenues.where((v) =>
                         v.name.toLowerCase().contains(_searchQuery) ||
                         v.type.toLowerCase().contains(_searchQuery)
                       ).toList();
                     }
-                    
+
                     return SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -288,18 +286,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showSearchDialog() {
+    final controller = TextEditingController(text: _searchQuery);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         title: const Text('Search Venues', style: TextStyle(color: Colors.white)),
         content: TextField(
+          controller: controller,
           autofocus: true,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
-            hintText: 'Search by name or category',
+            hintText: 'Search by name, area or tags...',
             hintStyle: const TextStyle(color: Color(0xFF64748B)),
             prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8)),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.clear, color: Color(0xFF64748B)),
+              onPressed: () => controller.clear(),
+            ),
             filled: true,
             fillColor: const Color(0xFF0F172A),
             border: OutlineInputBorder(
@@ -307,24 +311,96 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               borderSide: BorderSide.none,
             ),
           ),
-          onChanged: (value) {
-            setState(() => _searchQuery = value.toLowerCase());
-          },
         ),
         actions: [
           TextButton(
             onPressed: () {
-              setState(() => _searchQuery = '');
+              setState(() { _searchQuery = ''; _isSearching = false; });
+              ref.read(venueSearchProvider.notifier).clear();
               Navigator.pop(context);
             },
             child: const Text('Clear', style: TextStyle(color: Color(0xFF94A3B8))),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close', style: TextStyle(color: Color(0xFF2DD4BF))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2DD4BF),
+              foregroundColor: const Color(0xFF0F172A),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              final q = controller.text.trim();
+              if (q.isNotEmpty) {
+                setState(() { _searchQuery = q; _isSearching = true; });
+                ref.read(venueSearchProvider.notifier).search(q);
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Search'),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSearchResults(AsyncValue<List<Venue>> searchAsync) {
+    return searchAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
+      error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+      data: (venues) {
+        if (venues.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.search_off, color: Color(0xFF64748B), size: 64),
+                const SizedBox(height: 16),
+                Text('No results for "$_searchQuery"',
+                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 16)),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    setState(() { _searchQuery = ''; _isSearching = false; });
+                    ref.read(venueSearchProvider.notifier).clear();
+                  },
+                  child: const Text('Clear search', style: TextStyle(color: Color(0xFF2DD4BF))),
+                ),
+              ],
+            ),
+          );
+        }
+        return Column(
+          children: [
+            // Search result header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Row(
+                children: [
+                  Text('${venues.length} results for "$_searchQuery"',
+                      style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      setState(() { _searchQuery = ''; _isSearching = false; });
+                      ref.read(venueSearchProvider.notifier).clear();
+                    },
+                    child: const Text('Clear', style: TextStyle(color: Color(0xFF2DD4BF), fontSize: 13)),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: venues.length,
+                itemBuilder: (_, i) => Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: _buildVenueCard(venue: venues[i], isBookmarked: false),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -419,7 +495,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                   child: venue.coverImageUrl != null
                     ? Image.network(
-                        '${Env.apiBaseUrl}${venue.coverImageUrl}',
+                        venue.coverImageUrl!.startsWith('http')
+                            ? venue.coverImageUrl!
+                            : '${Env.apiBaseUrl}${venue.coverImageUrl}',
                         width: double.infinity,
                         height: 280,
                         fit: BoxFit.cover,

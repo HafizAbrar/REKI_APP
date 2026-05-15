@@ -279,13 +279,20 @@ class AuthService {
   }
 
   Future<bool> refreshAccessToken() async {
-    if (useMockData || _apiService == null || _refreshToken == null) {
-      return false;
-    }
+    _refreshToken ??= await _storage.read(key: 'refresh_token');
+    if (useMockData || _apiService == null || _refreshToken == null) return false;
 
     try {
       final response = await _apiService!.refreshToken(_refreshToken!);
-      _accessToken = response['access_token'];
+      final newAccess = response['accessToken'] ?? response['access_token'];
+      final newRefresh = response['refreshToken'] ?? response['refresh_token'];
+      if (newAccess == null) return false;
+      _accessToken = newAccess as String;
+      await _storage.write(key: 'access_token', value: _accessToken);
+      if (newRefresh != null) {
+        _refreshToken = newRefresh as String;
+        await _storage.write(key: 'refresh_token', value: _refreshToken);
+      }
       return true;
     } catch (e) {
       return false;

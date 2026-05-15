@@ -46,6 +46,31 @@ class BusinessRepository {
     }
   }
 
+  Future<Result<List<Map<String, dynamic>>>> getMyVenues() async {
+    try {
+      return Result.success(await _api.getMyVenues());
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> updateVenue(String id, Map<String, dynamic> data) async {
+    try {
+      return Result.success(await _api.updateVenue(id, data));
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<void>> deleteVenue(String id) async {
+    try {
+      await _api.deleteVenue(id);
+      return Result.success(null);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
   Future<Result<Map<String, dynamic>>> getDashboard(String venueId) async {
     try {
       return Result.success(await _api.getDashboard(venueId));

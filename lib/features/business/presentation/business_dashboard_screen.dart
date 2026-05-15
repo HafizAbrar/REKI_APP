@@ -75,6 +75,11 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
               onTap: () => context.push('/admin/create-venue'),
             ),
             ListTile(
+              leading: const Icon(Icons.store, color: Colors.white),
+              title: const Text('My Venues', style: TextStyle(color: Colors.white)),
+              onTap: () => context.push('/my-venues'),
+            ),
+            ListTile(
               leading: const Icon(Icons.local_offer, color: Colors.white),
               title: const Text('Create Offer', style: TextStyle(color: Colors.white)),
               onTap: () => context.push('/create-offer?venueId=$venueId'),

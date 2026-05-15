@@ -76,9 +76,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         name: name,
         phone: phone,
       );
-      await _storeTokens(response);
-      await _authService.setAccessToken(response['access_token']);
-      await _authService.fetchCurrentUser();
+      await _handleTokenResponse(response);
       state = const AuthStateRegisterSuccess();
     } catch (e) {
       state = AuthStateError(_parseError(e));
@@ -137,13 +135,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> login({
     required String email,
     required String password,
-  }) async {
+    }) async {
     state = const AuthStateLoading();
     try {
       final response = await _apiService.login(email: email, password: password);
-      await _storeTokens(response);
-      await _authService.login(email, password);
-      await _authService.fetchCurrentUser();
+      await _handleTokenResponse(response);
       state = const AuthStateLoginSuccess();
     } catch (e) {
       state = AuthStateError(_parseError(e));

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'api_client.dart';
 
 final businessApiServiceProvider = Provider<BusinessApiService>((ref) {
@@ -52,6 +53,46 @@ class BusinessApiService {
     return res.data as Map<String, dynamic>;
   }
 
+  // POST /upload/image - Upload a single image, returns { url: '...' }
+  Future<String> uploadImage(XFile file) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(file.path, filename: file.name),
+    });
+    final res = await _dio.post('/upload/image', data: formData);
+    final data = res.data as Map<String, dynamic>;
+    return data['url']?.toString() ?? data['imageUrl']?.toString() ?? data['path']?.toString() ?? '';
+  }
+
+  // GET /business/venues - Get all my venues
+  Future<List<Map<String, dynamic>>> getMyVenues() async {
+    final res = await _dio.get('/business/venues');
+    final data = res.data;
+    // Handle: array, { venues: [] }, { data: [] }, { data: { venues: [] } }
+    if (data is List) return List<Map<String, dynamic>>.from(data);
+    if (data is Map) {
+      final inner = data['data'];
+      if (inner is List) return List<Map<String, dynamic>>.from(inner);
+      if (inner is Map) {
+        final nested = inner['venues'] ?? inner['items'] ?? inner['data'];
+        if (nested is List) return List<Map<String, dynamic>>.from(nested);
+      }
+      final list = data['venues'] ?? data['items'] ?? data['results'] ?? [];
+      if (list is List) return List<Map<String, dynamic>>.from(list);
+    }
+    return [];
+  }
+
+  // PUT /business/venues/{id} - Update venue details
+  Future<Map<String, dynamic>> updateVenue(String id, Map<String, dynamic> data) async {
+    final res = await _dio.put('/business/venues/$id', data: data);
+    return res.data as Map<String, dynamic>;
+  }
+
+  // DELETE /business/venues/{id} - Remove venue from account
+  Future<void> deleteVenue(String id) async {
+    await _dio.delete('/business/venues/$id');
+  }
+
   // GET /business/dashboard/{venueId} - Get venue dashboard (stats, vibe, weather)
   Future<Map<String, dynamic>> getDashboard(String venueId) async {
     final response = await _dio.get('/business/dashboard/$venueId');
@@ -96,8 +137,18 @@ class BusinessApiService {
 
   // POST /business/offers - Create new offer
   Future<Map<String, dynamic>> createOffer(Map<String, dynamic> offerData) async {
-    final response = await _dio.post('/business/offers', data: offerData);
-    return response.data as Map<String, dynamic>;
+    final response = await _dio.post(
+      '/business/offers',
+      data: offerData,
+      options: Options(validateStatus: (s) => s != null && s < 500),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final data = response.data;
+      return (data is Map && data['data'] != null)
+          ? data['data'] as Map<String, dynamic>
+          : data as Map<String, dynamic>;
+    }
+    throw Exception(response.data?['message'] ?? 'Failed to create offer');
   }
 
   // PUT /business/offers/{id} - Update an offer

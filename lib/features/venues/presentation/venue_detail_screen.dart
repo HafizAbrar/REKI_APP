@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
 import '../../../core/network/vibe_schedule_api_service.dart';
+import '../../../core/network/venue_api_service.dart';
 import '../../../core/models/vibe_schedule.dart';
 import '../../../core/config/env.dart';
 import '../../../core/services/venue_repository.dart';
@@ -59,7 +60,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                     children: [
                       venue.coverImageUrl != null
                         ? Image.network(
-                            '${Env.apiBaseUrl}${venue.coverImageUrl}',
+                            venue.coverImageUrl!.startsWith('http')
+                                ? venue.coverImageUrl!
+                                : '${Env.apiBaseUrl}${venue.coverImageUrl}',
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
@@ -189,33 +192,8 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                     children: [
                       _buildVibeSection(venue),
                       const SizedBox(height: 32),
-                      // Phase 5 - Reviews & Check-in
-                      GestureDetector(
-                        onTap: () => context.push(
-                            '/venue-reviews?id=${venue.id}&name=${Uri.encodeComponent(venue.name)}'),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                                color: const Color(0xFF2DD4BF).withOpacity(0.3)),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.star, color: Color(0xFFF59E0B), size: 20),
-                              SizedBox(width: 8),
-                              Text('Reviews & Check-in',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600)),
-                              Spacer(),
-                              Icon(Icons.arrow_forward_ios,
-                                  color: Color(0xFF94A3B8), size: 14),
-                            ],
-                          ),
-                        ),
-                      ),
+                      // Vibe Check
+                      _VibeCheckCard(venueId: venue.id, venueName: venue.name),
                       const SizedBox(height: 32),
                       if (_vibeSchedules != null) _buildVibeScheduleSection(),
                       if (_vibeSchedules != null) const SizedBox(height: 32),
@@ -507,6 +485,209 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Vibe Check Card ────────────────────────────────────────────────────────
+class _VibeCheckCard extends ConsumerStatefulWidget {
+  final String venueId;
+  final String venueName;
+  const _VibeCheckCard({required this.venueId, required this.venueName});
+
+  @override
+  ConsumerState<_VibeCheckCard> createState() => _VibeCheckCardState();
+}
+
+class _VibeCheckCardState extends ConsumerState<_VibeCheckCard> {
+  int? _submittedScore;
+
+  void _showSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _VibeCheckSheet(
+        venueId: widget.venueId,
+        venueName: widget.venueName,
+        onSubmitted: (score) => setState(() => _submittedScore = score),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _showSheet,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.star, color: Color(0xFFF59E0B), size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Vibe Check',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                  Text(
+                    _submittedScore != null
+                        ? 'You rated this $_submittedScore/5 ⭐'
+                        : 'Rate the vibe right now (1–5)',
+                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              _submittedScore != null ? Icons.check_circle : Icons.arrow_forward_ios,
+              color: _submittedScore != null ? const Color(0xFF2DD4BF) : const Color(0xFF94A3B8),
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Vibe Check Bottom Sheet ────────────────────────────────────────────────
+class _VibeCheckSheet extends ConsumerStatefulWidget {
+  final String venueId;
+  final String venueName;
+  final void Function(int score) onSubmitted;
+  const _VibeCheckSheet({required this.venueId, required this.venueName, required this.onSubmitted});
+
+  @override
+  ConsumerState<_VibeCheckSheet> createState() => _VibeCheckSheetState();
+}
+
+class _VibeCheckSheetState extends ConsumerState<_VibeCheckSheet> {
+  int? _selectedScore;
+  bool _isLoading = false;
+  bool _done = false;
+
+  static const _labels = ['Terrible', 'Bad', 'Okay', 'Good', 'Amazing'];
+  static const _emojis = ['😞', '😕', '😐', '😊', '🔥'];
+
+  Future<void> _submit() async {
+    if (_selectedScore == null) return;
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(venueApiServiceProvider).submitVibeCheck(widget.venueId, _selectedScore!);
+      setState(() { _done = true; _isLoading = false; });
+      widget.onSubmitted(_selectedScore!);
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red[700]),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E293B),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(width: 40, height: 4,
+              decoration: BoxDecoration(color: const Color(0xFF334155), borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 20),
+          if (_done) ...[
+            const Icon(Icons.check_circle, color: Color(0xFF2DD4BF), size: 56),
+            const SizedBox(height: 12),
+            const Text('Vibe check submitted!',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            const Text('Thanks for keeping it real 🔥',
+                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14)),
+          ] else ...[
+            const Text("How's the vibe at",
+                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14)),
+            const SizedBox(height: 4),
+            Text(widget.venueName,
+                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(5, (i) {
+                final score = i + 1;
+                final selected = _selectedScore != null && score <= _selectedScore!;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedScore = score),
+                  child: Column(
+                    children: [
+                      Text(_emojis[i], style: const TextStyle(fontSize: 28)),
+                      const SizedBox(height: 6),
+                      Icon(
+                        selected ? Icons.star : Icons.star_border,
+                        color: selected ? const Color(0xFFF59E0B) : const Color(0xFF475569),
+                        size: 32,
+                      ),
+                      const SizedBox(height: 4),
+                      Text('$score',
+                          style: TextStyle(
+                            color: selected ? const Color(0xFFF59E0B) : const Color(0xFF64748B),
+                            fontSize: 12, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                );
+              }),
+            ),
+            if (_selectedScore != null) ...[
+              const SizedBox(height: 12),
+              Text(_labels[_selectedScore! - 1],
+                  style: const TextStyle(color: Color(0xFF2DD4BF), fontSize: 16, fontWeight: FontWeight.w700)),
+            ],
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _selectedScore != null
+                      ? const Color(0xFF2DD4BF)
+                      : const Color(0xFF334155),
+                  foregroundColor: const Color(0xFF0F172A),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                ),
+                onPressed: _selectedScore == null || _isLoading ? null : _submit,
+                child: _isLoading
+                    ? const SizedBox(height: 20, width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0F172A)))
+                    : const Text('Submit Vibe Check',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+        ],
+      ),
     );
   }
 }

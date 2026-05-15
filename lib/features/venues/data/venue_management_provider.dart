@@ -43,6 +43,31 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   }
 }
 
+// Search provider — calls GET /venues/search?q=&city=
+final venueSearchProvider = StateNotifierProvider<VenueSearchNotifier, AsyncValue<List<Venue>>>((ref) {
+  return VenueSearchNotifier(ref.read(venueRepositoryProvider));
+});
+
+class VenueSearchNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
+  final VenueRepository _repository;
+  VenueSearchNotifier(this._repository) : super(const AsyncValue.data([]));
+
+  Future<void> search(String query, {String city = 'Manchester'}) async {
+    if (query.trim().isEmpty) {
+      state = const AsyncValue.data([]);
+      return;
+    }
+    state = const AsyncValue.loading();
+    final result = await _repository.searchVenues(query.trim(), city: city);
+    state = result.when(
+      success: (venues) => AsyncValue.data(venues),
+      failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
+  }
+
+  void clear() => state = const AsyncValue.data([]);
+}
+
 final venueDetailProvider = FutureProvider.family<Venue, String>((ref, id) async {
   final repository = ref.read(venueRepositoryProvider);
   final result = await repository.getVenueById(id);

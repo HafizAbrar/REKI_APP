@@ -33,13 +33,25 @@ class VenueApiService {
   }
 
   // GET /venues/search - Search venues by name, area, or tags
-  Future<List<Venue>> searchVenues(String query, {String? cityId}) async {
+  Future<List<Venue>> searchVenues(String query, {String? city}) async {
     final response = await _dio.get('/venues/search', queryParameters: {
       'q': query,
-      if (cityId != null) 'cityId': cityId,
+      if (city != null) 'city': city,
     });
-    final data = response.data is Map ? response.data['data'] ?? response.data['venues'] ?? response.data : response.data;
-    return (data as List).map((json) => Venue.fromJson(json)).toList();
+    final data = response.data;
+    dynamic raw;
+    if (data is Map) {
+      raw = data['venues'] ?? data['data'] ?? data['results'] ?? [];
+    } else if (data is List) {
+      raw = data;
+    } else {
+      raw = [];
+    }
+    final result = <Venue>[];
+    for (final json in raw as List) {
+      try { result.add(Venue.fromJson(json as Map<String, dynamic>)); } catch (_) {}
+    }
+    return result;
   }
 
   // GET /venues/filter-options - Get available filter options for a city
@@ -76,11 +88,23 @@ class VenueApiService {
     return List<Map<String, dynamic>>.from(data);
   }
 
-  // GET /venues/{id} - Get venue detail by ID (kept for compatibility)
+  // GET /venues - returns { venues: [], count, pagination, city }
   Future<List<Venue>> getAllVenuesList() async {
     final response = await getAllVenues();
-    final data = response['data'] ?? response['venues'] ?? [];
-    return (data as List).map((json) => Venue.fromJson(json)).toList();
+    dynamic raw = response['venues'] ?? response['data'] ?? response;
+    if (raw is Map) {
+      raw = raw['venues'] ?? raw['items'] ?? raw['data'] ?? [];
+    }
+    if (raw is! List) return [];
+    final result = <Venue>[];
+    for (final json in raw) {
+      try {
+        result.add(Venue.fromJson(json as Map<String, dynamic>));
+      } catch (e) {
+        // ignore malformed venue
+      }
+    }
+    return result;
   }
 
   // POST /venues - Create new venue
@@ -96,6 +120,12 @@ class VenueApiService {
         ? response.data['data']
         : response.data;
     return Venue.fromJson(data);
+  }
+
+  // POST /venues/{id}/vibe-check - Submit a vibe check score (1-5)
+  Future<Map<String, dynamic>> submitVibeCheck(String venueId, int score) async {
+    final response = await _dio.post('/venues/$venueId/vibe-check', data: {'score': score});
+    return response.data as Map<String, dynamic>;
   }
 
   // POST /venues/{id}/view - Track venue view

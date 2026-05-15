@@ -29,9 +29,9 @@ class VenueRepository {
     }
   }
 
-  Future<Result<List<Venue>>> searchVenues(String query, {String? cityId}) async {
+  Future<Result<List<Venue>>> searchVenues(String query, {String? city}) async {
     try {
-      final venues = await _apiService.searchVenues(query, cityId: cityId);
+      final venues = await _apiService.searchVenues(query, city: city);
       return Result.success(venues);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));

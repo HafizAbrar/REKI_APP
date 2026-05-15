@@ -7,6 +7,11 @@ class Offer {
   final DateTime validUntil;
   final String terms;
   final Map<String, dynamic>? venue;
+  final List<String> validDays;
+  final String? validTimeStart;
+  final String? validTimeEnd;
+  final int? maxRedemptions;
+  final int? savingValue;
 
   Offer({
     required this.id,
@@ -17,6 +22,11 @@ class Offer {
     required this.validUntil,
     this.terms = '',
     this.venue,
+    this.validDays = const [],
+    this.validTimeStart,
+    this.validTimeEnd,
+    this.maxRedemptions,
+    this.savingValue,
   });
 
   Map<String, dynamic> toJson() => {
@@ -25,17 +35,33 @@ class Offer {
     'description': description,
     'type': type,
     'isActive': isActive,
-    'validUntil': validUntil.toIso8601String(),
+    'expiresAt': validUntil.toIso8601String(),
+    'validDays': validDays,
+    if (validTimeStart != null) 'validTimeStart': validTimeStart,
+    if (validTimeEnd != null) 'validTimeEnd': validTimeEnd,
+    if (maxRedemptions != null) 'maxRedemptions': maxRedemptions,
+    if (savingValue != null) 'savingValue': savingValue,
   };
 
   factory Offer.fromJson(Map<String, dynamic> json) => Offer(
     id: json['id']?.toString() ?? '',
     title: json['title']?.toString() ?? '',
     description: json['description']?.toString() ?? '',
-    type: json['offerType']?.toString() ?? json['type']?.toString() ?? '',
+    type: json['type']?.toString() ?? json['offerType']?.toString() ?? 'discount',
     isActive: json['isActive'] ?? false,
-    validUntil: json['endsAt'] != null ? DateTime.parse(json['endsAt']) : (json['validUntil'] != null ? DateTime.parse(json['validUntil']) : DateTime.now()),
+    validUntil: json['expiresAt'] != null
+        ? DateTime.parse(json['expiresAt'])
+        : json['endsAt'] != null
+            ? DateTime.parse(json['endsAt'])
+            : json['validUntil'] != null
+                ? DateTime.parse(json['validUntil'])
+                : DateTime.now(),
     terms: json['terms']?.toString() ?? '',
-    venue: json['venue'],
+    venue: json['venue'] as Map<String, dynamic>?,
+    validDays: (json['validDays'] as List?)?.map((e) => e.toString()).toList() ?? [],
+    validTimeStart: json['validTimeStart']?.toString(),
+    validTimeEnd: json['validTimeEnd']?.toString(),
+    maxRedemptions: json['maxRedemptions'] as int?,
+    savingValue: json['savingValue'] as int?,
   );
 }

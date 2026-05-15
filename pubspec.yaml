@@ -38,6 +38,7 @@ dependencies:
   # Location & Maps (Week 8)
   geolocator: ^10.1.0
   permission_handler: ^11.1.0
+  google_maps_flutter: ^2.9.0
 
   # Firebase - Crashlytics (Week 7) + FCM (Week 9)
   firebase_core: ^3.6.0
@@ -47,6 +48,9 @@ dependencies:
 
   # Image caching (Week 7 - Performance)
   cached_network_image: ^3.3.1
+
+  # Image picker
+  image_picker: ^1.1.2
 
   # Logging (Week 7)
   logger: ^2.4.0

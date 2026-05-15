@@ -53,21 +53,63 @@ class Venue {
     'activeOffersCount': activeOffersCount,
   };
 
-  factory Venue.fromJson(Map<String, dynamic> json) => Venue(
-    id: json['id'],
-    name: json['name'],
-    type: json['category'] ?? json['type'],
-    latitude: (json['lat'] ?? json['latitude']).toDouble(),
-    longitude: (json['lng'] ?? json['longitude']).toDouble(),
-    address: json['address'],
-    busyness: json['busyness'] ?? 'QUIET',
-    currentVibe: json['vibe'] ?? json['currentVibe'] ?? 'PARTY',
-    availableVibes: json['availableVibes'] != null ? List<String>.from(json['availableVibes']) : ['PARTY'],
-    offers: json['offers'] != null ? (json['offers'] as List).map((o) => Offer.fromJson(o)).toList() : [],
-    lastUpdated: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : DateTime.now(),
-    postcode: json['postcode'],
-    coverImageUrl: json['coverImageUrl'],
-    description: json['description'],
-    activeOffersCount: json['activeOffersCount'] ?? 0,
-  );
+  factory Venue.fromJson(Map<String, dynamic> json) {
+    // busyness is an object { level, percentage } or a plain string
+    final busynessRaw = json['busyness'];
+    final busynessStr = busynessRaw is Map
+        ? (busynessRaw['level']?.toString() ?? 'quiet')
+        : busynessRaw?.toString() ?? 'quiet';
+
+    // vibe is an object { tags, description } or a plain string
+    final vibeRaw = json['vibe'];
+    String vibeStr = '';
+    if (vibeRaw is Map) {
+      final tags = vibeRaw['tags'];
+      vibeStr = (tags is List && tags.isNotEmpty)
+          ? tags.first.toString()
+          : vibeRaw['description']?.toString() ?? '';
+    } else {
+      vibeStr = vibeRaw?.toString() ?? '';
+    }
+
+    // coverImageUrl: direct field or first item in images array
+    String? coverImageUrl = json['coverImageUrl']?.toString();
+    if (coverImageUrl == null) {
+      final images = json['images'];
+      if (images is List && images.isNotEmpty) {
+        coverImageUrl = images.first?.toString();
+      }
+    }
+
+    // offers: map using expiresAt or validUntil
+    List<Offer> offers = [];
+    if (json['offers'] is List) {
+      for (final o in json['offers'] as List) {
+        try { offers.add(Offer.fromJson(o as Map<String, dynamic>)); } catch (_) {}
+      }
+    }
+
+    return Venue(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      type: json['category']?.toString() ?? json['type']?.toString() ?? 'bar',
+      latitude: double.tryParse(json['lat']?.toString() ?? '') ??
+          (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: double.tryParse(json['lng']?.toString() ?? '') ??
+          (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      address: json['address']?.toString() ?? '',
+      busyness: busynessStr,
+      currentVibe: vibeStr,
+      availableVibes: [],
+      offers: offers,
+      lastUpdated: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt']) ?? DateTime.now()
+          : DateTime.now(),
+      postcode: json['postcode']?.toString(),
+      coverImageUrl: coverImageUrl,
+      description: json['description']?.toString(),
+      activeOffersCount: (json['activeOffersCount'] as num?)?.toInt() ??
+          (json['offers'] is List ? (json['offers'] as List).length : 0),
+    );
+  }
 }
