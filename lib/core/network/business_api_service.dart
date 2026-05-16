@@ -13,6 +13,45 @@ class BusinessApiService {
   final Dio _dio;
   BusinessApiService(this._dio);
 
+  // GET /business/profile
+  Future<Map<String, dynamic>> getBusinessProfile() async {
+    final response = await _dio.get('/business/profile');
+    return response.data as Map<String, dynamic>;
+  }
+
+  // PUT /business/profile - Update name, phone, avatar (multipart/form-data)
+  Future<Map<String, dynamic>> updateBusinessProfile({
+    String? name,
+    String? phone,
+    String? avatarPath,
+  }) async {
+    final token = await const FlutterSecureStorage().read(key: 'access_token');
+    final bareDio = Dio(BaseOptions(
+      baseUrl: Env.apiBaseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    ));
+    final formData = FormData();
+    if (name != null) formData.fields.add(MapEntry('name', name));
+    if (phone != null) formData.fields.add(MapEntry('phone', phone));
+    if (avatarPath != null) {
+      formData.files.add(MapEntry(
+        'avatar',
+        await MultipartFile.fromFile(avatarPath,
+            filename: avatarPath.split('/').last),
+      ));
+    }
+    final response = await bareDio.put('/business/profile', data: formData);
+    final data = response.data;
+    return (data is Map && data['user'] != null)
+        ? data['user'] as Map<String, dynamic>
+        : data as Map<String, dynamic>;
+  }
+
   // POST /auth/business/login - Business login
   Future<Map<String, dynamic>> businessLogin({
     required String email,
@@ -153,23 +192,37 @@ class BusinessApiService {
     return response.data as Map<String, dynamic>;
   }
 
-  // GET /business/analytics/{venueId} - Get venue analytics
-  Future<Map<String, dynamic>> getAnalytics(String venueId) async {
-    final response = await _dio.get('/business/analytics/$venueId');
+  // GET /business/analytics/{venueId}?period=today|week|month
+  Future<Map<String, dynamic>> getAnalytics(String venueId, {String period = 'week'}) async {
+    final response = await _dio.get(
+      '/business/analytics/$venueId',
+      queryParameters: {'period': period},
+    );
     return response.data as Map<String, dynamic>;
   }
 
-  // PUT /business/venues/{id}/status - Update busyness + vibe + liveInfo (Phase 6)
+  // GET /tags/vibes - Get all vibe tags
+  Future<List<Map<String, dynamic>>> getVibeTags() async {
+    final res = await _dio.get('/tags/vibes');
+    return List<Map<String, dynamic>>.from(res.data as List);
+  }
+
+  // GET /tags/music - Get all music tags
+  Future<List<Map<String, dynamic>>> getMusicTags() async {
+    final res = await _dio.get('/tags/music');
+    return List<Map<String, dynamic>>.from(res.data as List);
+  }
+
+  // PUT /business/venues/{id}/status
+  // Accepted fields: busyness (required), vibes (optional string[])
   Future<Map<String, dynamic>> updateVenueStatus(
     String venueId, {
-    String? busyness,
-    String? vibe,
-    String? liveInfo,
+    required String busyness,
+    List<String>? vibes,
   }) async {
     final response = await _dio.put('/business/venues/$venueId/status', data: {
-      if (busyness != null) 'busyness': busyness,
-      if (vibe != null) 'vibe': vibe,
-      if (liveInfo != null) 'liveInfo': liveInfo,
+      'busyness': busyness,
+      if (vibes != null) 'vibes': vibes,
     });
     return response.data as Map<String, dynamic>;
   }
@@ -183,10 +236,21 @@ class BusinessApiService {
   // GET /business/venues/{id}/offers - List venue offers (active + past)
   Future<List<Map<String, dynamic>>> getVenueOffers(String venueId) async {
     final response = await _dio.get('/business/venues/$venueId/offers');
-    final data = response.data is Map
-        ? response.data['data'] ?? response.data['offers'] ?? response.data
-        : response.data;
-    return List<Map<String, dynamic>>.from(data as List);
+    final raw = response.data;
+    List? list;
+    if (raw is List) {
+      list = raw;
+    } else if (raw is Map) {
+      final inner = raw['data'] ?? raw['offers'] ?? raw['items'] ?? raw['results'];
+      if (inner is List) {
+        list = inner;
+      } else if (inner is Map) {
+        final nested = inner['offers'] ?? inner['items'] ?? inner['data'];
+        if (nested is List) list = nested;
+      }
+    }
+    if (list == null) return [];
+    return list.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
   }
 
   // POST /business/offers - Create new offer

@@ -5,6 +5,8 @@ import '../data/venue_management_provider.dart';
 import '../../../core/config/env.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/models/venue.dart';
+import '../../../features/users/data/user_preferences_provider.dart';
+import '../../../shared/widgets/app_cached_image.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -32,6 +34,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final filters = ref.watch(filterProvider);
     final authService = AuthService();
     final user = authService.currentUser;
+    // Watch live profile for up-to-date avatar
+    final profileAsync = ref.watch(userProfileProvider);
+    final avatarUrl = profileAsync.valueOrNull?['avatar']?.toString()
+        ?? profileAsync.valueOrNull?['profilePicture']?.toString()
+        ?? user?.profilePicture;
     
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -52,23 +59,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       children: [
                         Stack(
                           children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.5), width: 2),
-                              ),
-                              child: ClipOval(
-                                child: user?.profilePicture != null
-                                  ? Image.network(
-                                      user!.profilePicture!,
-                                      fit: BoxFit.cover,
-                                      width: 40,
-                                      height: 40,
-                                      errorBuilder: (context, error, stackTrace) => _buildInitialsAvatar(user),
-                                    )
-                                  : _buildInitialsAvatar(user),
+                            GestureDetector(
+                              onTap: () => context.push('/profile'),
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                      color: const Color(0xFF2DD4BF).withOpacity(0.5), width: 2),
+                                ),
+                                child: ClipOval(
+                                  child: avatarUrl != null && avatarUrl.isNotEmpty
+                                      ? AppCachedImage(
+                                          url: avatarUrl,
+                                          width: 40,
+                                          height: 40,
+                                          fit: BoxFit.cover,
+                                          placeholder: _buildInitialsAvatar(user),
+                                        )
+                                      : _buildInitialsAvatar(user),
+                                ),
                               ),
                             ),
                             Positioned(
@@ -80,7 +91,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF2DD4BF),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: const Color(0xFF0F172A), width: 2),
+                                  border: Border.all(
+                                      color: const Color(0xFF0F172A), width: 2),
                                 ),
                               ),
                             ),
@@ -531,24 +543,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                   child: venue.coverImageUrl != null
-                    ? Image.network(
-                        venue.coverImageUrl!.startsWith('http')
+                    ? AppCachedImage(
+                        url: venue.coverImageUrl!.startsWith('http')
                             ? venue.coverImageUrl!
                             : '${Env.apiBaseUrl}${venue.coverImageUrl}',
                         width: double.infinity,
                         height: 280,
                         fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            height: 280,
-                            color: const Color(0xFF334155),
-                            child: const Center(
-                              child: CircularProgressIndicator(color: Color(0xFF2DD4BF)),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        placeholder: Container(
                           height: 280,
                           color: const Color(0xFF334155),
                           child: const Center(

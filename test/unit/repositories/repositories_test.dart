@@ -3,6 +3,7 @@ import 'package:reki_mvp/core/models/offer.dart';
 import 'package:reki_mvp/core/models/user.dart';
 import 'package:reki_mvp/core/models/venue.dart';
 import 'package:reki_mvp/core/models/notification.dart';
+import 'package:reki_mvp/core/models/notification_preferences.dart';
 import 'package:reki_mvp/core/network/offer_api_service.dart';
 import 'package:reki_mvp/core/network/user_api_service.dart';
 import 'package:reki_mvp/core/network/venue_api_service.dart';
@@ -128,10 +129,6 @@ class MockVenueApi implements VenueApiService {
     String? cityId, double? swLat, double? swLng,
     double? neLat, double? neLng,
   }) async => [];
-  @override Future<Map<String, dynamic>> createVibeSchedule(
-      String id, Map<String, dynamic> s) async => {};
-  @override Future<List<Map<String, dynamic>>> getVibeSchedules(String id) async => [];
-  @override Future<Map<String, dynamic>> getCurrentVibe(String id) async => {};
   @override Future<Map<String, dynamic>> submitVibeCheck(String venueId, int score) async => {};
   @override Future<List<Map<String, dynamic>>> getVenueOffers(String venueId) async => [];
 }
@@ -205,6 +202,42 @@ class MockUserApi implements UserApiService {
     if (throws) throw Exception('err');
     return [];
   }
+  @override Future<void> deleteAccount() async {
+    if (throws) throw Exception('err');
+  }
+  @override Future<Map<String, dynamic>> updateProfile({
+    String? name,
+    String? phone,
+    double? currentLat,
+    double? currentLng,
+    bool? locationEnabled,
+    bool? backgroundLocationEnabled,
+    String? avatarPath,
+  }) async {
+    if (throws) throw Exception('err');
+    return {'name': name ?? 'Test User', 'phone': phone};
+  }
+  @override Future<NotificationPreferences> getNotificationPreferences() async {
+    if (throws) throw Exception('err');
+    return NotificationPreferences(
+      id: 'np1', userId: 'u1',
+      vibeAlerts: true, livePerformance: true, socialCheckins: true,
+      offerAlerts: true, weeklyRecap: true, proximityAlerts: true,
+    );
+  }
+  @override Future<NotificationPreferences> updateNotificationPreferences(
+      Map<String, dynamic> preferences) async {
+    if (throws) throw Exception('err');
+    return NotificationPreferences(
+      id: 'np1', userId: 'u1',
+      vibeAlerts: preferences['vibeAlerts'] as bool? ?? true,
+      livePerformance: preferences['livePerformance'] as bool? ?? true,
+      socialCheckins: preferences['socialCheckins'] as bool? ?? true,
+      offerAlerts: preferences['offerAlerts'] as bool? ?? true,
+      weeklyRecap: preferences['weeklyRecap'] as bool? ?? true,
+      proximityAlerts: preferences['proximityAlerts'] as bool? ?? true,
+    );
+  }
 }
 
 // ── Mock: NotificationApiService ─────────────────────────────────────────────
@@ -216,7 +249,7 @@ class MockNotificationApi implements NotificationApiService {
         id: id,
         title: 'Test',
         message: 'Msg',
-        type: NotificationType.offer,
+        type: NotificationType.system,
         timestamp: DateTime(2024),
       );
 

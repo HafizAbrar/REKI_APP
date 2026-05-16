@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/models/user.dart';
+import '../../../core/services/user_repository.dart';
+import '../../../shared/widgets/app_cached_image.dart';
 import '../data/user_preferences_provider.dart';
 
 class UserProfileScreen extends ConsumerWidget {
@@ -124,6 +126,10 @@ class UserProfileScreen extends ConsumerWidget {
     final locationEnabled = location['locationEnabled'] == true;
     final createdAt = profile['createdAt'] != null ? DateTime.tryParse(profile['createdAt'] as String) : null;
 
+    final avatarUrl = profile['avatar']?.toString()
+        ?? profile['profilePicture']?.toString()
+        ?? profile['picture']?.toString();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -136,10 +142,15 @@ class UserProfileScreen extends ConsumerWidget {
               border: Border.all(color: const Color(0xFF2DD4BF), width: 3),
             ),
             child: ClipOval(
-              child: Container(
-                color: const Color(0xFF2DD4BF),
-                child: const Icon(Icons.person, color: Colors.white, size: 50),
-              ),
+              child: avatarUrl != null && avatarUrl.isNotEmpty
+                  ? AppCachedImage(
+                      url: avatarUrl,
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                      placeholder: _avatarFallback(),
+                    )
+                  : _avatarFallback(),
             ),
           ),
           const SizedBox(height: 16),
@@ -225,19 +236,29 @@ class UserProfileScreen extends ConsumerWidget {
               onTap: () => _showSavedVenues(context, ref)),
           _buildMenuItem(context, icon: Icons.receipt_long, title: 'Redemption History',
               onTap: () => _showRedemptions(context, ref)),
-          _buildMenuItem(context, icon: Icons.person, title: 'Edit Profile',
-              onTap: () => context.push('/user-detail?id=${profile['id']}')),
+          _buildMenuItem(context, icon: Icons.edit, title: 'Edit Profile',
+              onTap: () => context.push('/edit-profile')),
           _buildMenuItem(context, icon: Icons.settings, title: 'Preferences',
               onTap: () => context.push('/user-preferences')),
           _buildMenuItem(context, icon: Icons.notifications, title: 'Notifications',
               onTap: () => context.push('/notifications')),
+          _buildMenuItem(context, icon: Icons.notifications_active_outlined, title: 'Notification Preferences',
+              onTap: () => context.push('/notification-preferences')),
           const SizedBox(height: 16),
           _buildMenuItem(context, icon: Icons.logout, title: 'Logout', isDestructive: true,
               onTap: () { AuthService().logout(); context.go('/login'); }),
+          const SizedBox(height: 8),
+          _buildMenuItem(context, icon: Icons.delete_forever, title: 'Delete Account', isDestructive: true,
+              onTap: () => _showDeleteAccountSheet(context, ref)),
         ],
       ),
     );
   }
+
+  Widget _avatarFallback() => Container(
+    color: const Color(0xFF2DD4BF),
+    child: const Icon(Icons.person, color: Colors.white, size: 50),
+  );
 
   Widget _buildInfoCard({required String title, required List<Widget> children}) {
     return Container(
@@ -521,6 +542,193 @@ class UserProfileScreen extends ConsumerWidget {
     );
   }
 
+  void _showDeleteAccountSheet(BuildContext context, WidgetRef ref) {
+    final confirmController = TextEditingController();
+    bool isDeleting = false;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 24, right: 24, top: 8,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 32,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              // Warning icon
+              Center(
+                child: Container(
+                  width: 64, height: 64,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.delete_forever,
+                      color: Colors.red, size: 32),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Center(
+                child: Text('Delete Account',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800)),
+              ),
+              const SizedBox(height: 8),
+              const Center(
+                child: Text(
+                  'This is permanent and cannot be undone.',
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // What gets deleted
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red.withOpacity(0.2)),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('The following will be permanently deleted:',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600)),
+                    SizedBox(height: 10),
+                    _BulletItem('Your profile and personal data'),
+                    _BulletItem('Saved venues and preferences'),
+                    _BulletItem('Offer redemption history'),
+                    _BulletItem('All account activity'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Confirmation input
+              const Text('Type DELETE to confirm',
+                  style: TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: confirmController,
+                style: const TextStyle(color: Colors.white, fontSize: 15),
+                textCapitalization: TextCapitalization.characters,
+                onChanged: (_) => setSheetState(() {}),
+                decoration: InputDecoration(
+                  hintText: 'DELETE',
+                  hintStyle: const TextStyle(color: Color(0xFF475569)),
+                  filled: true,
+                  fillColor: const Color(0xFF0F172A),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Buttons
+              Row(children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.white.withOpacity(0.15)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: isDeleting
+                        ? null
+                        : () => Navigator.pop(sheetContext),
+                    child: const Text('Cancel',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      disabledBackgroundColor: Colors.red.withOpacity(0.3),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                    ),
+                    onPressed: (confirmController.text == 'DELETE' && !isDeleting)
+                        ? () async {
+                            setSheetState(() => isDeleting = true);
+                            final result = await ref
+                                .read(userRepositoryProvider)
+                                .deleteAccount();
+                            if (!context.mounted) return;
+                            Navigator.pop(sheetContext);
+                            result.when(
+                              success: (_) async {
+                                await AuthService().logout();
+                                if (context.mounted) context.go('/login');
+                              },
+                              failure: (msg) =>
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(msg),
+                                  backgroundColor: Colors.red[700],
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: isDeleting
+                        ? const SizedBox(
+                            height: 20, width: 20,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2))
+                        : const Text('Delete Account',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildMenuItem(BuildContext context, {
     required IconData icon,
     required String title,
@@ -546,6 +754,30 @@ class UserProfileScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _BulletItem extends StatelessWidget {
+  final String text;
+  const _BulletItem(this.text);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 5),
+          child: Icon(Icons.circle, color: Colors.red, size: 6),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(text,
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
+        ),
+      ],
+    ),
+  );
 }
 
 class _RedemptionCard extends StatelessWidget {

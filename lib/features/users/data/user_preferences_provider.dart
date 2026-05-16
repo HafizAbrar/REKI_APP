@@ -1,7 +1,50 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/models/notification_preferences.dart';
 import '../../../core/services/user_repository.dart';
 import '../../../core/services/venue_repository.dart';
 import '../../../core/models/venue.dart';
+
+// PUT /users/profile
+final updateProfileProvider =
+    StateNotifierProvider<UpdateProfileNotifier, AsyncValue<void>>(
+  (ref) => UpdateProfileNotifier(ref.read(userRepositoryProvider), ref),
+);
+
+class UpdateProfileNotifier extends StateNotifier<AsyncValue<void>> {
+  final UserRepository _repository;
+  final Ref _ref;
+
+  UpdateProfileNotifier(this._repository, this._ref) : super(const AsyncValue.data(null));
+
+  Future<bool> update({
+    String? name,
+    String? phone,
+    bool? locationEnabled,
+    bool? backgroundLocationEnabled,
+    String? avatarPath,
+  }) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.updateProfile(
+      name: name,
+      phone: phone,
+      locationEnabled: locationEnabled,
+      backgroundLocationEnabled: backgroundLocationEnabled,
+      avatarPath: avatarPath,
+    );
+    return result.when(
+      success: (data) {
+        state = const AsyncValue.data(null);
+        // Refresh profile after update
+        _ref.read(userProfileProvider.notifier).load();
+        return true;
+      },
+      failure: (error) {
+        state = AsyncValue.error(error, StackTrace.current);
+        return false;
+      },
+    );
+  }
+}
 
 // GET /users/preferences
 final userPreferencesProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
@@ -130,6 +173,49 @@ class RedemptionsNotifier extends StateNotifier<AsyncValue<List<Map<String, dyna
     state = result.when(
       success: (data) => AsyncValue.data(data),
       failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
+  }
+}
+
+// GET /users/notification-preferences
+final notificationPreferencesProvider =
+    StateNotifierProvider<NotificationPreferencesNotifier,
+        AsyncValue<NotificationPreferences>>(
+  (ref) => NotificationPreferencesNotifier(ref.read(userRepositoryProvider)),
+);
+
+class NotificationPreferencesNotifier
+    extends StateNotifier<AsyncValue<NotificationPreferences>> {
+  final UserRepository _repository;
+
+  NotificationPreferencesNotifier(this._repository)
+      : super(const AsyncValue.loading()) {
+    load();
+  }
+
+  Future<void> load() async {
+    state = const AsyncValue.loading();
+    final result = await _repository.getNotificationPreferences();
+    state = result.when(
+      success: AsyncValue.data,
+      failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
+  }
+
+  /// PUT /users/notification-preferences
+  /// Accepts a [NotificationPreferences] with updated values via copyWith.
+  Future<bool> update(NotificationPreferences preferences) async {
+    final result = await _repository
+        .updateNotificationPreferences(preferences.toUpdateJson());
+    return result.when(
+      success: (data) {
+        state = AsyncValue.data(data);
+        return true;
+      },
+      failure: (e) {
+        state = AsyncValue.error(e, StackTrace.current);
+        return false;
+      },
     );
   }
 }

@@ -12,6 +12,7 @@ import 'core/services/offline_sync_service.dart';
 import 'core/utils/app_logger.dart';
 import 'core/network/interceptors/auth_interceptor.dart';
 import 'core/services/auth_service.dart';
+import 'core/services/device_registration_service.dart';
 import 'shared/widgets/connectivity_banner.dart';
 
 void main() async {
@@ -54,6 +55,9 @@ class _RekiAppState extends ConsumerState<RekiApp> {
       appLogger.w('Session expired — redirecting to login');
       await AuthService().logout();
       appRouter.go('/login');
+    });
+    tokenRefreshedStream.stream.listen((_) {
+      ref.read(deviceRegistrationServiceProvider).register();
     });
   }
 

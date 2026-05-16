@@ -199,8 +199,10 @@ class _VenueCard extends ConsumerWidget {
                   children: [
                     _chip(category.toUpperCase(), Icons.category),
                     const SizedBox(width: 8),
-                    if (vibeTags.isNotEmpty) _chip(vibeTags, Icons.mood),
-                    const Spacer(),
+                    if (vibeTags.isNotEmpty) Flexible(
+                      child: _chip(vibeTags, Icons.mood, maxLines: 1),
+                    ),
+                    const SizedBox(width: 8),
                     _chip('$activeOffers offers', Icons.local_offer, color: AppTheme.primaryColor),
                   ],
                 ),
@@ -272,7 +274,7 @@ class _VenueCard extends ConsumerWidget {
     );
   }
 
-  Widget _chip(String label, IconData icon, {Color? color}) => Container(
+  Widget _chip(String label, IconData icon, {Color? color, int maxLines = 1}) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: (color ?? const Color(0xFF64748B)).withOpacity(0.1),
@@ -281,7 +283,12 @@ class _VenueCard extends ConsumerWidget {
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, size: 11, color: color ?? const Color(0xFF64748B)),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: color ?? const Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600)),
+          Flexible(
+            child: Text(label,
+                style: TextStyle(color: color ?? const Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600),
+                maxLines: maxLines,
+                overflow: TextOverflow.ellipsis),
+          ),
         ]),
       );
 

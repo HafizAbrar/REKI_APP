@@ -79,19 +79,41 @@ class BusinessRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> getAnalytics(String venueId) async {
+  Future<Result<Map<String, dynamic>>> getAnalytics(String venueId, {String period = 'week'}) async {
     try {
-      return Result.success(await _api.getAnalytics(venueId));
+      return Result.success(await _api.getAnalytics(venueId, period: period));
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<List<Map<String, dynamic>>>> getVibeTags() async {
+    try {
+      return Result.success(await _api.getVibeTags());
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<List<Map<String, dynamic>>>> getMusicTags() async {
+    try {
+      return Result.success(await _api.getMusicTags());
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
   Future<Result<Map<String, dynamic>>> updateVenueStatus(
-    String venueId, {String? busyness, String? vibe, String? liveInfo}) async {
+    String venueId, {
+    required String busyness,
+    List<String>? vibes,
+  }) async {
     try {
       return Result.success(await _api.updateVenueStatus(
-        venueId, busyness: busyness, vibe: vibe, liveInfo: liveInfo));
+        venueId,
+        busyness: busyness,
+        vibes: vibes,
+      ));
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }
@@ -141,6 +163,30 @@ class BusinessRepository {
   Future<Result<Map<String, dynamic>>> toggleOffer(String id) async {
     try {
       return Result.success(await _api.toggleOffer(id));
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> getBusinessProfile() async {
+    try {
+      return Result.success(await _api.getBusinessProfile());
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> updateBusinessProfile({
+    String? name,
+    String? phone,
+    String? avatarPath,
+  }) async {
+    try {
+      return Result.success(await _api.updateBusinessProfile(
+        name: name,
+        phone: phone,
+        avatarPath: avatarPath,
+      ));
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }

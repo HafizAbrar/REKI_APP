@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
-import '../../../core/network/vibe_schedule_api_service.dart';
 import '../../../core/network/venue_api_service.dart';
 import '../../../core/models/vibe_schedule.dart';
 import '../../../core/config/env.dart';
@@ -44,7 +43,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
 
   Future<void> _loadVibeSchedules() async {
     try {
-      final apiService = ref.read(vibeScheduleApiServiceProvider);
+      final apiService = ref.read(venueApiServiceProvider);
       final schedules = await apiService.getVibeSchedules(widget.venueId);
       setState(() => _vibeSchedules = schedules.map((s) => VibeSchedule.fromJson(s)).toList());
     } catch (e) {

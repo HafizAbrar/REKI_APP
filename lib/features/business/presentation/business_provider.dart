@@ -1,6 +1,50 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/business_repository.dart';
 
+// GET /business/profile
+final businessProfileProvider =
+    StateNotifierProvider<BusinessProfileNotifier, AsyncValue<Map<String, dynamic>>>(
+  (ref) => BusinessProfileNotifier(ref.read(businessRepositoryProvider)),
+);
+
+class BusinessProfileNotifier
+    extends StateNotifier<AsyncValue<Map<String, dynamic>>> {
+  final BusinessRepository _repository;
+  BusinessProfileNotifier(this._repository) : super(const AsyncValue.loading()) {
+    load();
+  }
+
+  Future<void> load() async {
+    state = const AsyncValue.loading();
+    final result = await _repository.getBusinessProfile();
+    state = result.when(
+      success: AsyncValue.data,
+      failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
+  }
+
+  Future<String?> update({
+    String? name,
+    String? phone,
+    String? avatarPath,
+  }) async {
+    final result = await _repository.updateBusinessProfile(
+      name: name,
+      phone: phone,
+      avatarPath: avatarPath,
+    );
+    return result.when(
+      success: (data) {
+        // Merge updated fields into current state
+        final current = state.valueOrNull ?? {};
+        state = AsyncValue.data({...current, ...data});
+        return null; // null = success
+      },
+      failure: (e) => e,
+    );
+  }
+}
+
 // GET /business/venues - Get all my venues
 final myVenuesProvider = StateNotifierProvider<MyVenuesNotifier, AsyncValue<List<Map<String, dynamic>>>>((ref) {
   return MyVenuesNotifier(ref.read(businessRepositoryProvider));
@@ -50,17 +94,83 @@ final liveDashboardProvider = StreamProvider.family<Map<String, dynamic>, String
   }
 });
 
-// GET /business/analytics/{venueId}
-final businessAnalyticsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, venueId) async {
-  final result = await ref.read(businessRepositoryProvider).getAnalytics(venueId);
-  return result.when(success: (data) => data, failure: (e) => throw Exception(e));
-});
+// GET /business/analytics/{venueId}?period=today|week|month
+// Key: (venueId, period)
+final businessAnalyticsProvider = StateNotifierProvider.family<
+    VenueAnalyticsNotifier,
+    AsyncValue<Map<String, dynamic>>,
+    ({String venueId, String period})>(
+  (ref, args) =>
+      VenueAnalyticsNotifier(ref.read(businessRepositoryProvider), args.venueId, args.period),
+);
+
+class VenueAnalyticsNotifier
+    extends StateNotifier<AsyncValue<Map<String, dynamic>>> {
+  final BusinessRepository _repository;
+  final String _venueId;
+  final String _period;
+
+  VenueAnalyticsNotifier(this._repository, this._venueId, this._period)
+      : super(const AsyncValue.loading()) {
+    load();
+  }
+
+  Future<void> load() async {
+    state = const AsyncValue.loading();
+    final result = await _repository.getAnalytics(_venueId, period: _period);
+    state = result.when(
+      success: AsyncValue.data,
+      failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
+  }
+}
 
 // GET /business/venues/{id}/status
-final venueStatusProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, venueId) async {
-  final result = await ref.read(businessRepositoryProvider).getVenueStatus(venueId);
-  return result.when(success: (data) => data, failure: (e) => throw Exception(e));
-});
+final venueStatusProvider = StateNotifierProvider.family<
+    VenueStatusLoadNotifier,
+    AsyncValue<Map<String, dynamic>>,
+    String>(
+  (ref, venueId) =>
+      VenueStatusLoadNotifier(ref.read(businessRepositoryProvider), venueId),
+);
+
+class VenueStatusLoadNotifier
+    extends StateNotifier<AsyncValue<Map<String, dynamic>>> {
+  final BusinessRepository _repository;
+  final String _venueId;
+
+  VenueStatusLoadNotifier(this._repository, this._venueId)
+      : super(const AsyncValue.loading()) {
+    load();
+  }
+
+  Future<void> load() async {
+    state = const AsyncValue.loading();
+    final result = await _repository.getVenueStatus(_venueId);
+    state = result.when(
+      success: AsyncValue.data,
+      failure: (e) => AsyncValue.error(e, StackTrace.current),
+    );
+  }
+
+  Future<String?> update({
+    required String busyness,
+    List<String>? vibes,
+  }) async {
+    final result = await _repository.updateVenueStatus(
+      _venueId,
+      busyness: busyness,
+      vibes: vibes,
+    );
+    return result.when(
+      success: (data) {
+        state = AsyncValue.data(data);
+        return null;
+      },
+      failure: (e) => e,
+    );
+  }
+}
 
 // GET /business/venues/{id}/offers
 final businessVenueOffersProvider = StateNotifierProvider.family<BusinessOffersNotifier, AsyncValue<List<Map<String, dynamic>>>, String>((ref, venueId) {
@@ -109,32 +219,22 @@ class BusinessOffersNotifier extends StateNotifier<AsyncValue<List<Map<String, d
   }
 }
 
-// PUT /business/venues/{id}/status notifier
-final venueStatusNotifierProvider = StateNotifierProvider.family<VenueStatusNotifier, AsyncValue<Map<String, dynamic>?>, String>((ref, venueId) {
-  return VenueStatusNotifier(ref.read(businessRepositoryProvider), venueId);
+// GET /tags/vibes + /tags/music
+final vibeTagsProvider = FutureProvider<List<String>>((ref) async {
+  final result = await ref.read(businessRepositoryProvider).getVibeTags();
+  return result.when(
+    success: (tags) => tags.map((t) => t['name'].toString()).toList(),
+    failure: (_) => [],
+  );
 });
 
-class VenueStatusNotifier extends StateNotifier<AsyncValue<Map<String, dynamic>?>> {
-  final BusinessRepository _repository;
-  final String _venueId;
-
-  VenueStatusNotifier(this._repository, this._venueId) : super(const AsyncValue.data(null));
-
-  // Phase 6: added liveInfo for Worker "What's On" updates
-  Future<bool> updateStatus({String? busyness, String? vibe, String? liveInfo}) async {
-    state = const AsyncValue.loading();
-    final result = await _repository.updateVenueStatus(
-      _venueId,
-      busyness: busyness,
-      vibe: vibe,
-      liveInfo: liveInfo,
-    );
-    return result.when(
-      success: (data) { state = AsyncValue.data(data); return true; },
-      failure: (e) { state = AsyncValue.error(e, StackTrace.current); return false; },
-    );
-  }
-}
+final musicTagsProvider = FutureProvider<List<String>>((ref) async {
+  final result = await ref.read(businessRepositoryProvider).getMusicTags();
+  return result.when(
+    success: (tags) => tags.map((t) => t['name'].toString()).toList(),
+    failure: (_) => [],
+  );
+});
 
 // POST /auth/business/login + register + forgot-password notifier
 final businessAuthProvider = StateNotifierProvider<BusinessAuthNotifier, AsyncValue<Map<String, dynamic>?>>((ref) {

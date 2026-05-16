@@ -28,29 +28,58 @@ class NotificationManagementNotifier
     );
   }
 
-  // PUT /notifications/{id}/read
+  // PUT /notifications/{id}/read — optimistic update
   Future<bool> markAsRead(String id) async {
+    // Optimistically mark as read in local state immediately
+    final current = state.valueOrNull;
+    if (current != null) {
+      final updated = current.map((key, list) => MapEntry(
+        key,
+        list.map((n) => n.id == id ? (n..isRead = true) : n).toList(),
+      ));
+      state = AsyncValue.data(updated);
+    }
+    // Fire API in background — reload on failure to restore correct state
     final result = await _repository.markAsRead(id);
     return result.when(
-      success: (_) { loadNotifications(); return true; },
-      failure: (_) => false,
+      success: (_) => true,
+      failure: (_) { loadNotifications(); return false; },
     );
   }
 
-  // PUT /notifications/read-all
+  // PUT /notifications/read-all — optimistic update
   Future<bool> markAllAsRead() async {
+    // Optimistically mark all as read in local state immediately
+    final current = state.valueOrNull;
+    if (current != null) {
+      final updated = current.map((key, list) => MapEntry(
+        key,
+        list.map((n) => n..isRead = true).toList(),
+      ));
+      state = AsyncValue.data(updated);
+    }
+    // Fire API in background — reload on failure to restore correct state
     final result = await _repository.markAllAsRead();
     return result.when(
-      success: (_) { loadNotifications(); return true; },
-      failure: (_) => false,
+      success: (_) => true,
+      failure: (_) { loadNotifications(); return false; },
     );
   }
 
   Future<bool> deleteNotification(String id) async {
+    // Optimistically remove from local state immediately
+    final current = state.valueOrNull;
+    if (current != null) {
+      final updated = current.map((key, list) => MapEntry(
+        key,
+        list.where((n) => n.id != id).toList(),
+      ));
+      state = AsyncValue.data(updated);
+    }
     final result = await _repository.deleteNotification(id);
     return result.when(
-      success: (_) { loadNotifications(); return true; },
-      failure: (_) => false,
+      success: (_) => true,
+      failure: (_) { loadNotifications(); return false; },
     );
   }
 

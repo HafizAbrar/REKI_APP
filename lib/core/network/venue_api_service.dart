@@ -142,22 +142,16 @@ class VenueApiService {
     return Venue.fromJson(response.data);
   }
 
-  // POST /venues/{id}/vibe-schedules - Create vibe schedule
-  Future<Map<String, dynamic>> createVibeSchedule(String id, Map<String, dynamic> schedule) async {
-    final response = await _dio.post('/venues/$id/vibe-schedules', data: schedule);
-    return response.data;
-  }
-
-  // GET /venues/{id}/vibe-schedules - Get vibe schedules
-  Future<List<Map<String, dynamic>>> getVibeSchedules(String id) async {
-    final response = await _dio.get('/venues/$id/vibe-schedules');
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  // GET /venues/{id}/current-vibe - Get current vibe
-  Future<Map<String, dynamic>> getCurrentVibe(String id) async {
-    final response = await _dio.get('/venues/$id/current-vibe');
-    return response.data;
+  // GET /venues/{id}/vibe-schedules - Get weekly vibe schedule
+  Future<List<Map<String, dynamic>>> getVibeSchedules(String venueId) async {
+    final response = await _dio.get('/venues/$venueId/vibe-schedules');
+    final data = response.data;
+    if (data is List) return List<Map<String, dynamic>>.from(data);
+    if (data is Map) {
+      final list = data['schedules'] ?? data['data'] ?? data['results'] ?? [];
+      return List<Map<String, dynamic>>.from(list as List);
+    }
+    return [];
   }
 
   // GET /venues/{id}/offers - Get offers for a specific venue

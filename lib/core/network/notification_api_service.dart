@@ -21,10 +21,10 @@ class NotificationApiService {
   // PUT /notifications/{id}/read - Mark a notification as read
   Future<AppNotification> markAsRead(String id) async {
     final response = await _dio.put('/notifications/$id/read');
-    final data = response.data is Map && response.data['data'] != null
-        ? response.data['data']
+    final data = response.data is Map
+        ? (response.data['data'] ?? response.data['notification'] ?? response.data)
         : response.data;
-    return AppNotification.fromJson(data);
+    return AppNotification.fromJson(data as Map<String, dynamic>);
   }
 
   // PUT /notifications/read-all - Mark all notifications as read

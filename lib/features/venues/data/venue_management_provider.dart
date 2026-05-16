@@ -108,21 +108,3 @@ final venueDetailProvider = FutureProvider.family<Venue, String>((ref, id) async
     failure: (error) => throw Exception(error),
   );
 });
-
-final vibeSchedulesProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, id) async {
-  final repository = ref.read(venueRepositoryProvider);
-  final result = await repository.getVibeSchedules(id);
-  return result.when(
-    success: (schedules) => schedules,
-    failure: (error) => throw Exception(error),
-  );
-});
-
-final currentVibeProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
-  final repository = ref.read(venueRepositoryProvider);
-  final result = await repository.getCurrentVibe(id);
-  return result.when(
-    success: (vibe) => vibe,
-    failure: (error) => throw Exception(error),
-  );
-});

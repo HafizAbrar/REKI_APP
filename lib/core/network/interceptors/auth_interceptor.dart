@@ -6,6 +6,9 @@ import '../../config/env.dart';
 /// Fires when a 401 cannot be recovered via refresh — app should redirect to login.
 final sessionExpiredStream = StreamController<void>.broadcast();
 
+/// Fires after a silent token refresh succeeds — listeners should re-register the device.
+final tokenRefreshedStream = StreamController<void>.broadcast();
+
 class AuthInterceptor extends Interceptor {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   bool _isRefreshing = false;
@@ -93,6 +96,9 @@ class AuthInterceptor extends Interceptor {
       if (newRefreshToken != null) {
         await _storage.write(key: 'refresh_token', value: newRefreshToken);
       }
+
+      // Notify listeners (e.g. device registration) that a new token is available
+      tokenRefreshedStream.add(null);
 
       // Retry original request
       final retryResponse = await _retry(err.requestOptions, newAccessToken);

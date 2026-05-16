@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/network/auth_api_service.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/device_registration_service.dart';
 
 // Auth service provider
 final authNotifierProvider = Provider<AuthService>((ref) {
@@ -14,14 +15,17 @@ final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
     ref.watch(authApiServiceProvider),
     ref.watch(authNotifierProvider),
+    ref.read(deviceRegistrationServiceProvider),
   );
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthApiService _apiService;
   final AuthService _authService;
+  final DeviceRegistrationService _deviceReg;
 
-  AuthNotifier(this._apiService, this._authService) : super(const AuthStateInitial());
+  AuthNotifier(this._apiService, this._authService, this._deviceReg)
+      : super(const AuthStateInitial());
 
   bool get isLoading => state is AuthStateLoading;
   bool get isAuthenticated => state is AuthStateAuthenticated;
@@ -126,6 +130,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (response['user'] != null) {
         _authService.setCurrentUserFromJson(response['user'] as Map<String, dynamic>);
       }
+      // Register device for push notifications
+      _deviceReg.register();
       state = const AuthStateLoginSuccess();
     } catch (e) {
       state = AuthStateError(_parseError(e));
@@ -177,6 +183,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final response = await _apiService.loginAsGuest();
       await _storeTokens(response);
       await _authService.fetchCurrentUser();
+      _deviceReg.register();
       state = const AuthStateGuestSuccess();
     } catch (e) {
       state = AuthStateError(_parseError(e));
@@ -217,6 +224,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
+    await _deviceReg.deactivate();
     try {
       await _apiService.logout();
     } catch (e) {}
@@ -255,6 +263,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (photoUrl != null) {
       _authService.setProfilePicture(photoUrl);
     }
+    // Register device for push notifications after every successful auth
+    _deviceReg.register();
   }
 
   Future<void> _storeTokens(Map<String, dynamic> response) async {

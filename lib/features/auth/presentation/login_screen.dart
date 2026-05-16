@@ -106,10 +106,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             case UserRole.BUSINESS:
               context.go('/business-dashboard');
             case UserRole.USER:
-              context.go('/personalize');
+              context.go('/home');
           }
         } else {
-          context.go('/personalize');
+          context.go('/home');
         }
       } else if (next is AuthStateError) {
         ScaffoldMessenger.of(context).showSnackBar(

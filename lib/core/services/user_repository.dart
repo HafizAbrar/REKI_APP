@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/notification_preferences.dart';
 import '../models/user.dart';
 import '../network/user_api_service.dart';
 import '../utils/error_handler.dart';
@@ -49,6 +50,31 @@ class UserRepository {
     }
   }
 
+  Future<Result<Map<String, dynamic>>> updateProfile({
+    String? name,
+    String? phone,
+    double? currentLat,
+    double? currentLng,
+    bool? locationEnabled,
+    bool? backgroundLocationEnabled,
+    String? avatarPath,
+  }) async {
+    try {
+      final data = await _apiService.updateProfile(
+        name: name,
+        phone: phone,
+        currentLat: currentLat,
+        currentLng: currentLng,
+        locationEnabled: locationEnabled,
+        backgroundLocationEnabled: backgroundLocationEnabled,
+        avatarPath: avatarPath,
+      );
+      return Result.success(data);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
   Future<Result<Map<String, dynamic>>> getProfile() async {
     try {
       final profile = await _apiService.getProfile();
@@ -85,6 +111,15 @@ class UserRepository {
     }
   }
 
+  Future<Result<void>> deleteAccount() async {
+    try {
+      await _apiService.deleteAccount();
+      return Result.success(null);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
   Future<Result<List<Map<String, dynamic>>>> getSavedVenues() async {
     try {
       final venues = await _apiService.getSavedVenues();
@@ -116,6 +151,25 @@ class UserRepository {
     try {
       final redemptions = await _apiService.getRedemptions();
       return Result.success(redemptions);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<NotificationPreferences>> getNotificationPreferences() async {
+    try {
+      final prefs = await _apiService.getNotificationPreferences();
+      return Result.success(prefs);
+    } catch (e) {
+      return Result.failure(ErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<Result<NotificationPreferences>> updateNotificationPreferences(
+      Map<String, dynamic> preferences) async {
+    try {
+      final prefs = await _apiService.updateNotificationPreferences(preferences);
+      return Result.success(prefs);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }

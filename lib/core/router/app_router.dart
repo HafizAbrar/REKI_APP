@@ -17,34 +17,46 @@ import '../../features/venues/presentation/venue_filter_screen.dart';
 
 import '../../features/venues/presentation/venue_detail_screen.dart';
 import '../../features/venues/presentation/map_view_screen.dart';
-import '../../features/venues/presentation/vibe_schedules_screen.dart';
 import '../../features/offers/presentation/offer_detail_screen.dart';
 import '../../features/offers/presentation/offer_redeemed_screen.dart';
 import '../../features/offers/presentation/offers_list_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/notifications/presentation/notification_preferences_screen.dart';
 import '../../features/business/presentation/business_dashboard_screen.dart';
+import '../../features/business/presentation/business_profile_screen.dart';
+import '../../features/business/presentation/edit_business_profile_screen.dart';
+import '../../features/business/presentation/business_venue_detail_screen.dart';
+import '../../features/business/presentation/venue_analytics_screen.dart';
+import '../../features/business/presentation/venue_status_screen.dart';
 import '../../features/business/presentation/business_update_screen.dart';
 import '../../features/business/presentation/manage_offers_screen.dart';
 import '../../features/business/presentation/create_offer_screen.dart';
 import '../../features/business/presentation/my_venues_screen.dart';
 import '../../features/users/presentation/user_preferences_screen.dart';
 import '../../features/users/presentation/user_profile_screen.dart';
+import '../../features/users/presentation/edit_profile_screen.dart';
 import '../../features/auth/presentation/business_forgot_password_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/business/presentation/create_venue_screen.dart';
 
 // Routes that require a fully logged-in (non-guest) user
 const _guestBlockedRoutes = [
-  '/personalize',
   '/notifications',
   '/profile',
+  '/edit-profile',
   '/offer-redeemed',
   '/user-preferences',
+  '/notification-preferences',
 ];
 
 // Routes only accessible to BUSINESS role
 const _businessRoutes = [
   '/business-dashboard',
+  '/business-profile',
+  '/edit-business-profile',
+  '/business-venue',
+  '/venue-analytics',
+  '/venue-status',
   '/business-update',
   '/manage-offers',
   '/create-offer',
@@ -177,17 +189,49 @@ final appRouter = GoRouter(
     GoRoute(
         path: '/notifications',
         builder: (_, __) => const NotificationsScreen()),
+    GoRoute(
+        path: '/notification-preferences',
+        builder: (_, __) => const NotificationPreferencesScreen()),
 
     // ── User ──────────────────────────────────────────────────────────────
     GoRoute(
         path: '/user-preferences',
         builder: (_, __) => const UserPreferencesScreen()),
     GoRoute(path: '/profile', builder: (_, __) => const UserProfileScreen()),
+    GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfileScreen()),
 
     // ── Business Dashboard ────────────────────────────────────────────────
     GoRoute(
         path: '/business-dashboard',
         builder: (_, __) => const BusinessDashboardScreen()),
+    GoRoute(
+        path: '/business-profile',
+        builder: (_, __) => const BusinessProfileScreen()),
+    GoRoute(
+        path: '/edit-business-profile',
+        builder: (_, __) => const EditBusinessProfileScreen()),
+    GoRoute(
+      path: '/business-venue/:id',
+      builder: (_, state) => BusinessVenueDetailScreen(
+        venueId: state.pathParameters['id'] ?? '',
+        venueName: state.uri.queryParameters['name'] ?? '',
+        venueAddress: state.uri.queryParameters['address'] ?? '',
+      ),
+    ),
+    GoRoute(
+      path: '/venue-analytics/:id',
+      builder: (_, state) => VenueAnalyticsScreen(
+        venueId: state.pathParameters['id'] ?? '',
+        venueName: state.uri.queryParameters['name'] ?? '',
+      ),
+    ),
+    GoRoute(
+      path: '/venue-status/:id',
+      builder: (_, state) => VenueStatusScreen(
+        venueId: state.pathParameters['id'] ?? '',
+        venueName: state.uri.queryParameters['name'] ?? '',
+      ),
+    ),
     GoRoute(
         path: '/business-update',
         builder: (_, __) => const BusinessUpdateScreen()),
@@ -202,10 +246,6 @@ final appRouter = GoRouter(
       builder: (_, state) => CreateOfferScreen(
           venueId: state.uri.queryParameters['venueId'] ?? ''),
     ),
-    GoRoute(
-        path: '/vibe-schedules',
-        builder: (_, __) => const VibeSchedulesScreen()),
-
     // ── Admin Dashboard ───────────────────────────────────────────────────
     GoRoute(
         path: '/admin-dashboard',

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/services/device_registration_service.dart';
 import '../../core/models/user.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -12,10 +14,13 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
   final _authService = AuthService();
+  // ProviderContainer to access providers from non-Consumer widget
+  final _container = ProviderContainer();
 
   @override
   void initState() {
@@ -40,6 +45,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       final user = await _authService.fetchCurrentUser();
       
       if (user != null && mounted) {
+        // Re-register device on session restore
+        _container.read(deviceRegistrationServiceProvider).register();
         // Route based on role
         switch (user.role) {
           case UserRole.ADMIN:
@@ -60,6 +67,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void dispose() {
     _controller.dispose();
+    _container.dispose();
     super.dispose();
   }
 

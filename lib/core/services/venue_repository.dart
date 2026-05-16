@@ -106,31 +106,4 @@ class VenueRepository {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
-
-  Future<Result<Map<String, dynamic>>> createVibeSchedule(String id, Map<String, dynamic> schedule) async {
-    try {
-      final result = await _apiService.createVibeSchedule(id, schedule);
-      return Result.success(result);
-    } catch (e) {
-      return Result.failure(ErrorHandler.getErrorMessage(e));
-    }
-  }
-
-  Future<Result<List<Map<String, dynamic>>>> getVibeSchedules(String id) async {
-    try {
-      final schedules = await _apiService.getVibeSchedules(id);
-      return Result.success(schedules);
-    } catch (e) {
-      return Result.failure(ErrorHandler.getErrorMessage(e));
-    }
-  }
-
-  Future<Result<Map<String, dynamic>>> getCurrentVibe(String id) async {
-    try {
-      final vibe = await _apiService.getCurrentVibe(id);
-      return Result.success(vibe);
-    } catch (e) {
-      return Result.failure(ErrorHandler.getErrorMessage(e));
-    }
-  }
 }
