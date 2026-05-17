@@ -181,9 +181,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthStateLoading();
     try {
       final response = await _apiService.loginAsGuest();
-      await _storeTokens(response);
-      await _authService.fetchCurrentUser();
-      _deviceReg.register();
+      // Guest response uses same shape as regular login: { tokens: { accessToken, refreshToken }, user: {...} }
+      await _handleTokenResponse(response);
       state = const AuthStateGuestSuccess();
     } catch (e) {
       state = AuthStateError(_parseError(e));
@@ -267,15 +266,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _deviceReg.register();
   }
 
-  Future<void> _storeTokens(Map<String, dynamic> response) async {
-    const storage = FlutterSecureStorage();
-    if (response['access_token'] != null) {
-      await storage.write(key: 'access_token', value: response['access_token']);
-    }
-    if (response['refresh_token'] != null) {
-      await storage.write(key: 'refresh_token', value: response['refresh_token']);
-    }
-  }
 }
 
 sealed class AuthState {

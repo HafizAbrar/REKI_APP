@@ -7,6 +7,7 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/models/venue.dart';
 import '../../../features/users/data/user_preferences_provider.dart';
 import '../../../shared/widgets/app_cached_image.dart';
+import '../../../shared/widgets/guest_guard.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -60,7 +61,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Stack(
                           children: [
                             GestureDetector(
-                              onTap: () => context.push('/profile'),
+                              onTap: () async {
+                                if (!mounted) return;
+                                if (await guardGuestAction(context) && mounted) {
+                                  context.push('/profile');
+                                }
+                              },
                               child: Container(
                                 width: 40,
                                 height: 40,
@@ -667,7 +673,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ],
                       ),
                     ),
-                    Container(
+                    GestureDetector(
+                      onTap: () => guardGuestAction(context),
+                      child: Container(
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
@@ -690,6 +698,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         color: isBookmarked ? const Color(0xFF0F172A) : Colors.white,
                         size: 20,
                       ),
+                    ),
                     ),
                   ],
                 ),
@@ -886,9 +895,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (index == 1) {
           context.push('/map').then((_) => setState(() => _selectedNavIndex = 0));
         } else if (index == 2) {
-          context.push('/offers').then((_) => setState(() => _selectedNavIndex = 0));
+          guardGuestAction(context).then((allowed) {
+            if (allowed && mounted) context.push('/offers').then((_) => setState(() => _selectedNavIndex = 0));
+          });
         } else if (index == 3) {
-          context.push('/profile').then((_) => setState(() => _selectedNavIndex = 0));
+          guardGuestAction(context).then((allowed) {
+            if (allowed && mounted) context.push('/profile').then((_) => setState(() => _selectedNavIndex = 0));
+          });
         } else {
           setState(() => _selectedNavIndex = index);
         }

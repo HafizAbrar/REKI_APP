@@ -265,15 +265,24 @@ class AuthService {
     }
     try {
       final response = await _apiService!.loginAsGuest();
-      if (response['access_token'] != null) {
-        _accessToken = response['access_token'];
-        await _storage.write(key: 'access_token', value: _accessToken);
+      // Response: { user: { id, role, name }, tokens: { accessToken, refreshToken } }
+      final tokens = response['tokens'] as Map<String, dynamic>?;
+      final accessToken = tokens?['accessToken']?.toString();
+      final refreshToken = tokens?['refreshToken']?.toString();
+      if (accessToken != null) {
+        _accessToken = accessToken;
+        await _storage.write(key: 'access_token', value: accessToken);
+      }
+      if (refreshToken != null) {
+        _refreshToken = refreshToken;
+        await _storage.write(key: 'refresh_token', value: refreshToken);
       }
       if (response['user'] != null) {
         _currentUser = User.fromJson(response['user'] as Map<String, dynamic>);
       }
       return true;
     } catch (e) {
+      appLogger.e('Guest login error', error: e);
       return false;
     }
   }

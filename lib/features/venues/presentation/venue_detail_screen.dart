@@ -7,6 +7,7 @@ import '../../../core/models/vibe_schedule.dart';
 import '../../../core/config/env.dart';
 import '../../../core/services/venue_repository.dart';
 import '../../../features/users/data/user_preferences_provider.dart';
+import '../../../shared/widgets/guest_guard.dart';
 
 class VenueDetailScreen extends ConsumerStatefulWidget {
   final String venueId;
@@ -122,6 +123,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                             _buildHeaderButton(
                               _isFavorite ? Icons.favorite : Icons.favorite_border,
                               _savingFavorite ? null : () async {
+                                if (!await guardGuestAction(context)) return;
                                 setState(() => _savingFavorite = true);
                                 final notifier = ref.read(savedVenuesProvider.notifier);
                                 final success = _isFavorite
@@ -534,18 +536,7 @@ class _VibeCheckCard extends ConsumerStatefulWidget {
 class _VibeCheckCardState extends ConsumerState<_VibeCheckCard> {
   int? _submittedScore;
 
-  void _showSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => _VibeCheckSheet(
-        venueId: widget.venueId,
-        venueName: widget.venueName,
-        onSubmitted: (score) => setState(() => _submittedScore = score),
-      ),
-    );
-  }
+  void _showSheet() { guardGuestAction(context).then((allowed) { if (!allowed || !mounted) return; showModalBottomSheet(context: context, backgroundColor: Colors.transparent, isScrollControlled: true, builder: (_) => _VibeCheckSheet(venueId: widget.venueId, venueName: widget.venueName, onSubmitted: (score) => setState(() => _submittedScore = score),),); }); }
 
   @override
   Widget build(BuildContext context) {

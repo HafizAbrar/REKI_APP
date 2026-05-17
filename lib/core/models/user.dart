@@ -35,8 +35,10 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     final roleStr = json['role']?.toString().toUpperCase() ?? 'USER';
+    // 'GUEST' role from API maps to UserRole.USER
+    final normalizedRole = roleStr == 'GUEST' ? 'USER' : roleStr;
     final role = UserRole.values.firstWhere(
-      (r) => r.name.toUpperCase() == roleStr,
+      (r) => r.name.toUpperCase() == normalizedRole,
       orElse: () => UserRole.USER,
     );
     
@@ -80,5 +82,8 @@ enum UserType { customer, business }
 enum UserRole { USER, BUSINESS, ADMIN }
 
 extension UserGuest on User {
-  bool get isGuest => email == 'guest@reki.app' || id.startsWith('guest_');
+  bool get isGuest =>
+      email == 'guest@reki.app' ||
+      id.startsWith('guest_') ||
+      (email.isEmpty && name == 'Guest');
 }
