@@ -7,7 +7,7 @@ import '../../../core/theme/app_theme.dart';
 
 class BusinessDashboardScreen extends ConsumerStatefulWidget {
   const BusinessDashboardScreen({super.key});
-  
+
   @override
   ConsumerState<BusinessDashboardScreen> createState() => _BusinessDashboardScreenState();
 }
@@ -15,22 +15,48 @@ class BusinessDashboardScreen extends ConsumerStatefulWidget {
 class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    final user = AuthService().currentUser;
-    final venueId = user?.venueId ?? '';
+    final venuesAsync = ref.watch(myVenuesProvider);
 
-    if (venueId.isEmpty) {
-      return _buildNoVenue();
-    }
-
-    final dashboardAsync = ref.watch(businessDashboardProvider(venueId));
-
-    return dashboardAsync.when(
-      data: (data) => _buildDashboard(context, data, venueId),
+    return venuesAsync.when(
       loading: () => const Scaffold(
         backgroundColor: AppTheme.backgroundDark,
         body: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
       ),
       error: (e, _) => _buildError(e.toString()),
+      data: (venues) {
+        if (venues.isEmpty) return _buildNoVenue();
+
+        // Initialise selected venue on first load
+        final selectedId = ref.watch(selectedVenueIdProvider) ?? venues.first['id']?.toString() ?? '';
+        final dashboardAsync = ref.watch(businessDashboardProvider(selectedId));
+
+        return dashboardAsync.when(
+          loading: () => _buildScaffoldShell(
+            venues: venues,
+            selectedId: selectedId,
+            child: const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+          ),
+          error: (e, _) => _buildScaffoldShell(
+            venues: venues,
+            selectedId: selectedId,
+            child: Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                const SizedBox(height: 12),
+                Text(e.toString(),
+                    style: const TextStyle(color: Colors.white70),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => ref.refresh(businessDashboardProvider(selectedId)),
+                  child: const Text('Retry', style: TextStyle(color: AppTheme.primaryColor)),
+                ),
+              ]),
+            ),
+          ),
+          data: (data) => _buildDashboard(context, data, selectedId, venues),
+        );
+      },
     );
   }
 
@@ -59,14 +85,109 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
         Text(error, style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
         const SizedBox(height: 16),
         TextButton(
-          onPressed: () => setState(() {}),
+          onPressed: () => ref.refresh(myVenuesProvider),
           child: const Text('Retry', style: TextStyle(color: AppTheme.primaryColor)),
         ),
       ]),
     ),
   );
 
-  Widget _buildDashboard(BuildContext context, Map<String, dynamic> data, String venueId) {
+  // Scaffold shell used while dashboard data is loading/erroring
+  Widget _buildScaffoldShell({
+    required List<Map<String, dynamic>> venues,
+    required String selectedId,
+    required Widget child,
+  }) =>
+      Scaffold(
+        backgroundColor: AppTheme.backgroundDark,
+        appBar: _buildAppBar(venues, selectedId),
+        drawer: _buildDrawer(context, selectedId),
+        body: child,
+      );
+
+  AppBar _buildAppBar(List<Map<String, dynamic>> venues, String selectedId) {
+    final user = AuthService().currentUser;
+    final userName = user?.name ?? 'Business';
+    final profilePic = user?.profilePicture;
+
+    return AppBar(
+      backgroundColor: AppTheme.surface,
+      elevation: 0,
+      leading: Builder(
+        builder: (ctx) => IconButton(
+          icon: const Icon(Icons.menu, color: Colors.white),
+          onPressed: () => Scaffold.of(ctx).openDrawer(),
+        ),
+      ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+            backgroundImage:
+                profilePic != null ? NetworkImage(profilePic) : null,
+            child: profilePic == null
+                ? Text(
+                    userName.isNotEmpty ? userName[0].toUpperCase() : 'B',
+                    style: const TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                userName,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700),
+              ),
+              const Text(
+                'Business Portal',
+                style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        // Venue selector dropdown
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: _VenueDropdown(
+            venues: venues,
+            selectedId: selectedId,
+            onChanged: (id) {
+              if (id != null) {
+                ref.read(selectedVenueIdProvider.notifier).state = id;
+              }
+            },
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh, color: AppTheme.primaryColor),
+          onPressed: () => ref.refresh(businessDashboardProvider(selectedId)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDashboard(
+      BuildContext context,
+      Map<String, dynamic> data,
+      String venueId,
+      List<Map<String, dynamic>> venues,
+      ) {
     final venue = data['venue'] as Map<String, dynamic>? ?? {};
     final stats = data['stats'] as Map<String, dynamic>? ?? {};
     final vibeStatus = data['vibeStatus'] as Map<String, dynamic>? ?? {};
@@ -105,37 +226,7 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
-      appBar: AppBar(
-        backgroundColor: AppTheme.surface,
-        elevation: 0,
-        leading: Builder(
-          builder: (ctx) => IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(ctx).openDrawer(),
-          ),
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppTheme.primaryColor, Color(0xFF0F766E)]),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.bolt, color: Colors.white, size: 16),
-            ),
-            const SizedBox(width: 8),
-            const Text('REKI Biz', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: AppTheme.primaryColor),
-            onPressed: () => ref.refresh(businessDashboardProvider(venueId)),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(venues, venueId),
       drawer: _buildDrawer(context, venueId),
       body: RefreshIndicator(
         color: AppTheme.primaryColor,
@@ -750,6 +841,58 @@ class _ActionTile extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Venue Dropdown ───────────────────────────────────────────────────────────
+
+class _VenueDropdown extends StatelessWidget {
+  final List<Map<String, dynamic>> venues;
+  final String selectedId;
+  final ValueChanged<String?> onChanged;
+
+  const _VenueDropdown({
+    required this.venues,
+    required this.selectedId,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final validId = venues.any((v) => v['id']?.toString() == selectedId)
+        ? selectedId
+        : venues.first['id']?.toString() ?? '';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.4)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: validId,
+          isDense: true,
+          dropdownColor: const Color(0xFF1E293B),
+          icon: const Icon(Icons.expand_more, color: AppTheme.primaryColor, size: 18),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+          items: venues.map((v) {
+            final id = v['id']?.toString() ?? '';
+            final name = v['name']?.toString() ?? id;
+            return DropdownMenuItem<String>(
+              value: id,
+              child: Text(
+                name.length > 18 ? '${name.substring(0, 16)}…' : name,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+              ),
+            );
+          }).toList(),
+          onChanged: onChanged,
         ),
       ),
     );

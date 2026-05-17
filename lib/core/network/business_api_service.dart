@@ -234,23 +234,27 @@ class BusinessApiService {
   }
 
   // GET /business/venues/{id}/offers - List venue offers (active + past)
-  Future<List<Map<String, dynamic>>> getVenueOffers(String venueId) async {
+  Future<Map<String, dynamic>> getVenueOffers(String venueId) async {
     final response = await _dio.get('/business/venues/$venueId/offers');
     final raw = response.data;
-    List? list;
-    if (raw is List) {
-      list = raw;
-    } else if (raw is Map) {
-      final inner = raw['data'] ?? raw['offers'] ?? raw['items'] ?? raw['results'];
-      if (inner is List) {
-        list = inner;
-      } else if (inner is Map) {
-        final nested = inner['offers'] ?? inner['items'] ?? inner['data'];
-        if (nested is List) list = nested;
-      }
+    if (raw is Map<String, dynamic>) {
+      // Normalise: merge activeDeals + upcomingAndPast into a single map
+      final activeDeals = (raw['activeDeals'] as List? ?? [])
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+      final upcomingAndPast = (raw['upcomingAndPast'] as List? ?? [])
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+      final pagination = raw['pagination'] as Map<String, dynamic>? ?? {};
+      return {
+        'activeDeals': activeDeals,
+        'upcomingAndPast': upcomingAndPast,
+        'pagination': pagination,
+      };
     }
-    if (list == null) return [];
-    return list.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+    return {'activeDeals': [], 'upcomingAndPast': [], 'pagination': {}};
   }
 
   // POST /business/offers - Create new offer
@@ -281,8 +285,8 @@ class BusinessApiService {
   }
 
   // PUT /business/offers/{id}/toggle - Toggle offer active/inactive
-  Future<Map<String, dynamic>> toggleOffer(String id) async {
-    final response = await _dio.put('/business/offers/$id/toggle');
+  Future<Map<String, dynamic>> toggleOffer(String id, {required bool isActive}) async {
+    final response = await _dio.put('/business/offers/$id/toggle', data: {'isActive': isActive});
     return response.data as Map<String, dynamic>;
   }
 }

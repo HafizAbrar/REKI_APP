@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/network/business_api_service.dart';
 import '../../../core/services/business_repository.dart';
 import '../../../core/utils/error_handler.dart';
+import 'business_provider.dart';
 
 final userVenuesProvider = FutureProvider<List<dynamic>>((ref) async {
   return ref.read(businessApiServiceProvider).getMyVenues();
@@ -118,7 +119,12 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
       });
       if (!mounted) return;
       result.when(
-        success: (_) { _snack('Offer created successfully'); context.pop(); },
+        success: (_) {
+          _snack('Offer created successfully');
+          // Invalidate so manage offers screen reloads
+          ref.invalidate(businessVenueOffersProvider(_selectedVenueId!));
+          context.pop();
+        },
         failure: (msg) => ErrorHandler.showError(context, msg),
       );
     } catch (e) {

@@ -1,5 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../core/services/business_repository.dart';
+
+// Selected venue ID for the business dashboard
+final selectedVenueIdProvider = StateProvider<String?>((ref) {
+  return AuthService().currentUser?.venueId;
+});
 
 // GET /business/profile
 final businessProfileProvider =
@@ -173,11 +179,11 @@ class VenueStatusLoadNotifier
 }
 
 // GET /business/venues/{id}/offers
-final businessVenueOffersProvider = StateNotifierProvider.family<BusinessOffersNotifier, AsyncValue<List<Map<String, dynamic>>>, String>((ref, venueId) {
+final businessVenueOffersProvider = StateNotifierProvider.family<BusinessOffersNotifier, AsyncValue<Map<String, dynamic>>, String>((ref, venueId) {
   return BusinessOffersNotifier(ref.read(businessRepositoryProvider), venueId);
 });
 
-class BusinessOffersNotifier extends StateNotifier<AsyncValue<List<Map<String, dynamic>>>> {
+class BusinessOffersNotifier extends StateNotifier<AsyncValue<Map<String, dynamic>>> {
   final BusinessRepository _repository;
   final String _venueId;
 
@@ -213,8 +219,8 @@ class BusinessOffersNotifier extends StateNotifier<AsyncValue<List<Map<String, d
   }
 
   // PUT /business/offers/{id}/toggle
-  Future<bool> toggleOffer(String id) async {
-    final result = await _repository.toggleOffer(id);
+  Future<bool> toggleOffer(String id, {required bool isActive}) async {
+    final result = await _repository.toggleOffer(id, isActive: isActive);
     return result.when(success: (_) { load(); return true; }, failure: (_) => false);
   }
 }

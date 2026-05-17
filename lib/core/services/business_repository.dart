@@ -127,7 +127,7 @@ class BusinessRepository {
     }
   }
 
-  Future<Result<List<Map<String, dynamic>>>> getVenueOffers(String venueId) async {
+  Future<Result<Map<String, dynamic>>> getVenueOffers(String venueId) async {
     try {
       return Result.success(await _api.getVenueOffers(venueId));
     } catch (e) {
@@ -160,9 +160,9 @@ class BusinessRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> toggleOffer(String id) async {
+  Future<Result<Map<String, dynamic>>> toggleOffer(String id, {required bool isActive}) async {
     try {
-      return Result.success(await _api.toggleOffer(id));
+      return Result.success(await _api.toggleOffer(id, isActive: isActive));
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }
