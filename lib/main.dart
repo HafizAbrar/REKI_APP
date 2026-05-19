@@ -50,11 +50,18 @@ class _RekiAppState extends ConsumerState<RekiApp> {
     _listenSessionExpiry();
   }
 
+  bool _handlingExpiry = false;
+
   void _listenSessionExpiry() {
     sessionExpiredStream.stream.listen((_) async {
+      if (_handlingExpiry) return;
+      _handlingExpiry = true;
       appLogger.w('Session expired — redirecting to login');
-      await AuthService().logout();
+      // Clear local state only — do NOT call logout() API (token already invalid)
+      final authService = AuthService();
+      authService.clearSession();
       appRouter.go('/login');
+      _handlingExpiry = false;
     });
     tokenRefreshedStream.stream.listen((_) {
       ref.read(deviceRegistrationServiceProvider).register();
@@ -72,6 +79,12 @@ class _RekiAppState extends ConsumerState<RekiApp> {
         },
       );
       await fcm.subscribeToTopic('manchester');
+      // Re-register device on every app start so the backend always has
+      // a valid FCM token — covers already-logged-in users who skip login.
+      final deviceReg = ref.read(deviceRegistrationServiceProvider);
+      await deviceReg.register();
+      // Re-register whenever FCM rotates the token
+      fcm.setTokenRefreshCallback((_) => deviceReg.register());
     } catch (e) {
       appLogger.w('FCM init skipped: $e');
     }

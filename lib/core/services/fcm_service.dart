@@ -97,8 +97,12 @@ class FcmService {
     _messaging.onTokenRefresh.listen((t) {
       _token = t;
       appLogger.i('FCM token refreshed');
+      _onTokenRefresh?.call(t);
     });
   }
+
+  Function(String)? _onTokenRefresh;
+  void setTokenRefreshCallback(Function(String) cb) => _onTokenRefresh = cb;
 
   void _showLocal(RemoteMessage message) {
     final n = message.notification;

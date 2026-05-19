@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'auth_provider.dart';
+import '../../auth/presentation/auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user.dart';
 
@@ -18,6 +18,7 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
   bool _obscurePassword = true;
   String? _emailError;
   String? _passwordError;
+  String? _generalError;
 
   @override
   void dispose() {
@@ -33,6 +34,7 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
     setState(() {
       _emailError = email.isEmpty ? 'Please enter your business email.' : null;
       _passwordError = password.isEmpty ? 'Please enter your password.' : null;
+      _generalError = null;
     });
 
     if (_emailError != null || _passwordError != null) return;
@@ -51,9 +53,7 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
           context.go('/home');
         }
       } else if (next is AuthStateError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message), backgroundColor: Colors.red[700]),
-        );
+        setState(() => _generalError = next.message);
       }
     });
 
@@ -165,7 +165,7 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                     hint: 'Business Email',
                     icon: Icons.mail,
                     errorText: _emailError,
-                    onChanged: (_) => setState(() => _emailError = null),
+                    onChanged: (_) => setState(() { _emailError = null; _generalError = null; }),
                   ),
                   const SizedBox(height: 20),
                   _buildInputField(
@@ -176,7 +176,7 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                     obscureText: _obscurePassword,
                     onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
                     errorText: _passwordError,
-                    onChanged: (_) => setState(() => _passwordError = null),
+                    onChanged: (_) => setState(() { _passwordError = null; _generalError = null; }),
                   ),
                   const SizedBox(height: 8),
                   Align(
@@ -190,6 +190,31 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  // Inline error banner
+                  if (_generalError != null) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.4)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _generalError!,
+                              style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   // Login button — same glow style
                   SizedBox(
                     width: double.infinity,

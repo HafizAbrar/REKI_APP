@@ -10,7 +10,9 @@ import 'admin_users_screen.dart';
 import 'admin_profile_screen.dart';
 import 'test_push_screen.dart';
 import '../../../core/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/services/auth_service.dart';
+import '../../auth/presentation/auth_provider.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -217,7 +219,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ListTile(
           leading: const Icon(Icons.logout, color: Colors.red),
           title: const Text('Logout', style: TextStyle(color: Colors.red)),
-          onTap: () {},
+          onTap: () async {
+            Navigator.pop(context);
+            await ref.read(authStateProvider.notifier).logout();
+            if (context.mounted) context.go('/login');
+          },
         ),
       ],
     ),

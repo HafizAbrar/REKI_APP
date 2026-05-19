@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../business/presentation/business_provider.dart';
+import 'business_provider.dart';
 
 class BusinessForgotPasswordScreen extends ConsumerStatefulWidget {
   const BusinessForgotPasswordScreen({super.key});

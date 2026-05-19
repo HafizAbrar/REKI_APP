@@ -23,6 +23,7 @@ class AuthInterceptor extends Interceptor {
     '/auth/google',
     '/auth/apple',
     '/auth/guest',
+    '/auth/logout',
   ];
 
   @override

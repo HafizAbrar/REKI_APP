@@ -62,17 +62,112 @@ class _BusinessDashboardScreenState extends ConsumerState<BusinessDashboardScree
 
   Widget _buildNoVenue() => Scaffold(
     backgroundColor: AppTheme.backgroundDark,
-    body: Center(
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Icon(Icons.store_outlined, color: Colors.white.withOpacity(0.3), size: 64),
-        const SizedBox(height: 16),
-        const Text('No venue found', style: TextStyle(color: Colors.white70, fontSize: 16)),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () => context.push('/admin/create-venue'),
-          child: const Text('Create Venue', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w600)),
+    appBar: AppBar(
+      backgroundColor: AppTheme.surface,
+      elevation: 0,
+      leading: Builder(
+        builder: (ctx) => IconButton(
+          icon: const Icon(Icons.menu, color: Colors.white),
+          onPressed: () => Scaffold.of(ctx).openDrawer(),
         ),
-      ]),
+      ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+            child: Text(
+              (AuthService().currentUser?.name.isNotEmpty == true)
+                  ? AuthService().currentUser!.name[0].toUpperCase()
+                  : 'B',
+              style: const TextStyle(
+                  color: AppTheme.primaryColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AuthService().currentUser?.name ?? 'Business',
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700),
+              ),
+              const Text(
+                'Business Portal',
+                style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+    drawer: _buildDrawer(context, ''),
+    body: Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 2),
+              ),
+              child: const Icon(Icons.store_outlined,
+                  color: AppTheme.primaryColor, size: 48),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Welcome to REKI Business',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'You haven\'t added a venue yet.\nCreate your first venue to start managing your business.',
+              style: TextStyle(
+                  color: Color(0xFF94A3B8), fontSize: 14, height: 1.6),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: AppTheme.backgroundDark,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.add_business, size: 20),
+                label: const Text('Create Your First Venue',
+                    style: TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
+                onPressed: () => context.push('/admin/create-venue'),
+              ),
+            ),
+          ],
+        ),
+      ),
     ),
   );
 

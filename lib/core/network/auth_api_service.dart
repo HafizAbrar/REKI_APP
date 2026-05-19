@@ -32,18 +32,12 @@ class AuthApiService {
     required String email,
     required String password,
     required String name,
-    required String venueName,
-    required String venueAddress,
-    required String venueCategory,
     String? phone,
   }) async {
     final response = await _dio.post('/auth/business/register', data: {
       'email': email,
       'password': password,
       'name': name,
-      'venueName': venueName,
-      'venueAddress': venueAddress,
-      'venueCategory': venueCategory.toLowerCase(),
       if (phone != null && phone.isNotEmpty) 'phone': phone,
     });
     return response.data;
@@ -120,7 +114,7 @@ class AuthApiService {
   }) async {
     final response = await _dio.post('/auth/reset-password', data: {
       'token': token,
-      'new_password': newPassword,
+      'newPassword': newPassword,
     });
     return response.data;
   }

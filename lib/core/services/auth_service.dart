@@ -103,6 +103,14 @@ class AuthService {
     }
   }
 
+  void clearSession() {
+    _currentUser = null;
+    _accessToken = null;
+    _refreshToken = null;
+    _storage.delete(key: 'access_token');
+    _storage.delete(key: 'refresh_token');
+  }
+
   Future<void> logout() async {
     if (!useMockData && _apiService != null) {
       try {

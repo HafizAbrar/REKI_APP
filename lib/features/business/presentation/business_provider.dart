@@ -3,9 +3,7 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/services/business_repository.dart';
 
 // Selected venue ID for the business dashboard
-final selectedVenueIdProvider = StateProvider<String?>((ref) {
-  return AuthService().currentUser?.venueId;
-});
+final selectedVenueIdProvider = StateProvider<String?>((ref) => null);
 
 // GET /business/profile
 final businessProfileProvider =
@@ -67,7 +65,7 @@ class MyVenuesNotifier extends StateNotifier<AsyncValue<List<Map<String, dynamic
     final result = await _repository.getMyVenues();
     state = result.when(
       success: (data) => AsyncValue.data(data),
-      failure: (e) => AsyncValue.error(e, StackTrace.current),
+      failure: (_) => const AsyncValue.data([]),
     );
   }
 

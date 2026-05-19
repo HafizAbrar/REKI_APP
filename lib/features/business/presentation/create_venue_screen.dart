@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/network/business_api_service.dart';
+import '../../business/presentation/business_provider.dart';
 
 class CreateVenueScreen extends ConsumerStatefulWidget {
   const CreateVenueScreen({super.key});
@@ -170,13 +171,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Venue created successfully!'),
-            backgroundColor: Colors.green[700],
-          ),
-        );
-        context.pop();
+        ref.read(myVenuesProvider.notifier).load();
+        context.go('/business-dashboard');
       }
     } catch (e) {
       if (mounted) {

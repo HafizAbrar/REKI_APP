@@ -91,21 +91,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String email,
     required String password,
     required String name,
-    required String venueName,
-    required String venueAddress,
-    required String venueCategory,
     String? phone,
   }) async {
     state = const AuthStateLoading();
     try {
-      // Response: {success, message, status} — no tokens returned
       await _apiService.registerBusiness(
         email: email,
         password: password,
         name: name,
-        venueName: venueName,
-        venueAddress: venueAddress,
-        venueCategory: venueCategory,
         phone: phone,
       );
       state = const AuthStateRegisterSuccess();

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'auth_provider.dart';
+import '../../auth/presentation/auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
-
-const _venueCategories = ['bar', 'restaurant', 'club', 'casino', 'cafe', 'other'];
 
 class BusinessSignupScreen extends ConsumerStatefulWidget {
   const BusinessSignupScreen({super.key});
@@ -17,25 +15,18 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _venueNameController = TextEditingController();
-  final _venueAddressController = TextEditingController();
   final _phoneController = TextEditingController();
-  String _selectedCategory = 'bar';
   bool _obscurePassword = true;
 
   String? _nameError;
   String? _emailError;
   String? _passwordError;
-  String? _venueNameError;
-  String? _venueAddressError;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _venueNameController.dispose();
-    _venueAddressController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
@@ -44,27 +35,19 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-    final venueName = _venueNameController.text.trim();
-    final venueAddress = _venueAddressController.text.trim();
 
     setState(() {
       _nameError = name.isEmpty ? 'Please enter your full name.' : null;
       _emailError = email.isEmpty ? 'Please enter your business email.' : null;
       _passwordError = password.isEmpty ? 'Please enter a password.' : null;
-      _venueNameError = venueName.isEmpty ? 'Please enter your venue name.' : null;
-      _venueAddressError = venueAddress.isEmpty ? 'Please enter your venue address.' : null;
     });
 
-    if (_nameError != null || _emailError != null || _passwordError != null ||
-        _venueNameError != null || _venueAddressError != null) return;
+    if (_nameError != null || _emailError != null || _passwordError != null) return;
 
     await ref.read(authStateProvider.notifier).registerBusiness(
       email: email,
       password: password,
       name: name,
-      venueName: venueName,
-      venueAddress: venueAddress,
-      venueCategory: _selectedCategory,
       phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
     );
   }
@@ -124,20 +107,12 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
         valueListenable: _emailController,
         builder: (context, _, __) => ValueListenableBuilder(
           valueListenable: _passwordController,
-          builder: (context, _, __) => ValueListenableBuilder(
-            valueListenable: _venueNameController,
-            builder: (context, _, __) => ValueListenableBuilder(
-              valueListenable: _venueAddressController,
-              builder: (context, _, __) {
-                final canSubmit = _nameController.text.trim().isNotEmpty &&
-                    _emailController.text.trim().isNotEmpty &&
-                    _passwordController.text.isNotEmpty &&
-                    _venueNameController.text.trim().isNotEmpty &&
-                    _venueAddressController.text.trim().isNotEmpty;
-                return _buildScaffold(isLoading, canSubmit);
-              },
-            ),
-          ),
+          builder: (context, _, __) {
+            final canSubmit = _nameController.text.trim().isNotEmpty &&
+                _emailController.text.trim().isNotEmpty &&
+                _passwordController.text.isNotEmpty;
+            return _buildScaffold(isLoading, canSubmit);
+          },
         ),
       ),
     );
@@ -216,9 +191,6 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
                   ),
                   const SizedBox(height: 40),
 
-                  // — Personal Info —
-                  _sectionLabel('Personal Info'),
-                  const SizedBox(height: 12),
                   _buildInputField(
                     controller: _nameController,
                     hint: 'Full Name',
@@ -253,28 +225,6 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
                     errorText: _passwordError,
                     onChanged: (_) => setState(() => _passwordError = null),
                   ),
-                  const SizedBox(height: 28),
-
-                  // — Venue Info —
-                  _sectionLabel('Venue Info'),
-                  const SizedBox(height: 12),
-                  _buildInputField(
-                    controller: _venueNameController,
-                    hint: 'Venue Name',
-                    icon: Icons.store_outlined,
-                    errorText: _venueNameError,
-                    onChanged: (_) => setState(() => _venueNameError = null),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _venueAddressController,
-                    hint: 'Venue Address',
-                    icon: Icons.location_on_outlined,
-                    errorText: _venueAddressError,
-                    onChanged: (_) => setState(() => _venueAddressError = null),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildCategoryDropdown(),
                   const SizedBox(height: 32),
 
                   // Submit button
@@ -326,54 +276,6 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _sectionLabel(String label) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        label.toUpperCase(),
-        style: const TextStyle(
-          color: Color(0xFF64748B),
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryDropdown() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(9999),
-        border: Border.all(color: const Color(0xFF334155)),
-        color: AppTheme.surface,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedCategory,
-          isExpanded: true,
-          dropdownColor: AppTheme.surface,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
-          items: _venueCategories.map((cat) => DropdownMenuItem(
-            value: cat,
-            child: Row(
-              children: [
-                const Icon(Icons.category_outlined, color: Color(0xFF64748B), size: 20),
-                const SizedBox(width: 12),
-                Text(
-                  cat[0].toUpperCase() + cat.substring(1),
-                  style: const TextStyle(color: Colors.white, fontSize: 15),
-                ),
-              ],
-            ),
-          )).toList(),
-          onChanged: (val) => setState(() => _selectedCategory = val!),
-        ),
       ),
     );
   }
