@@ -85,13 +85,10 @@ class OfferRepository {
     }
   }
 
-  Future<Result<Offer>> markOfferClicked(String id) async {
+  Future<void> trackOfferClick(String id) async {
     try {
-      final offer = await _apiService.markOfferClicked(id);
-      return Result.success(offer);
-    } catch (e) {
-      return Result.failure(ErrorHandler.getErrorMessage(e));
-    }
+      await _apiService.trackOfferClick(id);
+    } catch (_) {}
   }
 
   Future<Result<Map<String, dynamic>>> getOfferStats(String id) async {

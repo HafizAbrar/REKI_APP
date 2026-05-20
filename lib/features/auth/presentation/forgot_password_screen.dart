@@ -53,6 +53,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authStateProvider, (_, next) {
       if (next is AuthStateForgotPasswordSuccess && _step == 1) {
+        if (next.resetToken != null) {
+          _tokenController.text = next.resetToken!;
+        }
         setState(() => _step = 2);
       } else if (next is AuthStateResetPasswordSuccess) {
         ScaffoldMessenger.of(context).showSnackBar(

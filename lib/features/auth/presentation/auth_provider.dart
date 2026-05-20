@@ -185,8 +185,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> forgotPassword(String email) async {
     state = const AuthStateLoading();
     try {
-      await _apiService.forgotPassword(email);
-      state = const AuthStateForgotPasswordSuccess();
+      final response = await _apiService.forgotPassword(email);
+      final resetToken = response['resetToken'] as String?;
+      state = AuthStateForgotPasswordSuccess(resetToken: resetToken);
     } catch (e) {
       state = AuthStateError(_parseError(e));
     }
@@ -291,7 +292,8 @@ class AuthStateLoginSuccess extends AuthState {
 }
 
 class AuthStateForgotPasswordSuccess extends AuthState {
-  const AuthStateForgotPasswordSuccess();
+  final String? resetToken;
+  const AuthStateForgotPasswordSuccess({this.resetToken});
 }
 
 class AuthStateResetPasswordSuccess extends AuthState {

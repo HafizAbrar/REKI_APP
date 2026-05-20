@@ -65,11 +65,14 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(primary: AppTheme.primaryColor),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+        child: Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(primary: AppTheme.primaryColor),
+          ),
+          child: child!,
         ),
-        child: child!,
       ),
     );
     if (picked != null) {
@@ -285,9 +288,9 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                 title: 'Hours & Pricing',
                 children: [
                   Row(children: [
-                    Expanded(child: _timeField(_openingHoursController, 'Opening Time', required: true)),
+                    Expanded(child: _timeField(_openingHoursController, 'Opening Time (e.g. 9:00 AM)', required: true)),
                     const SizedBox(width: 12),
-                    Expanded(child: _timeField(_closingTimeController, 'Closing Time', required: true)),
+                    Expanded(child: _timeField(_closingTimeController, 'Closing Time (e.g. 2:00 AM)', required: true)),
                   ]),
                   const SizedBox(height: 16),
                   _sectionLabel('PRICE LEVEL'),

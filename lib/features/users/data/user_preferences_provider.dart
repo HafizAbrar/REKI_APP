@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/notification_preferences.dart';
 import '../../../core/services/user_repository.dart';
 import '../../../core/services/venue_repository.dart';
+import '../../../core/services/offline_sync_service.dart';
 import '../../../core/models/venue.dart';
 
 // PUT /users/profile
@@ -98,14 +99,20 @@ class UserPreferencesNotifier extends StateNotifier<AsyncValue<Map<String, dynam
 
 // GET /users/saved-venues → resolves IDs to full Venue objects
 final savedVenuesProvider = StateNotifierProvider<SavedVenuesNotifier, AsyncValue<List<Venue>>>((ref) {
-  return SavedVenuesNotifier(ref.read(userRepositoryProvider), ref.read(venueRepositoryProvider));
+  return SavedVenuesNotifier(
+    ref.read(userRepositoryProvider),
+    ref.read(venueRepositoryProvider),
+    ref.read(offlineSyncServiceProvider),
+  );
 });
 
 class SavedVenuesNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   final UserRepository _userRepo;
   final VenueRepository _venueRepo;
+  final OfflineSyncService _syncService;
 
-  SavedVenuesNotifier(this._userRepo, this._venueRepo) : super(const AsyncValue.loading()) {
+  SavedVenuesNotifier(this._userRepo, this._venueRepo, this._syncService)
+      : super(const AsyncValue.loading()) {
     load();
   }
 
@@ -126,12 +133,25 @@ class SavedVenuesNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
 
   Future<bool> unsaveVenue(String venueId) async {
     final result = await _userRepo.unsaveVenue(venueId);
-    return result.when(success: (_) { load(); return true; }, failure: (_) => false);
+    if (result.when(success: (_) => true, failure: (_) => false)) {
+      load();
+      return true;
+    }
+    // Offline: queue and optimistically update local state
+    await _syncService.queueUnsaveVenue(venueId);
+    state = state.whenData((venues) => venues.where((v) => v.id != venueId).toList());
+    return true;
   }
 
   Future<bool> saveVenue(String venueId) async {
     final result = await _userRepo.saveVenue(venueId);
-    return result.when(success: (_) { load(); return true; }, failure: (_) => false);
+    if (result.when(success: (_) => true, failure: (_) => false)) {
+      load();
+      return true;
+    }
+    // Offline: queue and optimistically update local state
+    await _syncService.queueSaveVenue(venueId);
+    return true;
   }
 }
 

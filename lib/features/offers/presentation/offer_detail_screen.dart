@@ -322,6 +322,8 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
       return;
     }
 
+    ref.read(offerRepositoryProvider).trackOfferClick(widget.offerId);
+
     final notifier = ref.read(offerActionProvider(widget.offerId).notifier);
     final claimed = await notifier.claim();
     if (!mounted) return;

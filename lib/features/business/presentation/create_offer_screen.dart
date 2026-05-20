@@ -60,18 +60,25 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
     super.dispose();
   }
 
-  String _fmt(TimeOfDay t) =>
-      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+  String _fmt(TimeOfDay t) {
+    final hour = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
+    final minute = t.minute.toString().padLeft(2, '0');
+    final period = t.period == DayPeriod.am ? 'AM' : 'PM';
+    return '$hour:$minute $period';
+  }
 
   Future<void> _pickTime(bool isStart) async {
     final picked = await showTimePicker(
       context: context,
       initialTime: isStart ? _timeStart : _timeEnd,
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(primary: AppTheme.primaryColor),
+      builder: (ctx, child) => MediaQuery(
+        data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: false),
+        child: Theme(
+          data: Theme.of(ctx).copyWith(
+            colorScheme: const ColorScheme.dark(primary: AppTheme.primaryColor),
+          ),
+          child: child!,
         ),
-        child: child!,
       ),
     );
     if (picked != null) setState(() => isStart ? _timeStart = picked : _timeEnd = picked);

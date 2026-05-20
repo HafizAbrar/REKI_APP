@@ -154,6 +154,12 @@ class VenueApiService {
     return [];
   }
 
+  // POST /sync/queue - Submit offline action queue for processing
+  Future<Map<String, dynamic>> submitSyncQueue(List<Map<String, dynamic>> actions) async {
+    final response = await _dio.post('/sync/queue', data: {'actions': actions});
+    return response.data as Map<String, dynamic>;
+  }
+
   // GET /venues/{id}/offers - Get offers for a specific venue
   Future<List<Map<String, dynamic>>> getVenueOffers(String venueId) async {
     final response = await _dio.get('/venues/$venueId/offers');

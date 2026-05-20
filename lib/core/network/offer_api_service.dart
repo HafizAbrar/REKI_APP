@@ -62,9 +62,8 @@ class OfferApiService {
     return Offer.fromJson(response.data);
   }
 
-  Future<Offer> markOfferClicked(String id) async {
-    final response = await _dio.patch('/offers/$id/click');
-    return Offer.fromJson(response.data);
+  Future<void> trackOfferClick(String id) async {
+    await _dio.post('/offers/$id/click');
   }
 
   Future<Map<String, dynamic>> getOfferStats(String id) async {
