@@ -221,10 +221,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       children: [
                         ...filteredVenues.map((venue) => Padding(
                           padding: const EdgeInsets.only(bottom: 24),
-                          child: _buildVenueCard(
-                            venue: venue,
-                            isBookmarked: false,
-                          ),
+                          child: _buildVenueCard(venue: venue),
                         )),
                         const SizedBox(height: 32),
                         Container(
@@ -449,7 +446,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 itemCount: venues.length,
                 itemBuilder: (_, i) => Padding(
                   padding: const EdgeInsets.only(bottom: 24),
-                  child: _buildVenueCard(venue: venues[i], isBookmarked: false),
+                  child: _buildVenueCard(venue: venues[i]),
                 ),
               ),
             ),
@@ -498,10 +495,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildVenueCard({
-    required venue,
-    required bool isBookmarked,
-  }) {
+  Widget _buildVenueCard({required venue}) {
     final name = venue.name;
     final subtitle = '${venue.type} • ${venue.address}';
     final statusLabel = venue.busyness;
@@ -673,33 +667,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ],
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => guardGuestAction(context),
-                      child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: isBookmarked
-                            ? const Color(0xFF2DD4BF).withOpacity(0.9)
-                            : Colors.black.withOpacity(0.4),
-                        shape: BoxShape.circle,
-                        border: isBookmarked
-                            ? null
-                            : Border.all(color: Colors.white.withOpacity(0.1), width: 1),
-                        boxShadow: isBookmarked ? [
-                          BoxShadow(
-                            color: const Color(0xFF2DD4BF).withOpacity(0.2),
-                            blurRadius: 16,
-                          ),
-                        ] : [],
-                      ),
-                      child: Icon(
-                        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                        color: isBookmarked ? const Color(0xFF0F172A) : Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    ),
+
                   ],
                 ),
               ),

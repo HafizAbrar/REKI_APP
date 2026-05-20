@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:geolocator/geolocator.dart';
 import '../data/venue_management_provider.dart';
 import '../../../core/network/venue_api_service.dart';
 import '../../../core/models/vibe_schedule.dart';
@@ -19,7 +21,6 @@ class VenueDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
-  bool _isFavorite = false;
   bool _savingFavorite = false;
   List<VibeSchedule>? _vibeSchedules;
 
@@ -29,16 +30,6 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     _loadVibeSchedules();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(venueRepositoryProvider).trackVenueView(widget.venueId);
-      _initFavoriteState();
-    });
-  }
-
-  void _initFavoriteState() {
-    final saved = ref.read(savedVenuesProvider);
-    saved.whenData((venues) {
-      if (mounted) {
-        setState(() => _isFavorite = venues.any((v) => v.id == widget.venueId));
-      }
     });
   }
 
@@ -49,6 +40,38 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
       setState(() => _vibeSchedules = schedules.map((s) => VibeSchedule.fromJson(s)).toList());
     } catch (e) {
       // Handle error silently
+    }
+  }
+
+  Future<void> _openDirections(double destLat, double destLng) async {
+    String origin = '';
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        final pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+        origin = '${pos.latitude},${pos.longitude}';
+      }
+    } catch (_) {}
+
+    final uri = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1'
+      '${origin.isNotEmpty ? '&origin=$origin' : ''}'
+      '&destination=$destLat,$destLng'
+      '&travelmode=walking',
+    );
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open Google Maps')),
+        );
+      }
     }
   }
 
@@ -120,35 +143,36 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _buildHeaderButton(Icons.arrow_back, () => Navigator.pop(context)),
-                            _buildHeaderButton(
-                              _isFavorite ? Icons.favorite : Icons.favorite_border,
-                              _savingFavorite ? null : () async {
-                                if (!await guardGuestAction(context)) return;
-                                setState(() => _savingFavorite = true);
-                                final notifier = ref.read(savedVenuesProvider.notifier);
-                                final success = _isFavorite
-                                    ? await notifier.unsaveVenue(widget.venueId)
-                                    : await notifier.saveVenue(widget.venueId);
-                                if (mounted) {
-                                  setState(() {
-                                    if (success) _isFavorite = !_isFavorite;
-                                    _savingFavorite = false;
-                                  });
-                                  if (!success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(_isFavorite ? 'Failed to unsave venue' : 'Failed to save venue'),
-                                        backgroundColor: Colors.red,
-                                        behavior: SnackBarBehavior.floating,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      ),
-                                    );
+                            Builder(builder: (context) {
+                              final isFavorite = ref.watch(savedVenuesProvider)
+                                  .whenOrNull(data: (venues) => venues.any((v) => v.id == widget.venueId)) ?? false;
+                              return _buildHeaderButton(
+                                isFavorite ? Icons.bookmark : Icons.bookmark_border,
+                                _savingFavorite ? null : () async {
+                                  if (!await guardGuestAction(context)) return;
+                                  setState(() => _savingFavorite = true);
+                                  final notifier = ref.read(savedVenuesProvider.notifier);
+                                  final success = isFavorite
+                                      ? await notifier.unsaveVenue(widget.venueId)
+                                      : await notifier.saveVenue(widget.venueId);
+                                  if (mounted) {
+                                    setState(() => _savingFavorite = false);
+                                    if (!success) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(isFavorite ? 'Failed to unsave venue' : 'Failed to save venue'),
+                                          backgroundColor: Colors.red,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        ),
+                                      );
+                                    }
                                   }
-                                }
-                              },
-                              isFavorite: _isFavorite,
-                              isLoading: _savingFavorite,
-                            ),
+                                },
+                                isFavorite: isFavorite,
+                                isLoading: _savingFavorite,
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -488,25 +512,28 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                               ],
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2DD4BF),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.directions, color: Color(0xFF0F172A), size: 16),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Directions',
-                                  style: TextStyle(
-                                    color: Color(0xFF0F172A),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: () => _openDirections(venue.latitude, venue.longitude),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2DD4BF),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.directions, color: Color(0xFF0F172A), size: 16),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Directions',
+                                    style: TextStyle(
+                                      color: Color(0xFF0F172A),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
