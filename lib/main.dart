@@ -53,19 +53,23 @@ class _RekiAppState extends ConsumerState<RekiApp> {
   bool _handlingExpiry = false;
 
   void _listenSessionExpiry() {
-    sessionExpiredStream.stream.listen((_) async {
-      if (_handlingExpiry) return;
-      _handlingExpiry = true;
-      appLogger.w('Session expired — redirecting to login');
-      // Clear local state only — do NOT call logout() API (token already invalid)
-      final authService = AuthService();
-      authService.clearSession();
-      appRouter.go('/login');
-      _handlingExpiry = false;
-    });
-    tokenRefreshedStream.stream.listen((_) {
-      ref.read(deviceRegistrationServiceProvider).register();
-    });
+    try {
+      sessionExpiredStream.stream.listen((_) async {
+        if (_handlingExpiry) return;
+        _handlingExpiry = true;
+        appLogger.w('Session expired — redirecting to login');
+        // Clear local state only — do NOT call logout() API (token already invalid)
+        final authService = AuthService();
+        authService.clearSession();
+        appRouter.go('/login');
+        _handlingExpiry = false;
+      });
+      tokenRefreshedStream.stream.listen((_) {
+        ref.read(deviceRegistrationServiceProvider).register();
+      });
+    } catch (e) {
+      appLogger.w('Session expiry listener init skipped: $e');
+    }
   }
 
   Future<void> _initFcm() async {
@@ -92,10 +96,14 @@ class _RekiAppState extends ConsumerState<RekiApp> {
 
   void _initConnectivity() {
     // Week 10 — trigger offline sync when connectivity restored
-    ref.read(connectivityServiceProvider).onConnected(() async {
-      appLogger.i('Connectivity restored — syncing offline queue');
-      await ref.read(offlineSyncServiceProvider).sync();
-    });
+    try {
+      ref.read(connectivityServiceProvider).onConnected(() async {
+        appLogger.i('Connectivity restored — syncing offline queue');
+        await ref.read(offlineSyncServiceProvider).sync();
+      });
+    } catch (e) {
+      appLogger.w('Connectivity init skipped: $e');
+    }
   }
 
   @override

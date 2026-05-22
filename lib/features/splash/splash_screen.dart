@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
-import '../../core/services/device_registration_service.dart';
 import '../../core/models/user.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -19,8 +17,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
   final _authService = AuthService();
-  // ProviderContainer to access providers from non-Consumer widget
-  final _container = ProviderContainer();
+  bool _navigated = false; // prevent double-navigation race
 
   @override
   void initState() {
@@ -35,39 +32,51 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkAuthAndNavigate() async {
     await Future.delayed(const Duration(milliseconds: 500));
     
-    if (!mounted) return;
+    if (!mounted || _navigated) return;
 
-    // Check if user has access token in storage
-    final token = await const FlutterSecureStorage().read(key: 'access_token');
-    
-    if (token != null) {
-      await _authService.setAccessToken(token);
-      final user = await _authService.fetchCurrentUser();
+    try {
+      // Check if user has access token in storage
+      final token = await const FlutterSecureStorage().read(key: 'access_token');
       
-      if (user != null && mounted) {
-        // Re-register device on session restore
-        _container.read(deviceRegistrationServiceProvider).register();
-        // Route based on role
-        switch (user.role) {
-          case UserRole.ADMIN:
-            context.go('/admin-dashboard');
-          case UserRole.BUSINESS:
-            context.go('/business-dashboard');
-          case UserRole.USER:
-            context.go('/home');
+      if (token != null) {
+        await _authService.setAccessToken(token);
+        final user = await _authService.fetchCurrentUser();
+        
+        if (user != null && mounted && !_navigated) {
+          _navigated = true;
+          // Route based on role
+          switch (user.role) {
+            case UserRole.ADMIN:
+              context.go('/admin-dashboard');
+            case UserRole.BUSINESS:
+              context.go('/business-dashboard');
+            case UserRole.USER:
+              context.go('/home');
+          }
+          return;
         }
-        return;
       }
+    } catch (e) {
+      // Storage or network failure — fall through to login
+      debugPrint('Splash auth check failed: $e');
     }
     
     // No token or failed to fetch user, go to login
-    if (mounted) context.go('/login');
+    if (mounted && !_navigated) {
+      _navigated = true;
+      context.go('/login');
+    }
+  }
+
+  void _onGetStarted() {
+    if (_navigated) return;
+    _navigated = true;
+    context.go('/signup');
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _container.dispose();
     super.dispose();
   }
 
@@ -256,7 +265,7 @@ class _SplashScreenState extends State<SplashScreen>
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: () => context.go('/signup'),
+                          onPressed: _onGetStarted,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppTheme.primaryColor,

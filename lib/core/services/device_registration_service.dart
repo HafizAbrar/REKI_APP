@@ -36,6 +36,10 @@ class DeviceRegistrationService {
   /// Call this after every successful login / token refresh.
   Future<void> register() async {
     try {
+      if (!_fcm.isAvailable) {
+        appLogger.w('DeviceRegistration: FCM not available, skipping');
+        return;
+      }
       final fcmToken = _fcm.token;
       if (fcmToken == null || fcmToken.isEmpty) {
         appLogger.w('DeviceRegistration: FCM token not available, skipping');

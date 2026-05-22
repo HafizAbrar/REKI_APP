@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +21,22 @@ const _androidChannel = AndroidNotificationChannel(
 );
 
 class FcmService {
-  final _messaging = FirebaseMessaging.instance;
+  // Lazy accessor — avoids crash when Firebase is not initialised (e.g. iOS
+  // without GoogleService-Info.plist).
+  FirebaseMessaging? _messaging;
+  FirebaseMessaging? get _safeMessaging {
+    if (_messaging != null) return _messaging;
+    try {
+      Firebase.app(); // throws if no default app
+      _messaging = FirebaseMessaging.instance;
+      return _messaging;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get isAvailable => _safeMessaging != null;
+
   final _localNotifications = FlutterLocalNotificationsPlugin();
 
   String? _token;
@@ -29,11 +45,17 @@ class FcmService {
   static const _prefKeyOptIn = 'fcm_opt_in';
 
   Future<void> initialize({Function(String route)? onDeepLink}) async {
+    final messaging = _safeMessaging;
+    if (messaging == null) {
+      appLogger.w('FCM: Firebase not available — push notifications disabled');
+      return;
+    }
+
     // Register background handler
     FirebaseMessaging.onBackgroundMessage(_onBackgroundMessage);
 
     // Request permission (iOS prompt / Android 13+)
-    final settings = await _messaging.requestPermission(
+    final settings = await messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
@@ -84,17 +106,17 @@ class FcmService {
     });
 
     // Check if app was launched from a notification
-    final initial = await _messaging.getInitialMessage();
+    final initial = await messaging.getInitialMessage();
     if (initial != null) {
       final route = initial.data['route'];
       if (route != null && onDeepLink != null) onDeepLink(route);
     }
 
     // Get & cache device token
-    _token = await _messaging.getToken();
+    _token = await messaging.getToken();
     appLogger.i('FCM token: $_token');
 
-    _messaging.onTokenRefresh.listen((t) {
+    messaging.onTokenRefresh.listen((t) {
       _token = t;
       appLogger.i('FCM token refreshed');
       _onTokenRefresh?.call(t);
@@ -137,12 +159,16 @@ class FcmService {
   }
 
   Future<void> subscribeToTopic(String topic) async {
-    await _messaging.subscribeToTopic(topic);
+    final messaging = _safeMessaging;
+    if (messaging == null) return;
+    await messaging.subscribeToTopic(topic);
     appLogger.d('FCM subscribed: $topic');
   }
 
   Future<void> unsubscribeFromTopic(String topic) async {
-    await _messaging.unsubscribeFromTopic(topic);
+    final messaging = _safeMessaging;
+    if (messaging == null) return;
+    await messaging.unsubscribeFromTopic(topic);
     appLogger.d('FCM unsubscribed: $topic');
   }
 }

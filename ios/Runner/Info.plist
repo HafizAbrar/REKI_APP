@@ -49,5 +49,16 @@
 	<string>REKI needs location access to show nearby venues and provide accurate crowd intelligence.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>REKI needs location access to show nearby venues and provide accurate crowd intelligence.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>REKI needs camera access to let you take and upload profile photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>REKI needs photo library access to let you choose a profile photo.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
 </dict>
 </plist>
