@@ -16,7 +16,7 @@ class VenueFilterScreen extends ConsumerStatefulWidget {
 }
 
 class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
-  String selectedBusyness = 'Moderate';
+  String selectedBusyness = '';
   Set<String> selectedVibes = {};
   bool offersOnly = false;
   String selectedSort = 'Distance (Nearest)';
@@ -25,7 +25,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
   void initState() {
     super.initState();
     final f = ref.read(filterProvider);
-    selectedBusyness = f.busyness.isEmpty ? 'Moderate' : f.busyness;
+    selectedBusyness = f.busyness;
     selectedVibes = Set.from(f.vibes);
     offersOnly = f.offersOnly;
   }
@@ -189,7 +189,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                   borderRadius: BorderRadius.circular(28),
                   onTap: () {
                     ref.read(filterProvider.notifier).update(
-                      busyness: selectedBusyness == 'Moderate' ? '' : selectedBusyness,
+                      busyness: selectedBusyness,
                       vibes: selectedVibes,
                       offersOnly: offersOnly,
                     );
@@ -206,7 +206,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                         decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.25), borderRadius: BorderRadius.circular(12)),
                         child: Text(
-                          '${selectedVibes.length + (selectedBusyness != 'Moderate' ? 1 : 0) + (offersOnly ? 1 : 0)}',
+                          '${selectedVibes.length + (selectedBusyness.isNotEmpty ? 1 : 0) + (offersOnly ? 1 : 0)}',
                           style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
                         ),
                       ),
@@ -228,7 +228,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
     final isSelected = selectedBusyness == option;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => selectedBusyness = option),
+        onTap: () => setState(() => selectedBusyness = isSelected ? '' : option),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
@@ -312,7 +312,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
 
   void _resetFilters() {
     setState(() {
-      selectedBusyness = 'Moderate';
+      selectedBusyness = '';
       selectedVibes = {};
       offersOnly = false;
       selectedSort = 'Distance (Nearest)';

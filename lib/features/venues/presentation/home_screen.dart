@@ -176,15 +176,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     var filteredVenues = _selectedTab == 0
                       ? venues
                       : venues.where((v) {
-                          final cat = v.type.toLowerCase();
-                          if (_selectedTab == 1) return cat == 'bar';
-                          if (_selectedTab == 2) return cat == 'club';
+                          final cat = v.type.toLowerCase().replaceAll(' ', '_');
+                          if (_selectedTab == 1) return cat == 'bar' || cat.contains('bar');
+                          if (_selectedTab == 2) return cat == 'club' || cat == 'nightclub';
                           if (_selectedTab == 3) return cat == 'restaurant';
                           if (_selectedTab == 4) return cat == 'lounge';
-                          if (_selectedTab == 5) return cat == 'live_music_venue';
+                          if (_selectedTab == 5) return cat == 'live_music_venue' || cat == 'live_music';
                           if (_selectedTab == 6) return cat == 'pub';
-                          if (_selectedTab == 7) return cat == 'rooftop_bar';
-                          if (_selectedTab == 8) return cat == 'cocktail_bar';
+                          if (_selectedTab == 7) return cat == 'rooftop_bar' || cat == 'rooftop';
+                          if (_selectedTab == 8) return cat == 'cocktail_bar' || cat == 'cocktail';
                           return true;
                         }).toList();
 
@@ -542,11 +542,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                  child: venue.coverImageUrl != null
+                  child: venue.coverImageUrl != null && venue.coverImageUrl!.isNotEmpty
                     ? AppCachedImage(
                         url: venue.coverImageUrl!.startsWith('http')
                             ? venue.coverImageUrl!
-                            : '${Env.apiBaseUrl}${venue.coverImageUrl}',
+                            : '${Env.apiBaseUrl}${venue.coverImageUrl!.startsWith('/') ? '' : '/'}${venue.coverImageUrl}',
                         width: double.infinity,
                         height: 280,
                         fit: BoxFit.cover,
