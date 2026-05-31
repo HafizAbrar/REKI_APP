@@ -33,7 +33,7 @@ dependencies:
   path: ^1.9.0
 
   # Connectivity (Week 10)
-  connectivity_plus: ^6.0.3
+  connectivity_plus: ^7.1.1
 
   # Location & Maps (Week 8)
   geolocator: ^10.1.0
