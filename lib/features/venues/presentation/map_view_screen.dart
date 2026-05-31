@@ -47,6 +47,7 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
   String? _selectedVenueId;
   Position? _userPosition;
   bool _locationLoading = false;
+  String? _mapError;
 
   final _searchController = TextEditingController();
   final _searchFocus = FocusNode();
@@ -188,8 +189,30 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
       body: Stack(
         children: [
           // ── Google Map ────────────────────────────────────────────────
+          if (_mapError != null)
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.map_outlined, color: Color(0xFF64748B), size: 64),
+                  const SizedBox(height: 16),
+                  const Text('Map unavailable', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Text(_mapError!, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13), textAlign: TextAlign.center),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => context.pop(),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF14B8A6)),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            )
+          else
           venuesAsync.when(
-            data: (venues) => GoogleMap(
+            data: (venues) {
+              try {
+                return GoogleMap(
               initialCameraPosition: CameraPosition(
                 target: widget.venueId != null
                     ? _venueLatLng(venues, widget.venueId!) ?? _manchesterCenter
@@ -217,7 +240,14 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                 _showSuggestions = false;
                 _searchFocus.unfocus();
               }),
-            ),
+            );
+              } catch (e) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) setState(() => _mapError = e.toString());
+                });
+                return const SizedBox.shrink();
+              }
+            },
             loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
             error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
           ),
@@ -455,10 +485,10 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: AppCachedImage(
-                              url: venue.coverImageUrl != null
+                              url: venue.coverImageUrl != null && venue.coverImageUrl!.isNotEmpty
                                   ? (venue.coverImageUrl!.startsWith('http')
                                       ? venue.coverImageUrl!
-                                      : '${Env.apiBaseUrl}${venue.coverImageUrl}')
+                                      : '${Env.apiBaseUrl}${venue.coverImageUrl!.startsWith('/') ? '' : '/'}${venue.coverImageUrl}')
                                   : null,
                               width: 72,
                               height: 72,
