@@ -1,5 +1,6 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '15.0'
+# GoogleMaps 10.x (used to fix blank simulator tiles) requires iOS 16.0+.
+platform :ios, '16.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -30,6 +31,12 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
 
+  # Pin GoogleMaps to 10.x to fix blank/white map tiles on the iOS Simulator with
+  # the 9.x SDK. Google-Maps-iOS-Utils 6.1.3 is the newest that stays < 7.0 (the
+  # google_maps_flutter_ios cap) while allowing GoogleMaps 10.x.
+  pod 'Google-Maps-iOS-Utils', '6.1.3'
+  pod 'GoogleMaps', '~> 10.0'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths
@@ -39,5 +46,8 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+    end
   end
 end
