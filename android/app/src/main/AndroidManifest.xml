@@ -41,7 +41,7 @@
             android:value="2" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDiFcQXIOiTdjjoGF5h8qkZ2mpBvRxON5Y" />
+            android:value="AIzaSyCcEnQ1uLbE5qqsuh8qxJHQFNpHzDuv9Cc" />
         <meta-data
             android:name="com.google.android.gms.auth.api.signin.CLIENT_ID"
             android:value="YOUR_WEB_CLIENT_ID_HERE" />

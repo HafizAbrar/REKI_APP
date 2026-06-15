@@ -246,7 +246,7 @@ class _EditBusinessProfileScreenState
     if (_currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty) {
       final url = _currentAvatarUrl!.startsWith('http')
           ? _currentAvatarUrl!
-          : '${Env.apiBaseUrl}$_currentAvatarUrl';
+          : '${Env.apiBaseUrl}${_currentAvatarUrl!.startsWith('/') ? '' : '/'}$_currentAvatarUrl';
       return AppCachedImage(
           url: url, width: 100, height: 100, fit: BoxFit.cover,
           placeholder: _fallback());

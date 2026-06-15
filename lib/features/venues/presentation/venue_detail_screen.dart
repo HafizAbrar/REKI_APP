@@ -95,7 +95,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                         ? Image.network(
                             venue.coverImageUrl!.startsWith('http')
                                 ? venue.coverImageUrl!
-                                : '${Env.apiBaseUrl}${venue.coverImageUrl}',
+                                : '${Env.apiBaseUrl}${venue.coverImageUrl!.startsWith('/') ? '' : '/'}${venue.coverImageUrl}',
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,

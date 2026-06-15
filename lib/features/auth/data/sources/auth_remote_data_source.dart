@@ -17,7 +17,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<Map<String, dynamic>> register(RegisterRequestDto request) async {
     try {
       final response = await _dio.post(
-        '${Env.apiBaseUrl}auth/register',
+        '${Env.apiBaseUrl}/auth/register',
         data: request.toJson(),
       );
       return response.data;
@@ -36,7 +36,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await _dio.post(
-        '${Env.apiBaseUrl}auth/login',
+        '${Env.apiBaseUrl}/auth/login',
         data: {'email': email, 'password': password},
       );
       return response.data;
