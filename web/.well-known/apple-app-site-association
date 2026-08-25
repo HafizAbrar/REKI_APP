@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "8J5K6HGW3B.com.example.rekiMvp",
+        "paths": ["/venue/*"]
+      }
+    ]
+  }
+}

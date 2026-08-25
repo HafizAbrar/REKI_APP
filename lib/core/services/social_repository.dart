@@ -1,12 +1,19 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/social_models.dart';
+import '../models/user.dart';
 import '../network/api_client.dart';
 import 'auth_service.dart';
+import 'engagement_analytics.dart';
 import 'local_database.dart';
 
 final socialRepositoryProvider = Provider<SocialRepository>((ref) {
-  return SocialRepository(ref.read(apiClientProvider), LocalDatabase());
+  return SocialRepository(
+    ref.read(apiClientProvider),
+    LocalDatabase(),
+    ref.read(engagementAnalyticsProvider),
+  );
 });
 
 /// Local-first Phase 5 repository.
@@ -17,20 +24,28 @@ final socialRepositoryProvider = Provider<SocialRepository>((ref) {
 class SocialRepository {
   final Dio _dio;
   final LocalDatabase _db;
+  final EngagementAnalytics _analytics;
 
-  SocialRepository(this._dio, this._db);
+  SocialRepository(this._dio, this._db, this._analytics);
 
   Future<void> recordVisit(String venueId, String venueName,
       {String source = 'home'}) async {
     final viewedAt = DateTime.now();
     await _db.addVenueVisit(venueId, venueName, visitedAt: viewedAt);
+    await _analytics.venueViewed(venueId, source);
+    if (!_isSignedIn) return;
     try {
       await _dio.post('/users/history/venues/$venueId', data: {
         'viewedAt': viewedAt.toUtc().toIso8601String(),
         'source': source,
       });
-    } catch (_) {
-      // The local history remains available while offline or signed out.
+    } catch (error) {
+      if (!_isRetryable(error)) rethrow;
+      await _queue('venue_history_view', {
+        'venueId': venueId,
+        'viewedAt': viewedAt.toUtc().toIso8601String(),
+        'source': source,
+      });
     }
   }
 
@@ -71,21 +86,32 @@ class SocialRepository {
   }
 
   Future<void> clearHistory() async {
+    if (!_isSignedIn) {
+      await _db.clearVenueHistory();
+      return;
+    }
     try {
       await _dio.delete('/users/history/venues');
-    } catch (_) {
-      // Clearing the device remains useful while offline or signed out.
+    } catch (error) {
+      if (!_isRetryable(error)) rethrow;
+      await _queue('history_clear', const {});
     }
     await _db.clearVenueHistory();
   }
 
-  Future<List<VenueReview>> getReviews(String venueId) async {
+  Future<VenueReviewFeed> getReviews(String venueId) async {
     final byId = <String, VenueReview>{};
+    VenueReviewSummary? serverSummary;
     try {
-      final response = await _dio.get('/venues/$venueId/reviews');
+      final response = await _dio.get('/venues/$venueId/reviews',
+          queryParameters: {'page': 1, 'limit': 50});
       final raw = response.data is Map
           ? (response.data['reviews'] ?? response.data['data'] ?? [])
           : response.data;
+      if (response.data is Map && response.data['summary'] is Map) {
+        serverSummary = VenueReviewSummary.fromJson(
+            Map<String, dynamic>.from(response.data['summary'] as Map));
+      }
       if (raw is List) {
         for (final item in raw.whereType<Map>()) {
           final review = VenueReview.fromJson(Map<String, dynamic>.from(item));
@@ -101,7 +127,10 @@ class SocialRepository {
     }
     final reviews = byId.values.toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return reviews;
+    return VenueReviewFeed(
+      reviews: reviews,
+      summary: serverSummary ?? VenueReviewFeed.fromReviews(reviews).summary,
+    );
   }
 
   Future<VenueReview> submitReview({
@@ -139,10 +168,18 @@ class SocialRepository {
           });
         }
       }
-    } catch (_) {
-      // Persist locally so review creation remains functional offline.
+    } catch (error) {
+      if (!_isRetryable(error)) rethrow;
+      await _queue('review_create', {
+        'localId': review.id,
+        'venueId': venueId,
+        'rating': rating,
+        'text': text.trim(),
+        'vibeAccurate': vibeAccurate,
+      });
     }
     await _db.upsertReview(_reviewRow(review));
+    await _analytics.reviewSubmitted(venueId, rating);
     return review;
   }
 
@@ -178,32 +215,54 @@ class SocialRepository {
           'isMine': true,
         });
       }
-    } catch (_) {
-      // Preserve the edit locally while offline.
+    } catch (error) {
+      if (!_isRetryable(error)) rethrow;
+      await _queue('review_update', {
+        'reviewId': review.id,
+        'venueId': review.venueId,
+        'rating': rating,
+        'text': text.trim(),
+        'vibeAccurate': vibeAccurate,
+      });
     }
     await _db.upsertReview(_reviewRow(updated));
     return updated;
   }
 
   Future<void> deleteReview(String reviewId) async {
-    await _dio.delete('/reviews/$reviewId');
+    try {
+      await _dio.delete('/reviews/$reviewId');
+    } catch (error) {
+      if (!_isRetryable(error)) rethrow;
+      await _queue('review_delete', {'reviewId': reviewId});
+    }
     await _db.deleteReview(reviewId);
   }
 
   Future<Map<String, dynamic>> voteVibeAccuracy(String venueId, bool accurate,
       {String? observedVibe}) async {
-    final response = await _dio.post(
-      '/venues/$venueId/vibe-accuracy-votes',
-      data: {
-        'accurate': accurate,
-        if (observedVibe != null && observedVibe.isNotEmpty)
-          'observedVibe': observedVibe,
-        'votedAt': DateTime.now().toUtc().toIso8601String(),
-      },
-    );
-    return response.data is Map
-        ? Map<String, dynamic>.from(response.data as Map)
-        : const <String, dynamic>{};
+    final votedAt = DateTime.now().toUtc().toIso8601String();
+    final data = {
+      'accurate': accurate,
+      if (observedVibe != null && observedVibe.isNotEmpty)
+        'observedVibe': observedVibe,
+      'votedAt': votedAt,
+    };
+    try {
+      final response = await _dio.post(
+        '/venues/$venueId/vibe-accuracy-votes',
+        data: data,
+      );
+      await _analytics.vibeAccuracyVote(venueId, accurate);
+      return response.data is Map
+          ? Map<String, dynamic>.from(response.data as Map)
+          : const <String, dynamic>{};
+    } catch (error) {
+      if (!_isRetryable(error)) rethrow;
+      await _queue('vibe_accuracy_vote', {'venueId': venueId, ...data});
+      await _analytics.vibeAccuracyVote(venueId, accurate);
+      return {'queued': true, 'userVote': accurate};
+    }
   }
 
   Future<VenueCheckIn> checkIn(
@@ -237,11 +296,21 @@ class SocialRepository {
           'pointsAwarded': body is Map ? body['pointsAwarded'] : 0,
         });
       }
-    } catch (_) {
-      // Local check-ins still count and are visible in achievements.
+    } catch (error) {
+      if (!_isRetryable(error)) rethrow;
+      await _queue('check_in', {
+        'localId': checkIn.id,
+        'venueId': venueId,
+        'venueName': venueName,
+        'lat': latitude,
+        'lng': longitude,
+        'accuracy': accuracy,
+        'timestamp': now.toUtc().toIso8601String(),
+      });
     }
     await _db.addCheckIn(checkIn.id, venueId, venueName,
         checkedInAt: checkIn.checkedInAt);
+    await _analytics.checkIn(venueId);
     return checkIn;
   }
 
@@ -377,18 +446,48 @@ class SocialRepository {
   }
 
   Future<int> trackShare(String venueId, {String channel = 'other'}) async {
+    if (!_isSignedIn) return 0;
+    final sharedAt = DateTime.now().toUtc().toIso8601String();
     try {
       final response = await _dio.post('/venues/$venueId/shares', data: {
         'channel': channel,
-        'sharedAt': DateTime.now().toUtc().toIso8601String(),
+        'sharedAt': sharedAt,
       });
+      await _analytics.venueShared(venueId, channel);
       return response.data is Map
           ? (response.data['pointsAwarded'] as num?)?.toInt() ?? 0
           : 0;
-    } catch (_) {
-      // Sharing should still work when analytics cannot be recorded.
+    } catch (error) {
+      if (!_isRetryable(error)) return 0;
+      await _queue('venue_share', {
+        'venueId': venueId,
+        'channel': channel,
+        'sharedAt': sharedAt,
+      });
+      await _analytics.venueShared(venueId, channel);
       return 0;
     }
+  }
+
+  bool get _isSignedIn {
+    final user = AuthService().currentUser;
+    return user != null && !user.isGuest;
+  }
+
+  bool _isRetryable(Object error) {
+    if (error is! DioException) return false;
+    if (error.type == DioExceptionType.connectionError ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.sendTimeout) {
+      return true;
+    }
+    final status = error.response?.statusCode;
+    return status == 429 || (status != null && status >= 500);
+  }
+
+  Future<void> _queue(String action, Map<String, dynamic> payload) {
+    return _db.enqueue(action, jsonEncode(payload));
   }
 
   Map<String, dynamic> _reviewRow(VenueReview review) => {

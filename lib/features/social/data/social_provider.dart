@@ -27,12 +27,11 @@ class VenueHistoryNotifier
 }
 
 final venueReviewsProvider = StateNotifierProvider.family<VenueReviewsNotifier,
-    AsyncValue<List<VenueReview>>, String>((ref, venueId) {
+    AsyncValue<VenueReviewFeed>, String>((ref, venueId) {
   return VenueReviewsNotifier(ref.read(socialRepositoryProvider), venueId);
 });
 
-class VenueReviewsNotifier
-    extends StateNotifier<AsyncValue<List<VenueReview>>> {
+class VenueReviewsNotifier extends StateNotifier<AsyncValue<VenueReviewFeed>> {
   final SocialRepository _repository;
   final String venueId;
   VenueReviewsNotifier(this._repository, this.venueId)
@@ -43,12 +42,12 @@ class VenueReviewsNotifier
       state = AsyncValue.data(await _repository.getReviews(venueId));
   Future<bool> submit(int rating, String text, bool vibeAccurate) async {
     try {
-      final review = await _repository.submitReview(
+      await _repository.submitReview(
           venueId: venueId,
           rating: rating,
           text: text,
           vibeAccurate: vibeAccurate);
-      state = AsyncValue.data([review, ...state.valueOrNull ?? []]);
+      await load();
       return true;
     } catch (error, stack) {
       state = AsyncValue.error(error, stack);
@@ -59,16 +58,13 @@ class VenueReviewsNotifier
   Future<bool> update(
       VenueReview review, int rating, String text, bool vibeAccurate) async {
     try {
-      final updated = await _repository.updateReview(
+      await _repository.updateReview(
         review: review,
         rating: rating,
         text: text,
         vibeAccurate: vibeAccurate,
       );
-      final reviews = [...state.valueOrNull ?? <VenueReview>[]];
-      final index = reviews.indexWhere((item) => item.id == review.id);
-      if (index >= 0) reviews[index] = updated;
-      state = AsyncValue.data(reviews);
+      await load();
       return true;
     } catch (error, stack) {
       state = AsyncValue.error(error, stack);
@@ -79,16 +75,13 @@ class VenueReviewsNotifier
   Future<bool> delete(String reviewId) async {
     try {
       await _repository.deleteReview(reviewId);
-      state = AsyncValue.data((state.valueOrNull ?? <VenueReview>[])
-          .where((item) => item.id != reviewId)
-          .toList());
+      await load();
       return true;
     } catch (error, stack) {
       state = AsyncValue.error(error, stack);
       return false;
     }
   }
-
 }
 
 final achievementsProvider = FutureProvider<List<Achievement>>(

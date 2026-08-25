@@ -5,6 +5,7 @@ import '../../../core/services/venue_repository.dart';
 import '../../../core/services/offline_sync_service.dart';
 import '../../../core/models/venue.dart';
 import '../../../core/services/local_database.dart';
+import '../../../core/services/engagement_analytics.dart';
 
 // PUT /users/profile
 final updateProfileProvider =
@@ -109,6 +110,7 @@ final savedVenuesProvider =
     ref.read(userRepositoryProvider),
     ref.read(venueRepositoryProvider),
     ref.read(offlineSyncServiceProvider),
+    ref.read(engagementAnalyticsProvider),
     LocalDatabase(),
   );
 });
@@ -117,10 +119,11 @@ class SavedVenuesNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   final UserRepository _userRepo;
   final VenueRepository _venueRepo;
   final OfflineSyncService _syncService;
+  final EngagementAnalytics _analytics;
   final LocalDatabase _localDb;
 
-  SavedVenuesNotifier(
-      this._userRepo, this._venueRepo, this._syncService, this._localDb)
+  SavedVenuesNotifier(this._userRepo, this._venueRepo, this._syncService,
+      this._analytics, this._localDb)
       : super(const AsyncValue.loading()) {
     load();
   }
@@ -128,18 +131,31 @@ class SavedVenuesNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   Future<void> load() async {
     state = const AsyncValue.loading();
     final result = await _userRepo.getSavedVenues();
+    var remoteLoaded = false;
     final remoteIds = result.when(
-      success: (list) => list
-          .map((e) =>
-              (e['venueId'] ?? e['id'] ?? e['venue']?['id'])?.toString() ?? '')
-          .where((id) => id.isNotEmpty)
-          .toList(),
+      success: (list) {
+        remoteLoaded = true;
+        return list
+            .map((e) =>
+                (e['venueId'] ?? e['id'] ?? e['venue']?['id'])?.toString() ??
+                '')
+            .where((id) => id.isNotEmpty)
+            .toList();
+      },
       failure: (_) => <String>[],
     );
     final localIds = await _localDb.getSavedVenueIds();
-    final ids = {...remoteIds, ...localIds}.toList();
-    for (final id in remoteIds) {
-      await _localDb.saveVenue(id);
+    final ids = remoteLoaded ? remoteIds.toSet() : localIds.toSet();
+    if (remoteLoaded) {
+      final pending = await _localDb.pendingSavedVenueOverrides();
+      for (final entry in pending.entries) {
+        if (entry.value) {
+          ids.add(entry.key);
+        } else {
+          ids.remove(entry.key);
+        }
+      }
+      await _localDb.replaceSavedVenueIds(ids);
     }
     final venues = <Venue>[];
     for (final id in ids) {
@@ -152,6 +168,7 @@ class SavedVenuesNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   Future<bool> unsaveVenue(String venueId) async {
     final previous = state.valueOrNull ?? const <Venue>[];
     await _localDb.unsaveVenue(venueId);
+    await _analytics.venueSaved(venueId, false);
     state = AsyncValue.data(
         previous.where((venue) => venue.id != venueId).toList());
     final result = await _userRepo.unsaveVenue(venueId);
@@ -167,6 +184,7 @@ class SavedVenuesNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
 
   Future<bool> saveVenue(String venueId) async {
     await _localDb.saveVenue(venueId);
+    await _analytics.venueSaved(venueId, true);
     final venueResult = await _venueRepo.getVenueById(venueId);
     venueResult.when(
       success: (venue) {

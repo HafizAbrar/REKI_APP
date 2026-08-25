@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:reki_mvp/core/services/local_database.dart';
@@ -6,6 +9,9 @@ void main() {
   setUpAll(() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+    databaseFactory.setDatabasesPath(
+      Directory.systemTemp.createTempSync('reki-local-db-test-').path,
+    );
   });
 
   group('LocalDatabase', () {
@@ -41,6 +47,27 @@ void main() {
     test('isVenueSaved returns true for saved venue', () async {
       await db.saveVenue('v30');
       expect(await db.isVenueSaved('v30'), true);
+    });
+
+    test('replaces cloud saved venues without resurrecting stale entries',
+        () async {
+      await db.saveVenue('stale-cloud-save');
+      await db.replaceSavedVenueIds(['current-cloud-save']);
+
+      expect(await db.getSavedVenueIds(), ['current-cloud-save']);
+    });
+
+    test('keeps the latest queued save override per venue', () async {
+      final database = await db.db;
+      await database.delete('sync_queue');
+      await db.enqueue('save_venue', jsonEncode({'venueId': 'v-queued'}));
+      await db.enqueue('unsave_venue', jsonEncode({'venueId': 'v-queued'}));
+      await db.enqueue('save_venue', jsonEncode({'venueId': 'v-other'}));
+
+      expect(await db.pendingSavedVenueOverrides(), {
+        'v-queued': false,
+        'v-other': true,
+      });
     });
 
     test('marks offer as redeemed', () async {

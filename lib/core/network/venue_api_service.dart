@@ -49,7 +49,9 @@ class VenueApiService {
     }
     final result = <Venue>[];
     for (final json in raw as List) {
-      try { result.add(Venue.fromJson(json as Map<String, dynamic>)); } catch (_) {}
+      try {
+        result.add(Venue.fromJson(json as Map<String, dynamic>));
+      } catch (_) {}
     }
     return result;
   }
@@ -67,15 +69,19 @@ class VenueApiService {
     final response = await _dio.get('/venues/trending', queryParameters: {
       if (cityId != null) 'cityId': cityId,
     });
-    final data = response.data is Map ? response.data['data'] ?? response.data['venues'] ?? response.data : response.data;
+    final data = response.data is Map
+        ? response.data['data'] ?? response.data['venues'] ?? response.data
+        : response.data;
     return (data as List).map((json) => Venue.fromJson(json)).toList();
   }
 
   // GET /venues/map-markers - Get map marker data with RAG colors
   Future<List<Map<String, dynamic>>> getMapMarkers({
     String? cityId,
-    double? swLat, double? swLng,
-    double? neLat, double? neLng,
+    double? swLat,
+    double? swLng,
+    double? neLat,
+    double? neLng,
   }) async {
     final response = await _dio.get('/venues/map-markers', queryParameters: {
       if (cityId != null) 'cityId': cityId,
@@ -84,7 +90,9 @@ class VenueApiService {
       if (neLat != null) 'neLat': neLat,
       if (neLng != null) 'neLng': neLng,
     });
-    final data = response.data is Map ? response.data['data'] ?? response.data : response.data;
+    final data = response.data is Map
+        ? response.data['data'] ?? response.data
+        : response.data;
     return List<Map<String, dynamic>>.from(data);
   }
 
@@ -123,8 +131,10 @@ class VenueApiService {
   }
 
   // POST /venues/{id}/vibe-check - Submit a vibe check score (1-5)
-  Future<Map<String, dynamic>> submitVibeCheck(String venueId, int score) async {
-    final response = await _dio.post('/venues/$venueId/vibe-check', data: {'score': score});
+  Future<Map<String, dynamic>> submitVibeCheck(
+      String venueId, int score) async {
+    final response =
+        await _dio.post('/venues/$venueId/vibe-check', data: {'score': score});
     return response.data as Map<String, dynamic>;
   }
 
@@ -134,7 +144,8 @@ class VenueApiService {
   }
 
   // PATCH /venues/{id}/live-state - Update venue live state
-  Future<Venue> updateLiveState(String id, {String? busyness, String? currentVibe}) async {
+  Future<Venue> updateLiveState(String id,
+      {String? busyness, String? currentVibe}) async {
     final response = await _dio.patch('/venues/$id/live-state', data: {
       if (busyness != null) 'busyness': busyness,
       if (currentVibe != null) 'currentVibe': currentVibe,
@@ -155,8 +166,12 @@ class VenueApiService {
   }
 
   // POST /sync/queue - Submit offline action queue for processing
-  Future<Map<String, dynamic>> submitSyncQueue(List<Map<String, dynamic>> actions) async {
-    final response = await _dio.post('/sync/queue', data: {'actions': actions});
+  Future<Map<String, dynamic>> submitSyncQueue(
+      String deviceId, List<Map<String, dynamic>> actions) async {
+    final response = await _dio.post('/sync/queue', data: {
+      'deviceId': deviceId,
+      'actions': actions,
+    });
     return response.data as Map<String, dynamic>;
   }
 

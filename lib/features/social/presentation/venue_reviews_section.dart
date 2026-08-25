@@ -47,7 +47,8 @@ class VenueReviewsSection extends ConsumerWidget {
                 ref.read(venueReviewsProvider(venueId).notifier).load(),
             child: const Text('Retry reviews'),
           ),
-          data: (reviews) {
+          data: (feed) {
+            final reviews = feed.reviews;
             if (reviews.isEmpty) {
               return _panel(
                 child: const Text(
@@ -56,10 +57,7 @@ class VenueReviewsSection extends ConsumerWidget {
                 ),
               );
             }
-            final average =
-                reviews.fold<int>(0, (sum, item) => sum + item.rating) /
-                    reviews.length;
-            final accurate = reviews.where((item) => item.vibeAccurate).length;
+            final average = feed.summary.averageRating;
             return Column(children: [
               _panel(
                 child: Row(children: [
@@ -75,14 +73,14 @@ class VenueReviewsSection extends ConsumerWidget {
                         children: [
                           _Stars(value: average.round(), size: 18),
                           const SizedBox(height: 4),
-                          Text('${reviews.length} reviews',
+                          Text('${feed.summary.totalReviews} reviews',
                               style: const TextStyle(color: Color(0xFF94A3B8))),
                         ]),
                   ),
                   Column(children: [
                     const Icon(Icons.auto_awesome, color: Color(0xFF2DD4BF)),
                     Text(
-                        '${(accurate / reviews.length * 100).round()}% accurate',
+                        '${feed.summary.vibeAccuracyPercentage.round()}% accurate',
                         style: const TextStyle(
                             color: Color(0xFF2DD4BF), fontSize: 11)),
                   ]),

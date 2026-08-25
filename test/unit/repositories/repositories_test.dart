@@ -185,7 +185,7 @@ class MockVenueApi implements VenueApiService {
       [];
   @override
   Future<Map<String, dynamic>> submitSyncQueue(
-          List<Map<String, dynamic>> actions) async =>
+          String deviceId, List<Map<String, dynamic>> actions) async =>
       {'processed': actions};
 }
 

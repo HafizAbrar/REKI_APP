@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -171,6 +172,20 @@ class LocalDatabase {
     return rows.map((r) => r['venue_id'] as String).toList();
   }
 
+  Future<void> replaceSavedVenueIds(Iterable<String> venueIds) async {
+    final d = await db;
+    await d.transaction((txn) async {
+      await txn.delete('saved_venues');
+      var savedAt = DateTime.now().millisecondsSinceEpoch;
+      for (final venueId in venueIds) {
+        await txn.insert('saved_venues', {
+          'venue_id': venueId,
+          'saved_at': savedAt--,
+        });
+      }
+    });
+  }
+
   Future<bool> isVenueSaved(String venueId) async {
     final d = await db;
     final rows = await d
@@ -215,6 +230,21 @@ class LocalDatabase {
   Future<List<Map<String, dynamic>>> pendingActions() async {
     final d = await db;
     return d.query('sync_queue', orderBy: 'created_at ASC');
+  }
+
+  Future<Map<String, bool>> pendingSavedVenueOverrides() async {
+    final overrides = <String, bool>{};
+    for (final row in await pendingActions()) {
+      final action = row['action']?.toString();
+      if (action != 'save_venue' && action != 'unsave_venue') continue;
+      try {
+        final payload = jsonDecode(row['payload'] as String);
+        if (payload is Map && payload['venueId'] != null) {
+          overrides[payload['venueId'].toString()] = action == 'save_venue';
+        }
+      } catch (_) {}
+    }
+    return overrides;
   }
 
   Future<void> removeAction(int id) async {
@@ -316,6 +346,11 @@ class LocalDatabase {
   Future<List<Map<String, dynamic>>> getCheckIns() async {
     final d = await db;
     return d.query('venue_checkins', orderBy: 'checked_in_at DESC');
+  }
+
+  Future<void> deleteCheckIn(String checkInId) async {
+    final d = await db;
+    await d.delete('venue_checkins', where: 'id = ?', whereArgs: [checkInId]);
   }
 
   Future<int> getReviewCount() async {

@@ -49,6 +49,50 @@ class VenueReview {
       };
 }
 
+class VenueReviewSummary {
+  final double averageRating;
+  final int totalReviews;
+  final double vibeAccuracyPercentage;
+
+  const VenueReviewSummary({
+    required this.averageRating,
+    required this.totalReviews,
+    required this.vibeAccuracyPercentage,
+  });
+
+  factory VenueReviewSummary.fromJson(Map<String, dynamic> json) =>
+      VenueReviewSummary(
+        averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0,
+        totalReviews: (json['totalReviews'] as num?)?.toInt() ?? 0,
+        vibeAccuracyPercentage:
+            (json['vibeAccuracyPercentage'] as num?)?.toDouble() ?? 0,
+      );
+}
+
+class VenueReviewFeed {
+  final List<VenueReview> reviews;
+  final VenueReviewSummary summary;
+
+  const VenueReviewFeed({required this.reviews, required this.summary});
+
+  factory VenueReviewFeed.fromReviews(List<VenueReview> reviews) {
+    final average = reviews.isEmpty
+        ? 0.0
+        : reviews.fold<int>(0, (sum, item) => sum + item.rating) /
+            reviews.length;
+    final accurate = reviews.where((item) => item.vibeAccurate).length;
+    return VenueReviewFeed(
+      reviews: reviews,
+      summary: VenueReviewSummary(
+        averageRating: average,
+        totalReviews: reviews.length,
+        vibeAccuracyPercentage:
+            reviews.isEmpty ? 0 : accurate / reviews.length * 100,
+      ),
+    );
+  }
+}
+
 class VenueCheckIn {
   final String id;
   final String venueId;
