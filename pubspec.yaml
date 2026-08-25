@@ -55,6 +55,9 @@ dependencies:
   # URL launcher
   url_launcher: ^6.3.0
 
+  # Native share sheet (Phase 5 social sharing)
+  share_plus: ^10.1.4
+
   # Logging (Week 7)
   logger: ^2.4.0
 

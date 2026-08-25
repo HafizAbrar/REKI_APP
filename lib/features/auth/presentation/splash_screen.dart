@@ -5,15 +5,16 @@ import '../../../core/theme/app_theme.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
-  
+
   @override
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -26,13 +27,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     );
     _controller.forward();
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,13 +42,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
         children: [
           // Background image with overlay
           Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuBzborjAAdzPy8cboHGNn3vzCWGkdUZRSrVYM9692EDdSjJq3vDM0JjjzVv9I5f-vKl2tc3DMSbxe1b9IzsFl9zqjpRCkImdV8wNWbvPlYyFPQ0sFXba-ZauTeINFolzYVnqV7g3HaxopKAoTHS0GfsorznNvYR817DeueCVXm6nPeiWw_z0XnJh2ELFEwZuOVrpy_HQxUrgNJJiTkYDroXCzL6xtVt-_mwTyMMwJ-zJL7DFrF_Nbq664wqJd4ydpDZ3_kydKWqtVBL'),
-                  fit: BoxFit.cover,
-                ),
-              ),
+            child: Image.network(
+              'https://lh3.googleusercontent.com/aida-public/AB6AXuBzborjAAdzPy8cboHGNn3vzCWGkdUZRSrVYM9692EDdSjJq3vDM0JjjzVv9I5f-vKl2tc3DMSbxe1b9IzsFl9zqjpRCkImdV8wNWbvPlYyFPQ0sFXba-ZauTeINFolzYVnqV7g3HaxopKAoTHS0GfsorznNvYR817DeueCVXm6nPeiWw_z0XnJh2ELFEwZuOVrpy_HQxUrgNJJiTkYDroXCzL6xtVt-_mwTyMMwJ-zJL7DFrF_Nbq664wqJd4ydpDZ3_kydKWqtVBL',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  const ColoredBox(color: Color(0xFF021218)),
             ),
           ),
           // Radial gradient overlay
@@ -116,7 +115,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                                 color: AppTheme.primaryColor,
                                 shadows: [
                                   Shadow(
-                                    color: AppTheme.primaryColor.withOpacity(0.8),
+                                    color:
+                                        AppTheme.primaryColor.withOpacity(0.8),
                                     blurRadius: 15,
                                   ),
                                 ],
@@ -200,7 +200,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                                         color: AppTheme.primaryColor,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppTheme.primaryColor.withOpacity(0.8),
+                                            color: AppTheme.primaryColor
+                                                .withOpacity(0.8),
                                             blurRadius: 12,
                                           ),
                                         ],

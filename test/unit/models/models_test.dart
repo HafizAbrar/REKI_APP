@@ -4,6 +4,7 @@ import 'package:reki_mvp/core/models/offer.dart';
 import 'package:reki_mvp/core/models/user.dart';
 import 'package:reki_mvp/core/models/notification.dart';
 import 'package:reki_mvp/core/models/vibe_schedule.dart';
+import 'package:reki_mvp/core/models/social_models.dart';
 
 void main() {
   // ── Venue ──────────────────────────────────────────────────────────────────
@@ -56,6 +57,57 @@ void main() {
     });
   });
 
+  group('Phase 5 social models', () {
+    test('VenueReview parses nested backend user', () {
+      final review = VenueReview.fromJson({
+        'id': 'r1',
+        'venueId': 'v1',
+        'rating': 5,
+        'text': 'Great atmosphere',
+        'vibeAccurate': true,
+        'createdAt': '2026-08-24T12:00:00.000Z',
+        'isMine': true,
+        'user': {'name': 'Alex', 'avatar': 'https://example.com/avatar.png'},
+      });
+      expect(review.userName, 'Alex');
+      expect(review.rating, 5);
+      expect(review.vibeAccurate, isTrue);
+      expect(review.isMine, isTrue);
+    });
+
+    test('VenueCheckIn parses the server response shape', () {
+      final checkIn = VenueCheckIn.fromJson({
+        'id': 'c1',
+        'venueId': 'v1',
+        'venueName': 'Warehouse Project',
+        'checkedInAt': '2026-08-24T12:00:00.000Z',
+        'pointsAwarded': 20,
+      });
+      expect(checkIn.venueName, 'Warehouse Project');
+      expect(checkIn.pointsAwarded, 20);
+    });
+
+    test('Achievement and leaderboard parse live nested fields', () {
+      final achievement = Achievement.fromJson({
+        'id': 'first-night',
+        'title': 'First Night Out',
+        'description': 'Check in once',
+        'icon': 'first-night',
+        'progress': 1,
+        'target': 1,
+      });
+      final entry = LeaderboardEntry.fromJson({
+        'rank': 1,
+        'points': 30,
+        'isCurrentUser': true,
+        'user': {'name': 'Alex'},
+      });
+      expect(achievement.isUnlocked, isTrue);
+      expect(entry.name, 'Alex');
+      expect(entry.isCurrentUser, isTrue);
+    });
+  });
+
   // ── Offer ──────────────────────────────────────────────────────────────────
   group('Offer model', () {
     final json = {
@@ -78,7 +130,8 @@ void main() {
     });
 
     test('fromJson handles type fallback key', () {
-      final o = Offer.fromJson({...json, 'offerType': null, 'type': 'DISCOUNT'});
+      final o =
+          Offer.fromJson({...json, 'offerType': null, 'type': 'DISCOUNT'});
       expect(o.type, 'DISCOUNT');
     });
 
@@ -103,7 +156,9 @@ void main() {
       'fullName': 'Test User',
       'role': 'USER',
       'isActive': true,
-      'preferences': {'preferredCategories': ['BAR', 'CLUB']},
+      'preferences': {
+        'preferredCategories': ['BAR', 'CLUB']
+      },
     };
 
     test('fromJson parses customer role', () {

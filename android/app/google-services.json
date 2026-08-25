@@ -12,7 +12,20 @@
           "package_name": "com.example.reki_mvp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "268435917845-0622ecfknnb1rq7po2gid31l08c185sr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.reki_mvp",
+            "certificate_hash": "1c420b0e4ae09c8cf9d1c84cf60f3cf0a51f18bc"
+          }
+        },
+        {
+          "client_id": "268435917845-nugtqnlvaiikg4aqq3shkrjavsh5v5rc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBZ0xz4d8EolD4cvktlSE3k-LohAd1SNF4"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "268435917845-nugtqnlvaiikg4aqq3shkrjavsh5v5rc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "268435917845-5i8jfs6h6n0q3snn7i5srbm5h8tmfkqs.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.rekiMvp"
+              }
+            }
+          ]
         }
       }
     }

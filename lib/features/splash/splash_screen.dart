@@ -22,7 +22,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2));
     _progressAnimation = Tween<double>(begin: 0, end: 0.75).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
@@ -31,17 +32,18 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _checkAuthAndNavigate() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     if (!mounted || _navigated) return;
 
     try {
       // Check if user has access token in storage
-      final token = await const FlutterSecureStorage().read(key: 'access_token');
-      
+      final token =
+          await const FlutterSecureStorage().read(key: 'access_token');
+
       if (token != null) {
         await _authService.setAccessToken(token);
         final user = await _authService.fetchCurrentUser();
-        
+
         if (user != null && mounted && !_navigated) {
           _navigated = true;
           // Route based on role
@@ -60,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen>
       // Storage or network failure — fall through to login
       debugPrint('Splash auth check failed: $e');
     }
-    
+
     // No token or failed to fetch user, go to login
     if (mounted && !_navigated) {
       _navigated = true;
@@ -88,15 +90,14 @@ class _SplashScreenState extends State<SplashScreen>
         children: [
           // Background image with overlay
           Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: const NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuBzborjAAdzPy8cboHGNn3vzCWGkdUZRSrVYM9692EDdSjJq3vDM0JjjzVv9I5f-vKl2tc3DMSbxe1b9IzsFl9zqjpRCkImdV8wNWbvPlYyFPQ0sFXba-ZauTeINFolzYVnqV7g3HaxopKAoTHS0GfsorznNvYR817DeueCVXm6nPeiWw_z0XnJh2ELFEwZuOVrpy_HQxUrgNJJiTkYDroXCzL6xtVt-_mwTyMMwJ-zJL7DFrF_Nbq664wqJd4ydpDZ3_kydKWqtVBL'),
-                  fit: BoxFit.cover,
-                  opacity: 0.4,
-                  colorFilter: ColorFilter.mode(Colors.purple.withOpacity(0.3), BlendMode.overlay),
-                ),
-              ),
+            child: Image.network(
+              'https://lh3.googleusercontent.com/aida-public/AB6AXuBzborjAAdzPy8cboHGNn3vzCWGkdUZRSrVYM9692EDdSjJq3vDM0JjjzVv9I5f-vKl2tc3DMSbxe1b9IzsFl9zqjpRCkImdV8wNWbvPlYyFPQ0sFXba-ZauTeINFolzYVnqV7g3HaxopKAoTHS0GfsorznNvYR817DeueCVXm6nPeiWw_z0XnJh2ELFEwZuOVrpy_HQxUrgNJJiTkYDroXCzL6xtVt-_mwTyMMwJ-zJL7DFrF_Nbq664wqJd4ydpDZ3_kydKWqtVBL',
+              fit: BoxFit.cover,
+              opacity: const AlwaysStoppedAnimation(0.4),
+              color: Colors.purple.withValues(alpha: 0.3),
+              colorBlendMode: BlendMode.overlay,
+              errorBuilder: (_, __, ___) =>
+                  const ColoredBox(color: AppTheme.backgroundDark),
             ),
           ),
           // Radial gradient overlay
@@ -160,7 +161,8 @@ class _SplashScreenState extends State<SplashScreen>
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.equalizer, size: 64, color: AppTheme.primaryColor),
+                              const Icon(Icons.equalizer,
+                                  size: 64, color: AppTheme.primaryColor),
                               const SizedBox(height: 16),
                               FittedBox(
                                 fit: BoxFit.scaleDown,
@@ -173,7 +175,8 @@ class _SplashScreenState extends State<SplashScreen>
                                     color: Colors.white,
                                     shadows: [
                                       Shadow(
-                                        color: AppTheme.primaryColor.withOpacity(0.8),
+                                        color: AppTheme.primaryColor
+                                            .withOpacity(0.8),
                                         blurRadius: 15,
                                       ),
                                     ],
@@ -208,7 +211,8 @@ class _SplashScreenState extends State<SplashScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.only(left: 4, bottom: 6),
+                              padding:
+                                  const EdgeInsets.only(left: 4, bottom: 6),
                               child: Text(
                                 'Loading vibes...',
                                 style: TextStyle(
@@ -237,7 +241,8 @@ class _SplashScreenState extends State<SplashScreen>
                                         color: AppTheme.primaryColor,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppTheme.primaryColor.withOpacity(0.8),
+                                            color: AppTheme.primaryColor
+                                                .withOpacity(0.8),
                                             blurRadius: 12,
                                           ),
                                         ],

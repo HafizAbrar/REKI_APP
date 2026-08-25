@@ -36,29 +36,30 @@ class Venue {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'type': type,
-    'latitude': latitude,
-    'longitude': longitude,
-    'address': address,
-    'busyness': busyness,
-    'currentVibe': currentVibe,
-    'availableVibes': availableVibes,
-    'offers': offers.map((o) => o.toJson()).toList(),
-    'lastUpdated': lastUpdated.toIso8601String(),
-    'postcode': postcode,
-    'coverImageUrl': coverImageUrl,
-    'description': description,
-    'activeOffersCount': activeOffersCount,
-  };
+        'id': id,
+        'name': name,
+        'type': type,
+        'latitude': latitude,
+        'longitude': longitude,
+        'address': address,
+        'busyness': busyness,
+        'currentVibe': currentVibe,
+        'availableVibes': availableVibes,
+        'offers': offers.map((o) => o.toJson()).toList(),
+        'lastUpdated': lastUpdated.toIso8601String(),
+        'postcode': postcode,
+        'coverImageUrl': coverImageUrl,
+        'description': description,
+        'activeOffersCount': activeOffersCount,
+      };
 
   factory Venue.fromJson(Map<String, dynamic> json) {
     // busyness is an object { level, percentage } or a plain string
     final busynessRaw = json['busyness'];
-    final busynessStr = busynessRaw is Map
-        ? (busynessRaw['level']?.toString() ?? 'quiet')
-        : busynessRaw?.toString() ?? 'quiet';
+    final busynessStr = (busynessRaw is Map
+            ? (busynessRaw['level']?.toString() ?? 'quiet')
+            : busynessRaw?.toString() ?? 'quiet')
+        .toUpperCase();
 
     // vibe is an object { tags, description } or a plain string
     final vibeRaw = json['vibe'];
@@ -85,22 +86,30 @@ class Venue {
     List<Offer> offers = [];
     if (json['offers'] is List) {
       for (final o in json['offers'] as List) {
-        try { offers.add(Offer.fromJson(o as Map<String, dynamic>)); } catch (_) {}
+        try {
+          offers.add(Offer.fromJson(o as Map<String, dynamic>));
+        } catch (_) {}
       }
     }
 
     return Venue(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
-      type: json['category']?.toString() ?? json['type']?.toString() ?? 'bar',
+      type: json['type']?.toString() ?? json['category']?.toString() ?? 'bar',
       latitude: double.tryParse(json['lat']?.toString() ?? '') ??
-          (json['latitude'] as num?)?.toDouble() ?? 0.0,
+          (json['latitude'] as num?)?.toDouble() ??
+          0.0,
       longitude: double.tryParse(json['lng']?.toString() ?? '') ??
-          (json['longitude'] as num?)?.toDouble() ?? 0.0,
+          (json['longitude'] as num?)?.toDouble() ??
+          0.0,
       address: json['address']?.toString() ?? '',
       busyness: busynessStr,
       currentVibe: vibeStr,
-      availableVibes: [],
+      availableVibes: json['availableVibes'] is List
+          ? (json['availableVibes'] as List)
+              .map((value) => value.toString())
+              .toList()
+          : const [],
       offers: offers,
       lastUpdated: json['updatedAt'] != null
           ? DateTime.tryParse(json['updatedAt']) ?? DateTime.now()

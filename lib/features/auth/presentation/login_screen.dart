@@ -1,16 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user.dart';
+import '../../../core/config/env.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
-  
+
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
@@ -32,21 +34,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _signInWithGoogle() async {
     try {
       final googleUser = await GoogleSignIn(
-        serverClientId: '835379339220-l1og46s294v65tc1dgo2o67o55lb91em.apps.googleusercontent.com', // TODO: replace with Web Client ID from Google Cloud Console
-        scopes: ['email', 'profile'],
+        serverClientId: Env.googleServerClientId,
+        scopes: const ['email', 'profile'],
       ).signIn();
       if (googleUser == null) return; // user cancelled
       final auth = await googleUser.authentication;
       final idToken = auth.idToken;
       if (idToken == null) return;
       await ref.read(authStateProvider.notifier).loginWithGoogle(
-        idToken,
-        photoUrl: googleUser.photoUrl,
-      );
+            idToken,
+            photoUrl: googleUser.photoUrl,
+          );
     } catch (e) {
       if (mounted) {
+        final message = e is PlatformException &&
+                e.code == 'sign_in_failed' &&
+                (e.message?.contains('12500') ?? false)
+            ? 'Google Sign-In is unavailable on this device. Update Google Play Services or use a current Google Play emulator.'
+            : 'Google sign-in failed: $e';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google sign-in failed: $e')),
+          SnackBar(content: Text(message)),
         );
       }
     }
@@ -55,7 +62,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _signInWithApple() async {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName
+        ],
       );
       final identityToken = credential.identityToken;
       if (identityToken == null) return;
@@ -63,9 +73,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .where((s) => s != null && s.isNotEmpty)
           .join(' ');
       await ref.read(authStateProvider.notifier).loginWithApple(
-        identityToken: identityToken,
-        fullName: fullName.isNotEmpty ? fullName : null,
-      );
+            identityToken: identityToken,
+            fullName: fullName.isNotEmpty ? fullName : null,
+          );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -80,16 +90,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final password = _passwordController.text;
 
     setState(() {
-      _emailError = email.isEmpty ? 'Please enter your email or phone number.' : null;
+      _emailError =
+          email.isEmpty ? 'Please enter your email or phone number.' : null;
       _passwordError = password.isEmpty ? 'Please enter your password.' : null;
     });
 
     if (_emailError != null || _passwordError != null) return;
 
     await ref.read(authStateProvider.notifier).login(
-      email: email,
-      password: password,
-    );
+          email: email,
+          password: password,
+        );
   }
 
   @override
@@ -147,7 +158,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuAbUJHdVYXEM5nb7gdCJuVW7JCDHX57JIbHlYa1QpCwLUn3IQ18tWdOP6jjy3OzZFeql3aQIRSc8wPeA8vaC6vRU3T_5DxF_C73GGcJIfrB1ITMzi9x8PXpXmxXCfSpxFffphHCdnz0ZqfuDGZKFvKzy6FldO8KPMejI_K6IPmQc2plM0xNFnJs5m-WKeFdub0DJzwa6N37lz-xVZjkCCXVWncXp2ZAd7Fua4l0bLXe22WfCLqtsp83Ep1GvowtKY7ZneCKhcWUxEBs'),
+                  image: NetworkImage(
+                      'https://lh3.googleusercontent.com/aida-public/AB6AXuAbUJHdVYXEM5nb7gdCJuVW7JCDHX57JIbHlYa1QpCwLUn3IQ18tWdOP6jjy3OzZFeql3aQIRSc8wPeA8vaC6vRU3T_5DxF_C73GGcJIfrB1ITMzi9x8PXpXmxXCfSpxFffphHCdnz0ZqfuDGZKFvKzy6FldO8KPMejI_K6IPmQc2plM0xNFnJs5m-WKeFdub0DJzwa6N37lz-xVZjkCCXVWncXp2ZAd7Fua4l0bLXe22WfCLqtsp83Ep1GvowtKY7ZneCKhcWUxEBs'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -193,7 +205,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.equalizer, size: 32, color: Colors.white),
+                    child: const Icon(Icons.equalizer,
+                        size: 32, color: Colors.white),
                   ),
                   const SizedBox(height: 24),
                   const Text(
@@ -231,7 +244,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     icon: Icons.lock,
                     isPassword: true,
                     obscureText: _obscurePassword,
-                    onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
+                    onToggleVisibility: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                     errorText: _passwordError,
                     onChanged: (_) => setState(() => _passwordError = null),
                   ),
@@ -320,11 +334,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (Platform.isIOS) ...
-                        [
-                          _socialButton(Icons.apple, label: 'Apple'),
-                          const SizedBox(width: 24),
-                        ],
+                      if (Platform.isIOS) ...[
+                        _socialButton(Icons.apple, label: 'Apple'),
+                        const SizedBox(width: 24),
+                      ],
                       _socialButton(Icons.g_mobiledata, label: 'Google'),
                     ],
                   ),
@@ -336,14 +349,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF475569), width: 1),
+                        side: const BorderSide(
+                            color: Color(0xFF475569), width: 1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(9999),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 12),
                         backgroundColor: Colors.transparent,
                       ),
-                      onPressed: isLoading ? null : () => ref.read(authStateProvider.notifier).loginAsGuest(),
+                      onPressed: isLoading
+                          ? null
+                          : () => ref
+                              .read(authStateProvider.notifier)
+                              .loginAsGuest(),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -356,7 +375,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                           SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, color: Colors.white, size: 18),
+                          Icon(Icons.arrow_forward,
+                              color: Colors.white, size: 18),
                         ],
                       ),
                     ),
@@ -369,7 +389,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       const Text(
                         'Are you a business? ',
-                        style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                        style:
+                            TextStyle(color: Color(0xFF64748B), fontSize: 13),
                       ),
                       GestureDetector(
                         onTap: () => context.push('/business-login'),
@@ -391,7 +412,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       const Text(
                         'Don\'t have an account? ',
-                        style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                        style:
+                            TextStyle(color: Color(0xFF64748B), fontSize: 13),
                       ),
                       GestureDetector(
                         onTap: () => context.push('/signup'),
@@ -462,7 +484,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(9999),
             border: Border.all(
-              color: hasError ? const Color(0xFFEF4444) : const Color(0xFF334155),
+              color:
+                  hasError ? const Color(0xFFEF4444) : const Color(0xFF334155),
               width: 1,
             ),
           ),
@@ -494,11 +517,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(9999),
                 borderSide: BorderSide(
-                  color: hasError ? const Color(0xFFEF4444) : AppTheme.primaryColor,
+                  color: hasError
+                      ? const Color(0xFFEF4444)
+                      : AppTheme.primaryColor,
                   width: 1,
                 ),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
             ),
           ),
         ),
@@ -507,7 +533,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             padding: const EdgeInsets.only(left: 16, top: 6),
             child: Row(
               children: [
-                const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 13),
+                const Icon(Icons.error_outline,
+                    color: Color(0xFFEF4444), size: 13),
                 const SizedBox(width: 4),
                 Text(
                   errorText,

@@ -15,7 +15,7 @@ class LocalDatabase {
     final path = join(await getDatabasesPath(), 'reki.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, _) async {
         // Venue cache with TTL
         await db.execute('''
@@ -57,8 +57,43 @@ class LocalDatabase {
             value TEXT NOT NULL
           )
         ''');
+        await _createSocialTables(db);
+      },
+      onUpgrade: (db, oldVersion, _) async {
+        if (oldVersion < 2) await _createSocialTables(db);
       },
     );
+  }
+
+  static Future<void> _createSocialTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS venue_history (
+        venue_id TEXT PRIMARY KEY,
+        venue_name TEXT NOT NULL,
+        visited_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS venue_reviews (
+        id TEXT PRIMARY KEY,
+        venue_id TEXT NOT NULL,
+        user_name TEXT NOT NULL,
+        user_avatar_url TEXT,
+        rating INTEGER NOT NULL,
+        review_text TEXT NOT NULL,
+        vibe_accurate INTEGER NOT NULL,
+        created_at INTEGER NOT NULL,
+        is_mine INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS venue_checkins (
+        id TEXT PRIMARY KEY,
+        venue_id TEXT NOT NULL,
+        venue_name TEXT NOT NULL,
+        checked_in_at INTEGER NOT NULL
+      )
+    ''');
   }
 
   // ── Venue cache ──────────────────────────────────────────────────────────
@@ -79,8 +114,8 @@ class LocalDatabase {
   /// Returns cached venue list JSON if within [ttlMinutes], else null.
   Future<String?> getCachedVenueList({int ttlMinutes = 5}) async {
     final d = await db;
-    final rows = await d.query('venue_cache',
-        where: 'id = ?', whereArgs: ['__list__']);
+    final rows =
+        await d.query('venue_cache', where: 'id = ?', whereArgs: ['__list__']);
     if (rows.isEmpty) return null;
     final age = DateTime.now().millisecondsSinceEpoch -
         (rows.first['cached_at'] as int);
@@ -103,8 +138,7 @@ class LocalDatabase {
 
   Future<String?> getCachedVenue(String id, {int ttlMinutes = 10}) async {
     final d = await db;
-    final rows =
-        await d.query('venue_cache', where: 'id = ?', whereArgs: [id]);
+    final rows = await d.query('venue_cache', where: 'id = ?', whereArgs: [id]);
     if (rows.isEmpty) return null;
     final age = DateTime.now().millisecondsSinceEpoch -
         (rows.first['cached_at'] as int);
@@ -128,8 +162,7 @@ class LocalDatabase {
 
   Future<void> unsaveVenue(String venueId) async {
     final d = await db;
-    await d.delete('saved_venues',
-        where: 'venue_id = ?', whereArgs: [venueId]);
+    await d.delete('saved_venues', where: 'venue_id = ?', whereArgs: [venueId]);
   }
 
   Future<List<String>> getSavedVenueIds() async {
@@ -140,8 +173,8 @@ class LocalDatabase {
 
   Future<bool> isVenueSaved(String venueId) async {
     final d = await db;
-    final rows = await d.query('saved_venues',
-        where: 'venue_id = ?', whereArgs: [venueId]);
+    final rows = await d
+        .query('saved_venues', where: 'venue_id = ?', whereArgs: [venueId]);
     return rows.isNotEmpty;
   }
 
@@ -162,8 +195,8 @@ class LocalDatabase {
 
   Future<bool> isOfferRedeemed(String offerId) async {
     final d = await db;
-    final rows = await d.query('redeemed_offers',
-        where: 'offer_id = ?', whereArgs: [offerId]);
+    final rows = await d
+        .query('redeemed_offers', where: 'offer_id = ?', whereArgs: [offerId]);
     return rows.isNotEmpty;
   }
 
@@ -213,5 +246,84 @@ class LocalDatabase {
   Future<void> deletePref(String key) async {
     final d = await db;
     await d.delete('user_prefs', where: 'key = ?', whereArgs: [key]);
+  }
+
+  // Phase 5: recently visited venues
+  Future<void> addVenueVisit(String venueId, String venueName,
+      {DateTime? visitedAt}) async {
+    final d = await db;
+    await d.insert(
+        'venue_history',
+        {
+          'venue_id': venueId,
+          'venue_name': venueName,
+          'visited_at': (visitedAt ?? DateTime.now()).millisecondsSinceEpoch,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    await d.rawDelete('''
+      DELETE FROM venue_history WHERE venue_id NOT IN (
+        SELECT venue_id FROM venue_history ORDER BY visited_at DESC LIMIT 30
+      )
+    ''');
+  }
+
+  Future<List<Map<String, dynamic>>> getVenueHistory() async {
+    final d = await db;
+    return d.query('venue_history', orderBy: 'visited_at DESC', limit: 30);
+  }
+
+  Future<void> clearVenueHistory() async {
+    final d = await db;
+    await d.delete('venue_history');
+  }
+
+  // Phase 5: local-first reviews
+  Future<void> upsertReview(Map<String, dynamic> review) async {
+    final d = await db;
+    await d.insert('venue_reviews', review,
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Map<String, dynamic>>> getReviews(String venueId) async {
+    final d = await db;
+    return d.query('venue_reviews',
+        where: 'venue_id = ?',
+        whereArgs: [venueId],
+        orderBy: 'created_at DESC');
+  }
+
+  Future<void> deleteReview(String reviewId) async {
+    final d = await db;
+    await d.delete('venue_reviews', where: 'id = ?', whereArgs: [reviewId]);
+  }
+
+  // Phase 5: check-ins and gamification counters
+  Future<void> addCheckIn(String id, String venueId, String venueName,
+      {DateTime? checkedInAt}) async {
+    final d = await db;
+    await d.insert(
+        'venue_checkins',
+        {
+          'id': id,
+          'venue_id': venueId,
+          'venue_name': venueName,
+          'checked_in_at':
+              (checkedInAt ?? DateTime.now()).millisecondsSinceEpoch,
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore);
+  }
+
+  Future<List<Map<String, dynamic>>> getCheckIns() async {
+    final d = await db;
+    return d.query('venue_checkins', orderBy: 'checked_in_at DESC');
+  }
+
+  Future<int> getReviewCount() async {
+    final d = await db;
+    return Sqflite.firstIntValue(
+          await d
+              .rawQuery('SELECT COUNT(*) FROM venue_reviews WHERE is_mine = 1'),
+        ) ??
+        0;
   }
 }

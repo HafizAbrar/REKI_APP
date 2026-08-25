@@ -97,5 +97,39 @@ void main() {
       await db.deletePref('to_delete');
       expect(await db.getPref('to_delete'), isNull);
     });
+
+    test('records venue history once and updates recency', () async {
+      await db.clearVenueHistory();
+      await db.addVenueVisit('history-v1', 'First Venue');
+      await db.addVenueVisit('history-v1', 'Renamed Venue');
+      final history = await db.getVenueHistory();
+      expect(history, hasLength(1));
+      expect(history.first['venue_name'], 'Renamed Venue');
+    });
+
+    test('stores reviews and counts current user reviews', () async {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      await db.upsertReview({
+        'id': 'review-$timestamp',
+        'venue_id': 'review-venue',
+        'user_name': 'Tester',
+        'user_avatar_url': null,
+        'rating': 5,
+        'review_text': 'Great atmosphere',
+        'vibe_accurate': 1,
+        'created_at': timestamp,
+        'is_mine': 1,
+      });
+      final reviews = await db.getReviews('review-venue');
+      expect(reviews.first['rating'], 5);
+      expect(await db.getReviewCount(), greaterThanOrEqualTo(1));
+    });
+
+    test('stores check-ins for gamification', () async {
+      final id = 'checkin-${DateTime.now().microsecondsSinceEpoch}';
+      await db.addCheckIn(id, 'venue-checkin', 'Check-in Venue');
+      final checkIns = await db.getCheckIns();
+      expect(checkIns.any((row) => row['id'] == id), true);
+    });
   });
 }

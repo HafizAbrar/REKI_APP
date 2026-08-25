@@ -38,6 +38,7 @@ import '../../features/users/presentation/edit_profile_screen.dart';
 import '../../features/business/presentation/business_forgot_password_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/business/presentation/create_venue_screen.dart';
+import '../../features/social/presentation/social_hub_screen.dart';
 
 // Routes that require a fully logged-in (non-guest) user
 const _guestBlockedRoutes = [
@@ -47,6 +48,7 @@ const _guestBlockedRoutes = [
   '/offer-redeemed',
   '/user-preferences',
   '/notification-preferences',
+  '/social',
 ];
 
 // Routes only accessible to BUSINESS role
@@ -75,9 +77,15 @@ String? _routeGuard(BuildContext context, GoRouterState state) {
 
   if (user == null) {
     const publicPaths = [
-      '/splash', '/loading', '/login', '/signup',
-      '/forgot-password', '/code-verification',
-      '/business-login', '/business-signup', '/business-forgot-password',
+      '/splash',
+      '/loading',
+      '/login',
+      '/signup',
+      '/forgot-password',
+      '/code-verification',
+      '/business-login',
+      '/business-signup',
+      '/business-forgot-password',
     ];
     if (!publicPaths.any((p) => path.startsWith(p))) return '/login';
     return null;
@@ -128,8 +136,8 @@ final appRouter = GoRouter(
         builder: (_, __) => const ForgotPasswordScreen()),
     GoRoute(
       path: '/code-verification',
-      builder: (_, state) => CodeVerificationScreen(
-          phoneNumber: state.extra as String? ?? ''),
+      builder: (_, state) =>
+          CodeVerificationScreen(phoneNumber: state.extra as String? ?? ''),
     ),
     GoRoute(
         path: '/change-password',
@@ -155,8 +163,8 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/venue-detail',
-      builder: (_, state) => VenueDetailScreen(
-          venueId: state.uri.queryParameters['id'] ?? '1'),
+      builder: (_, state) =>
+          VenueDetailScreen(venueId: state.uri.queryParameters['id'] ?? '1'),
     ),
     GoRoute(
       path: '/map',
@@ -174,8 +182,8 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/offer-detail',
-      builder: (_, state) => OfferDetailScreen(
-          offerId: state.uri.queryParameters['id'] ?? '1'),
+      builder: (_, state) =>
+          OfferDetailScreen(offerId: state.uri.queryParameters['id'] ?? '1'),
     ),
     GoRoute(
       path: '/offer-redeemed',
@@ -198,7 +206,9 @@ final appRouter = GoRouter(
         path: '/user-preferences',
         builder: (_, __) => const UserPreferencesScreen()),
     GoRoute(path: '/profile', builder: (_, __) => const UserProfileScreen()),
-    GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfileScreen()),
+    GoRoute(
+        path: '/edit-profile', builder: (_, __) => const EditProfileScreen()),
+    GoRoute(path: '/social', builder: (_, __) => const SocialHubScreen()),
 
     // ── Business Dashboard ────────────────────────────────────────────────
     GoRoute(
@@ -236,11 +246,8 @@ final appRouter = GoRouter(
         path: '/business-update',
         builder: (_, __) => const BusinessUpdateScreen()),
     GoRoute(
-        path: '/manage-offers',
-        builder: (_, __) => const ManageOffersScreen()),
-    GoRoute(
-        path: '/my-venues',
-        builder: (_, __) => const MyVenuesScreen()),
+        path: '/manage-offers', builder: (_, __) => const ManageOffersScreen()),
+    GoRoute(path: '/my-venues', builder: (_, __) => const MyVenuesScreen()),
     GoRoute(
       path: '/create-offer',
       builder: (_, state) => CreateOfferScreen(

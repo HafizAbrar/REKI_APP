@@ -21,7 +21,6 @@ class RetryInterceptor extends Interceptor {
         attempt < maxRetries &&
         (err.type == DioExceptionType.connectionTimeout ||
             err.type == DioExceptionType.receiveTimeout ||
-            err.type == DioExceptionType.connectionError ||
             (err.response?.statusCode != null &&
                 err.response!.statusCode! >= 500));
 

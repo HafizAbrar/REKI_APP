@@ -52,36 +52,55 @@ User _user(String id) => User(
 class MockOfferApi implements OfferApiService {
   bool throws = false;
 
-  @override Future<List<Offer>> getAllOffers() async {
+  @override
+  Future<List<Offer>> getAllOffers() async {
     if (throws) throw Exception('err');
     return [_offer('o1')];
   }
-  @override Future<Offer> getOfferById(String id) async {
+
+  @override
+  Future<Offer> getOfferById(String id) async {
     if (throws) throw Exception('err');
     return _offer(id);
   }
-  @override Future<List<Offer>> getOffersByVenue(String v) async {
+
+  @override
+  Future<List<Offer>> getOffersByVenue(String v) async {
     if (throws) throw Exception('err');
     return [_offer('o1')];
   }
-  @override Future<Offer> createOffer(Map<String, dynamic> d) async {
+
+  @override
+  Future<Offer> createOffer(Map<String, dynamic> d) async {
     if (throws) throw Exception('err');
     return _offer('new');
   }
-  @override Future<Map<String, dynamic>> claimOffer(String id) async {
+
+  @override
+  Future<Map<String, dynamic>> claimOffer(String id) async {
     if (throws) throw Exception('err');
     return {'voucherCode': 'ABC123'};
   }
-  @override Future<Map<String, dynamic>> redeemOffer(String id, {required String voucherCode}) async {
+
+  @override
+  Future<Map<String, dynamic>> redeemOffer(String id,
+      {required String voucherCode}) async {
     if (throws) throw Exception('err');
     return {'status': 'redeemed'};
   }
-  @override Future<Map<String, dynamic>> generateWalletPass(String id) async => {};
-  @override Future<Offer> markOfferViewed(String id) async => _offer(id);
-  @override Future<Offer> markOfferClicked(String id) async => _offer(id);
-  @override Future<Map<String, dynamic>> getOfferStats(String id) async => {};
-  @override Future<Offer> updateOfferStatus(String id, bool a) async => _offer(id);
-  @override Future<Map<String, dynamic>> redeemByCode(String code) async => {};
+
+  @override
+  Future<Map<String, dynamic>> generateWalletPass(String id) async => {};
+  @override
+  Future<Offer> markOfferViewed(String id) async => _offer(id);
+  @override
+  Future<void> trackOfferClick(String id) async {}
+  @override
+  Future<Map<String, dynamic>> getOfferStats(String id) async => {};
+  @override
+  Future<Offer> updateOfferStatus(String id, bool a) async => _offer(id);
+  @override
+  Future<Map<String, dynamic>> redeemByCode(String code) async => {};
 }
 
 // ── Mock: VenueApiService ─────────────────────────────────────────────────────
@@ -89,48 +108,85 @@ class MockOfferApi implements OfferApiService {
 class MockVenueApi implements VenueApiService {
   bool throws = false;
 
-  @override Future<List<Venue>> getAllVenuesList() async {
+  @override
+  Future<List<Venue>> getAllVenuesList() async {
     if (throws) throw Exception('err');
     return [_venue('v1')];
   }
-  @override Future<Map<String, dynamic>> getAllVenues({
-    String? category, String? busyness, String? vibe,
-    String? cityId, int page = 1, int limit = 20,
+
+  @override
+  Future<Map<String, dynamic>> getAllVenues({
+    String? category,
+    String? busyness,
+    String? vibe,
+    String? cityId,
+    int page = 1,
+    int limit = 20,
   }) async {
     if (throws) throw Exception('err');
     return {'data': []};
   }
-  @override Future<Venue> getVenueById(String id) async {
+
+  @override
+  Future<Venue> getVenueById(String id) async {
     if (throws) throw Exception('err');
     return _venue(id);
   }
-  @override Future<List<Venue>> searchVenues(String q, {String? city}) async {
+
+  @override
+  Future<List<Venue>> searchVenues(String q, {String? city}) async {
     if (throws) throw Exception('err');
     return [_venue('v1')];
   }
-  @override Future<List<Venue>> getTrendingVenues({String? cityId}) async {
+
+  @override
+  Future<List<Venue>> getTrendingVenues({String? cityId}) async {
     if (throws) throw Exception('err');
     return [_venue('v1')];
   }
-  @override Future<void> trackVenueView(String id) async {
+
+  @override
+  Future<void> trackVenueView(String id) async {
     if (throws) throw Exception('err');
   }
-  @override Future<Venue> createVenue(Map<String, dynamic> d) async {
+
+  @override
+  Future<Venue> createVenue(Map<String, dynamic> d) async {
     if (throws) throw Exception('err');
     return _venue('new');
   }
-  @override Future<Venue> updateLiveState(String id,
+
+  @override
+  Future<Venue> updateLiveState(String id,
       {String? busyness, String? currentVibe}) async {
     if (throws) throw Exception('err');
     return _venue(id);
   }
-  @override Future<Map<String, dynamic>> getFilterOptions({String? cityId}) async => {};
-  @override Future<List<Map<String, dynamic>>> getMapMarkers({
-    String? cityId, double? swLat, double? swLng,
-    double? neLat, double? neLng,
-  }) async => [];
-  @override Future<Map<String, dynamic>> submitVibeCheck(String venueId, int score) async => {};
-  @override Future<List<Map<String, dynamic>>> getVenueOffers(String venueId) async => [];
+
+  @override
+  Future<Map<String, dynamic>> getFilterOptions({String? cityId}) async => {};
+  @override
+  Future<List<Map<String, dynamic>>> getMapMarkers({
+    String? cityId,
+    double? swLat,
+    double? swLng,
+    double? neLat,
+    double? neLng,
+  }) async =>
+      [];
+  @override
+  Future<Map<String, dynamic>> submitVibeCheck(
+          String venueId, int score) async =>
+      {};
+  @override
+  Future<List<Map<String, dynamic>>> getVenueOffers(String venueId) async => [];
+  @override
+  Future<List<Map<String, dynamic>>> getVibeSchedules(String venueId) async =>
+      [];
+  @override
+  Future<Map<String, dynamic>> submitSyncQueue(
+          List<Map<String, dynamic>> actions) async =>
+      {'processed': actions};
 }
 
 // ── Mock: UserApiService ──────────────────────────────────────────────────────
@@ -138,22 +194,31 @@ class MockVenueApi implements VenueApiService {
 class MockUserApi implements UserApiService {
   bool throws = false;
 
-  @override Future<List<User>> getAllUsers() async {
+  @override
+  Future<List<User>> getAllUsers() async {
     if (throws) throw Exception('err');
     return [_user('u1')];
   }
-  @override Future<User> getUserById(String id) async {
+
+  @override
+  Future<User> getUserById(String id) async {
     if (throws) throw Exception('err');
     return _user(id);
   }
-  @override Future<User> updateUser(String id, Map<String, dynamic> u) async {
+
+  @override
+  Future<User> updateUser(String id, Map<String, dynamic> u) async {
     if (throws) throw Exception('err');
     return _user(id);
   }
-  @override Future<void> deleteUser(String id) async {
+
+  @override
+  Future<void> deleteUser(String id) async {
     if (throws) throw Exception('err');
   }
-  @override Future<Map<String, dynamic>> getProfile() async {
+
+  @override
+  Future<Map<String, dynamic>> getProfile() async {
     if (throws) throw Exception('err');
     return {
       'id': 'u1',
@@ -175,37 +240,59 @@ class MockUserApi implements UserApiService {
       'updatedAt': '2024-01-01T00:00:00.000Z',
     };
   }
-  @override Future<Map<String, dynamic>> getPreferences() async {
+
+  @override
+  Future<Map<String, dynamic>> getPreferences() async {
     if (throws) throw Exception('err');
-    return {'preferredCategories': ['BAR']};
+    return {
+      'preferredCategories': ['BAR']
+    };
   }
-  @override Future<Map<String, dynamic>> savePreferences(Map<String, dynamic> p) async {
+
+  @override
+  Future<Map<String, dynamic>> savePreferences(Map<String, dynamic> p) async {
     if (throws) throw Exception('err');
     return p;
   }
-  @override Future<Map<String, dynamic>> updatePreferences(Map<String, dynamic> p) async {
+
+  @override
+  Future<Map<String, dynamic>> updatePreferences(Map<String, dynamic> p) async {
     if (throws) throw Exception('err');
     return p;
   }
-  @override Future<List<Map<String, dynamic>>> getSavedVenues() async {
+
+  @override
+  Future<List<Map<String, dynamic>>> getSavedVenues() async {
     if (throws) throw Exception('err');
-    return [{'id': 'v1'}];
+    return [
+      {'id': 'v1'}
+    ];
   }
-  @override Future<Map<String, dynamic>> saveVenue(String id) async {
+
+  @override
+  Future<Map<String, dynamic>> saveVenue(String id) async {
     if (throws) throw Exception('err');
     return {'id': id};
   }
-  @override Future<void> unsaveVenue(String id) async {
+
+  @override
+  Future<void> unsaveVenue(String id) async {
     if (throws) throw Exception('err');
   }
-  @override Future<List<Map<String, dynamic>>> getRedemptions() async {
+
+  @override
+  Future<List<Map<String, dynamic>>> getRedemptions() async {
     if (throws) throw Exception('err');
     return [];
   }
-  @override Future<void> deleteAccount() async {
+
+  @override
+  Future<void> deleteAccount() async {
     if (throws) throw Exception('err');
   }
-  @override Future<Map<String, dynamic>> updateProfile({
+
+  @override
+  Future<Map<String, dynamic>> updateProfile({
     String? name,
     String? phone,
     double? currentLat,
@@ -217,19 +304,29 @@ class MockUserApi implements UserApiService {
     if (throws) throw Exception('err');
     return {'name': name ?? 'Test User', 'phone': phone};
   }
-  @override Future<NotificationPreferences> getNotificationPreferences() async {
+
+  @override
+  Future<NotificationPreferences> getNotificationPreferences() async {
     if (throws) throw Exception('err');
     return NotificationPreferences(
-      id: 'np1', userId: 'u1',
-      vibeAlerts: true, livePerformance: true, socialCheckins: true,
-      offerAlerts: true, weeklyRecap: true, proximityAlerts: true,
+      id: 'np1',
+      userId: 'u1',
+      vibeAlerts: true,
+      livePerformance: true,
+      socialCheckins: true,
+      offerAlerts: true,
+      weeklyRecap: true,
+      proximityAlerts: true,
     );
   }
-  @override Future<NotificationPreferences> updateNotificationPreferences(
+
+  @override
+  Future<NotificationPreferences> updateNotificationPreferences(
       Map<String, dynamic> preferences) async {
     if (throws) throw Exception('err');
     return NotificationPreferences(
-      id: 'np1', userId: 'u1',
+      id: 'np1',
+      userId: 'u1',
       vibeAlerts: preferences['vibeAlerts'] as bool? ?? true,
       livePerformance: preferences['livePerformance'] as bool? ?? true,
       socialCheckins: preferences['socialCheckins'] as bool? ?? true,
@@ -253,7 +350,8 @@ class MockNotificationApi implements NotificationApiService {
         timestamp: DateTime(2024),
       );
 
-  @override Future<Map<String, dynamic>> getAllNotifications() async {
+  @override
+  Future<Map<String, dynamic>> getAllNotifications() async {
     if (throws) throw Exception('err');
     return {
       'today': [_n('n1').toJson()],
@@ -261,17 +359,25 @@ class MockNotificationApi implements NotificationApiService {
       'earlier': [],
     };
   }
-  @override Future<AppNotification> markAsRead(String id) async {
+
+  @override
+  Future<AppNotification> markAsRead(String id) async {
     if (throws) throw Exception('err');
     return _n(id);
   }
-  @override Future<void> markAllAsRead() async {
+
+  @override
+  Future<void> markAllAsRead() async {
     if (throws) throw Exception('err');
   }
-  @override Future<void> deleteNotification(String id) async {
+
+  @override
+  Future<void> deleteNotification(String id) async {
     if (throws) throw Exception('err');
   }
-  @override Future<AppNotification> testNotification(Map<String, dynamic> d) async {
+
+  @override
+  Future<AppNotification> testNotification(Map<String, dynamic> d) async {
     if (throws) throw Exception('err');
     return _n('test');
   }
@@ -284,7 +390,10 @@ void main() {
   group('OfferRepository', () {
     late MockOfferApi api;
     late OfferRepository repo;
-    setUp(() { api = MockOfferApi(); repo = OfferRepository(api); });
+    setUp(() {
+      api = MockOfferApi();
+      repo = OfferRepository(api);
+    });
 
     test('getAllOffers success', () async {
       final r = await repo.getAllOffers();
@@ -326,7 +435,10 @@ void main() {
   group('VenueRepository', () {
     late MockVenueApi api;
     late VenueRepository repo;
-    setUp(() { api = MockVenueApi(); repo = VenueRepository(api); });
+    setUp(() {
+      api = MockVenueApi();
+      repo = VenueRepository(api);
+    });
 
     test('getAllVenues success', () async {
       final r = await repo.getAllVenues();
@@ -367,7 +479,10 @@ void main() {
   group('UserRepository', () {
     late MockUserApi api;
     late UserRepository repo;
-    setUp(() { api = MockUserApi(); repo = UserRepository(api); });
+    setUp(() {
+      api = MockUserApi();
+      repo = UserRepository(api);
+    });
 
     test('getAllUsers success', () async {
       final r = await repo.getAllUsers();
@@ -420,7 +535,10 @@ void main() {
   group('NotificationRepository', () {
     late MockNotificationApi api;
     late NotificationRepository repo;
-    setUp(() { api = MockNotificationApi(); repo = NotificationRepository(api); });
+    setUp(() {
+      api = MockNotificationApi();
+      repo = NotificationRepository(api);
+    });
 
     test('getAllNotifications success', () async {
       final r = await repo.getAllNotifications();
