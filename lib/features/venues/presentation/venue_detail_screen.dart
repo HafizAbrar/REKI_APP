@@ -11,6 +11,7 @@ import '../../../core/config/env.dart';
 import '../../../core/services/venue_repository.dart';
 import '../../../features/users/data/user_preferences_provider.dart';
 import '../../../shared/widgets/guest_guard.dart';
+import '../../../shared/widgets/venue_budget_tag.dart';
 import '../../../core/models/venue.dart';
 import '../../../core/services/social_repository.dart';
 import '../../social/data/social_provider.dart';
@@ -351,8 +352,11 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                                   const SizedBox(height: 16),
                                   Wrap(
                                     spacing: 8,
+                                    runSpacing: 8,
                                     children: [
                                       _buildTag(venue.type),
+                                      if (venue.priceLevel != null)
+                                        VenueBudgetTag(venue: venue),
                                     ],
                                   ),
                                 ],

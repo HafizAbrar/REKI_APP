@@ -8,10 +8,11 @@ import '../../../core/models/venue.dart';
 import '../../../features/users/data/user_preferences_provider.dart';
 import '../../../shared/widgets/app_cached_image.dart';
 import '../../../shared/widgets/guest_guard.dart';
+import '../../../shared/widgets/venue_budget_tag.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
-  
+
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
@@ -25,7 +26,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(venueManagementProvider.notifier).loadVenues());
+    Future.microtask(
+        () => ref.read(venueManagementProvider.notifier).loadVenues());
   }
 
   @override
@@ -37,10 +39,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final user = authService.currentUser;
     // Watch live profile for up-to-date avatar
     final profileAsync = ref.watch(userProfileProvider);
-    final avatarUrl = profileAsync.valueOrNull?['avatar']?.toString()
-        ?? profileAsync.valueOrNull?['profilePicture']?.toString()
-        ?? user?.profilePicture;
-    
+    final avatarUrl = profileAsync.valueOrNull?['avatar']?.toString() ??
+        profileAsync.valueOrNull?['profilePicture']?.toString() ??
+        user?.profilePicture;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
@@ -49,10 +51,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               // Header
               Container(
-                padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20, left: 16, right: 16, bottom: 12),
+                padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 20,
+                    left: 16,
+                    right: 16,
+                    bottom: 12),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B).withOpacity(0.75),
-                  border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.08), width: 1)),
+                  border: Border(
+                      bottom: BorderSide(
+                          color: Colors.white.withOpacity(0.08), width: 1)),
                 ),
                 child: Column(
                   children: [
@@ -63,7 +71,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             GestureDetector(
                               onTap: () async {
                                 if (!mounted) return;
-                                if (await guardGuestAction(context) && mounted) {
+                                if (await guardGuestAction(context) &&
+                                    mounted) {
                                   context.push('/profile');
                                 }
                               },
@@ -73,18 +82,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                      color: const Color(0xFF2DD4BF).withOpacity(0.5), width: 2),
+                                      color: const Color(0xFF2DD4BF)
+                                          .withOpacity(0.5),
+                                      width: 2),
                                 ),
                                 child: ClipOval(
-                                  child: avatarUrl != null && avatarUrl.isNotEmpty
-                                      ? AppCachedImage(
-                                          url: avatarUrl,
-                                          width: 40,
-                                          height: 40,
-                                          fit: BoxFit.cover,
-                                          placeholder: _buildInitialsAvatar(user),
-                                        )
-                                      : _buildInitialsAvatar(user),
+                                  child:
+                                      avatarUrl != null && avatarUrl.isNotEmpty
+                                          ? AppCachedImage(
+                                              url: avatarUrl,
+                                              width: 40,
+                                              height: 40,
+                                              fit: BoxFit.cover,
+                                              placeholder:
+                                                  _buildInitialsAvatar(user),
+                                            )
+                                          : _buildInitialsAvatar(user),
                                 ),
                               ),
                             ),
@@ -127,9 +140,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ],
                           ),
                         ),
-                        _buildHeaderButton(Icons.search, onTap: _showSearchDialog),
+                        _buildHeaderButton(Icons.search,
+                            onTap: _showSearchDialog),
                         const SizedBox(width: 8),
-                        _buildHeaderButton(Icons.tune, filterActive: filters.isActive),
+                        _buildHeaderButton(Icons.tune,
+                            filterActive: filters.isActive),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -172,76 +187,104 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: _isSearching
                     ? _buildSearchResults(searchAsync)
                     : venuesAsync.when(
-                  data: (venues) {
-                    var filteredVenues = _selectedTab == 0
-                      ? venues
-                      : venues.where((v) {
-                          final cat = v.type.toLowerCase().replaceAll(' ', '_');
-                          if (_selectedTab == 1) return cat == 'bar' || cat.contains('bar');
-                          if (_selectedTab == 2) return cat == 'club' || cat == 'nightclub';
-                          if (_selectedTab == 3) return cat == 'restaurant';
-                          if (_selectedTab == 4) return cat == 'lounge';
-                          if (_selectedTab == 5) return cat == 'live_music_venue' || cat == 'live_music';
-                          if (_selectedTab == 6) return cat == 'pub';
-                          if (_selectedTab == 7) return cat == 'rooftop_bar' || cat == 'rooftop';
-                          if (_selectedTab == 8) return cat == 'cocktail_bar' || cat == 'cocktail';
-                          return true;
-                        }).toList();
+                        data: (venues) {
+                          var filteredVenues = _selectedTab == 0
+                              ? venues
+                              : venues.where((v) {
+                                  final cat =
+                                      v.type.toLowerCase().replaceAll(' ', '_');
+                                  if (_selectedTab == 1)
+                                    return cat == 'bar' || cat.contains('bar');
+                                  if (_selectedTab == 2)
+                                    return cat == 'club' || cat == 'nightclub';
+                                  if (_selectedTab == 3)
+                                    return cat == 'restaurant';
+                                  if (_selectedTab == 4) return cat == 'lounge';
+                                  if (_selectedTab == 5)
+                                    return cat == 'live_music_venue' ||
+                                        cat == 'live_music';
+                                  if (_selectedTab == 6) return cat == 'pub';
+                                  if (_selectedTab == 7)
+                                    return cat == 'rooftop_bar' ||
+                                        cat == 'rooftop';
+                                  if (_selectedTab == 8)
+                                    return cat == 'cocktail_bar' ||
+                                        cat == 'cocktail';
+                                  return true;
+                                }).toList();
 
-                    // Apply filter panel selections
-                    if (filters.busyness.isNotEmpty) {
-                      filteredVenues = filteredVenues
-                          .where((v) => v.busyness.toLowerCase() == filters.busyness.toLowerCase())
-                          .toList();
-                    }
-                    if (filters.vibes.isNotEmpty) {
-                      filteredVenues = filteredVenues.where((v) {
-                        final vibe = v.currentVibe.toLowerCase();
-                        return filters.vibes.any((s) => vibe.contains(s.toLowerCase()));
-                      }).toList();
-                    }
-                    if (filters.offersOnly) {
-                      filteredVenues = filteredVenues.where((v) => v.offers.isNotEmpty).toList();
-                    }
+                          // Apply filter panel selections
+                          if (filters.busyness.isNotEmpty) {
+                            filteredVenues = filteredVenues
+                                .where((v) =>
+                                    v.busyness.toLowerCase() ==
+                                    filters.busyness.toLowerCase())
+                                .toList();
+                          }
+                          if (filters.vibes.isNotEmpty) {
+                            filteredVenues = filteredVenues.where((v) {
+                              final vibe = v.currentVibe.toLowerCase();
+                              return filters.vibes
+                                  .any((s) => vibe.contains(s.toLowerCase()));
+                            }).toList();
+                          }
+                          if (filters.offersOnly) {
+                            filteredVenues = filteredVenues
+                                .where((v) => v.offers.isNotEmpty)
+                                .toList();
+                          }
+                          if (filters.priceLevels.isNotEmpty) {
+                            filteredVenues = filteredVenues
+                                .where((v) =>
+                                    v.priceLevel != null &&
+                                    filters.priceLevels.contains(v.priceLevel))
+                                .toList();
+                          }
 
-                    if (_searchQuery.isNotEmpty) {
-                      filteredVenues = filteredVenues.where((v) =>
-                        v.name.toLowerCase().contains(_searchQuery) ||
-                        v.type.toLowerCase().contains(_searchQuery)
-                      ).toList();
-                    }
+                          if (_searchQuery.isNotEmpty) {
+                            filteredVenues = filteredVenues
+                                .where((v) =>
+                                    v.name
+                                        .toLowerCase()
+                                        .contains(_searchQuery) ||
+                                    v.type.toLowerCase().contains(_searchQuery))
+                                .toList();
+                          }
 
-                    if (filteredVenues.isEmpty) {
-                      return _buildNoResults(filters.isActive);
-                    }
+                          if (filteredVenues.isEmpty) {
+                            return _buildNoResults(filters.isActive);
+                          }
 
-                    return SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        ...filteredVenues.map((venue) => Padding(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          child: _buildVenueCard(venue: venue),
-                        )),
-                        const SizedBox(height: 32),
-                        Container(
-                          height: 4,
-                          width: 48,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
+                          return SingleChildScrollView(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              children: [
+                                ...filteredVenues.map((venue) => Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 24),
+                                      child: _buildVenueCard(venue: venue),
+                                    )),
+                                const SizedBox(height: 32),
+                                Container(
+                                  height: 4,
+                                  width: 48,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                const SizedBox(height: 100),
+                              ],
+                            ),
+                          );
+                        },
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (error, _) => Center(
+                          child: Text('Error: $error',
+                              style: const TextStyle(color: Colors.white)),
                         ),
-                        const SizedBox(height: 100),
-                      ],
-                    ),
-                  );
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (error, _) => Center(
-                    child: Text('Error: $error', style: const TextStyle(color: Colors.white)),
-                  ),
-                ),
+                      ),
               ),
             ],
           ),
@@ -254,11 +297,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.9,
                 constraints: const BoxConstraints(maxWidth: 360),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B).withOpacity(0.75),
                   borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+                  border: Border.all(
+                      color: Colors.white.withOpacity(0.08), width: 1),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.5),
@@ -286,19 +331,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildInitialsAvatar(user) {
     final initials = user?.name.isNotEmpty == true
-        ? user!.name.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase()
+        ? user!.name
+            .trim()
+            .split(' ')
+            .map((e) => e[0])
+            .take(2)
+            .join()
+            .toUpperCase()
         : '?';
     return Container(
       width: 40,
       height: 40,
       color: const Color(0xFF2DD4BF),
       child: Center(
-        child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+        child: Text(initials,
+            style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14)),
       ),
     );
   }
 
-  Widget _buildHeaderButton(IconData icon, {VoidCallback? onTap, bool filterActive = false}) {
+  Widget _buildHeaderButton(IconData icon,
+      {VoidCallback? onTap, bool filterActive = false}) {
     return Container(
       width: 40,
       height: 40,
@@ -310,20 +366,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: onTap ?? () {
-            if (icon == Icons.tune) {
-              context.push('/filters');
-            }
-          },
+          onTap: onTap ??
+              () {
+                if (icon == Icons.tune) {
+                  context.push('/filters');
+                }
+              },
           child: Stack(
             clipBehavior: Clip.none,
             children: [
               Center(child: Icon(icon, color: Colors.white, size: 20)),
               if (filterActive)
                 Positioned(
-                  top: 6, right: 6,
+                  top: 6,
+                  right: 6,
                   child: Container(
-                    width: 8, height: 8,
+                    width: 8,
+                    height: 8,
                     decoration: const BoxDecoration(
                       color: Color(0xFF2DD4BF),
                       shape: BoxShape.circle,
@@ -343,7 +402,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Search Venues', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Search Venues', style: TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -367,22 +427,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              setState(() { _searchQuery = ''; _isSearching = false; });
+              setState(() {
+                _searchQuery = '';
+                _isSearching = false;
+              });
               ref.read(venueSearchProvider.notifier).clear();
               Navigator.pop(context);
             },
-            child: const Text('Clear', style: TextStyle(color: Color(0xFF94A3B8))),
+            child:
+                const Text('Clear', style: TextStyle(color: Color(0xFF94A3B8))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2DD4BF),
               foregroundColor: const Color(0xFF0F172A),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () {
               final q = controller.text.trim();
               if (q.isNotEmpty) {
-                setState(() { _searchQuery = q; _isSearching = true; });
+                setState(() {
+                  _searchQuery = q;
+                  _isSearching = true;
+                });
                 ref.read(venueSearchProvider.notifier).search(q);
               }
               Navigator.pop(context);
@@ -396,25 +464,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildSearchResults(AsyncValue<List<Venue>> searchAsync) {
     return searchAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
-      error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+      loading: () => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
+      error: (e, _) => Center(
+          child:
+              Text('Error: $e', style: const TextStyle(color: Colors.white))),
       data: (venues) {
         if (venues.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.search_off, color: Color(0xFF64748B), size: 64),
+                const Icon(Icons.search_off,
+                    color: Color(0xFF64748B), size: 64),
                 const SizedBox(height: 16),
                 Text('No results for "$_searchQuery"',
-                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 16)),
+                    style: const TextStyle(
+                        color: Color(0xFF94A3B8), fontSize: 16)),
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () {
-                    setState(() { _searchQuery = ''; _isSearching = false; });
+                    setState(() {
+                      _searchQuery = '';
+                      _isSearching = false;
+                    });
                     ref.read(venueSearchProvider.notifier).clear();
                   },
-                  child: const Text('Clear search', style: TextStyle(color: Color(0xFF2DD4BF))),
+                  child: const Text('Clear search',
+                      style: TextStyle(color: Color(0xFF2DD4BF))),
                 ),
               ],
             ),
@@ -428,14 +505,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Row(
                 children: [
                   Text('${venues.length} results for "$_searchQuery"',
-                      style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
+                      style: const TextStyle(
+                          color: Color(0xFF94A3B8), fontSize: 13)),
                   const Spacer(),
                   TextButton(
                     onPressed: () {
-                      setState(() { _searchQuery = ''; _isSearching = false; });
+                      setState(() {
+                        _searchQuery = '';
+                        _isSearching = false;
+                      });
                       ref.read(venueSearchProvider.notifier).clear();
                     },
-                    child: const Text('Clear', style: TextStyle(color: Color(0xFF2DD4BF), fontSize: 13)),
+                    child: const Text('Clear',
+                        style:
+                            TextStyle(color: Color(0xFF2DD4BF), fontSize: 13)),
                   ),
                 ],
               ),
@@ -463,28 +546,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2DD4BF) : Colors.white.withOpacity(0.05),
+          color: isSelected
+              ? const Color(0xFF2DD4BF)
+              : Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(24),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: const Color(0xFF2DD4BF).withOpacity(0.25),
-              blurRadius: 16,
-            ),
-          ] : [],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF2DD4BF).withOpacity(0.25),
+                    blurRadius: 16,
+                  ),
+                ]
+              : [],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+              color: isSelected
+                  ? const Color(0xFF0F172A)
+                  : const Color(0xFFCBD5E1),
               size: 18,
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+                color: isSelected
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFCBD5E1),
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -500,12 +591,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final subtitle = '${venue.type} • ${venue.address}';
     final statusLabel = venue.busyness;
     final vibeLabel = venue.currentVibe;
-    final offerDescription = venue.offers.isNotEmpty ? venue.offers.first.description : null;
-    
+    final offerDescription =
+        venue.offers.isNotEmpty ? venue.offers.first.description : null;
+
     Color statusColor = Colors.green;
     if (statusLabel == 'Busy') statusColor = Colors.orange;
     if (statusLabel == 'Packed') statusColor = Colors.red;
-    
+
     IconData? statusIcon;
     IconData? vibeIcon;
     String? waitTime;
@@ -515,288 +607,308 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Color? offerColor;
     IconData? offerIcon;
     String? offerTitle;
-    
+
     return GestureDetector(
       onTap: () => context.push('/venue-detail?id=${venue.id}'),
       child: Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Image Section
-          Stack(
-            children: [
-              Container(
-                height: 280,
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-                ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                  child: venue.coverImageUrl != null && venue.coverImageUrl!.isNotEmpty
-                    ? AppCachedImage(
-                        url: venue.coverImageUrl!.startsWith('http')
-                            ? venue.coverImageUrl!
-                            : '${Env.apiBaseUrl}${venue.coverImageUrl!.startsWith('/') ? '' : '/'}${venue.coverImageUrl}',
-                        width: double.infinity,
-                        height: 280,
-                        fit: BoxFit.cover,
-                        placeholder: Container(
-                          height: 280,
-                          color: const Color(0xFF334155),
-                          child: const Center(
-                            child: Icon(Icons.image, size: 60, color: Color(0xFF64748B)),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Image Section
+            Stack(
+              children: [
+                Container(
+                  height: 280,
+                  decoration: const BoxDecoration(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(32)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(32)),
+                    child: venue.coverImageUrl != null &&
+                            venue.coverImageUrl!.isNotEmpty
+                        ? AppCachedImage(
+                            url: venue.coverImageUrl!.startsWith('http')
+                                ? venue.coverImageUrl!
+                                : '${Env.apiBaseUrl}${venue.coverImageUrl!.startsWith('/') ? '' : '/'}${venue.coverImageUrl}',
+                            width: double.infinity,
+                            height: 280,
+                            fit: BoxFit.cover,
+                            placeholder: Container(
+                              height: 280,
+                              color: const Color(0xFF334155),
+                              child: const Center(
+                                child: Icon(Icons.image,
+                                    size: 60, color: Color(0xFF64748B)),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            height: 280,
+                            color: const Color(0xFF334155),
+                            child: const Center(
+                              child: Icon(Icons.image,
+                                  size: 60, color: Color(0xFF64748B)),
+                            ),
                           ),
-                        ),
-                      )
-                    : Container(
-                        height: 280,
-                        color: const Color(0xFF334155),
-                        child: const Center(
-                          child: Icon(Icons.image, size: 60, color: Color(0xFF64748B)),
-                        ),
-                      ),
-                ),
-              ),
-              Container(
-                height: 280,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      const Color(0xFF0F172A).withOpacity(0.9),
-                    ],
-                    stops: const [0.0, 1.0],
                   ),
                 ),
-              ),
-              // Status and Vibe Tags
-              Positioned(
-                top: 16,
-                left: 16,
-                right: 16,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          if (statusLabel != null) ...[
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: (statusColor ?? Colors.red).withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 8,
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Stack(
-                                    children: [
-                                      Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.75),
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    statusLabel,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          if (vibeLabel != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    vibeLabel,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
+                Container(
+                  height: 280,
+                  decoration: BoxDecoration(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(32)),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        const Color(0xFF0F172A).withOpacity(0.9),
+                      ],
+                      stops: const [0.0, 1.0],
                     ),
-
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          // Content Section
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B).withOpacity(0.75),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // Status and Vibe Tags
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  right: 16,
+                  child: Row(
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                            if (statusLabel != null) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: (statusColor ?? Colors.red)
+                                      .withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      blurRadius: 8,
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Stack(
+                                      children: [
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.white.withOpacity(0.75),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      statusLabel,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            if (vibeLabel != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.4),
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                      color: Colors.white.withOpacity(0.1),
+                                      width: 1),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      vibeLabel,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      if (venue.priceLevel != null)
+                        VenueBudgetTag(venue: venue, compact: true),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            // Content Section
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B).withOpacity(0.75),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: Colors.white.withOpacity(0.08), width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                subtitle,
+                                style: const TextStyle(
+                                  color: Color(0xFFCBD5E1),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (vibeTags != null && vibeTags.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: vibeTags
+                            .map((tag) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    tag,
+                                    style: const TextStyle(
+                                      color: Color(0xFFCBD5E1),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ],
+                    if (offerDescription != null) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.only(top: 12),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(
+                                color: Colors.white.withOpacity(0.1), width: 1),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: (offerColor ?? const Color(0xFF2DD4BF))
+                                    .withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                offerIcon ?? Icons.local_activity,
+                                color: offerColor ?? const Color(0xFF2DD4BF),
+                                size: 18,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              subtitle,
-                              style: const TextStyle(
-                                color: Color(0xFFCBD5E1),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    offerTitle ?? 'ACTIVE OFFER',
+                                    style: TextStyle(
+                                      color:
+                                          offerColor ?? const Color(0xFF2DD4BF),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    offerDescription,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
                     ],
-                  ),
-                  if (vibeTags != null && vibeTags.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: vibeTags.map((tag) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          tag,
-                          style: const TextStyle(
-                            color: Color(0xFFCBD5E1),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      )).toList(),
-                    ),
                   ],
-                  if (offerDescription != null) ...[
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.only(top: 12),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: (offerColor ?? const Color(0xFF2DD4BF)).withOpacity(0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              offerIcon ?? Icons.local_activity,
-                              color: offerColor ?? const Color(0xFF2DD4BF),
-                              size: 18,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  offerTitle ?? 'ACTIVE OFFER',
-                                  style: TextStyle(
-                                    color: offerColor ?? const Color(0xFF2DD4BF),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  offerDescription,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -813,14 +925,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1E293B),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.3), width: 1.5),
+                border: Border.all(
+                    color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                    width: 1.5),
               ),
-              child: const Icon(Icons.search_off_rounded, color: Color(0xFF2DD4BF), size: 36),
+              child: const Icon(Icons.search_off_rounded,
+                  color: Color(0xFF2DD4BF), size: 36),
             ),
             const SizedBox(height: 24),
             const Text(
               'No venues found',
-              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
@@ -828,24 +946,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ? 'No venues match your current filters.\nTry adjusting or resetting them.'
                   : 'There are no venues available\nin this category right now.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15, height: 1.5),
+              style: const TextStyle(
+                  color: Color(0xFF94A3B8), fontSize: 15, height: 1.5),
             ),
             if (hasFilters) ...[
               const SizedBox(height: 28),
               GestureDetector(
                 onTap: () => ref.read(filterProvider.notifier).reset(),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                   decoration: BoxDecoration(
                     color: const Color(0xFF2DD4BF),
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
-                      BoxShadow(color: const Color(0xFF2DD4BF).withOpacity(0.3), blurRadius: 16),
+                      BoxShadow(
+                          color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                          blurRadius: 16),
                     ],
                   ),
                   child: const Text(
                     'Clear Filters',
-                    style: TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -856,19 +981,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index, {bool hasNotification = false}) {
+  Widget _buildNavItem(IconData icon, int index,
+      {bool hasNotification = false}) {
     bool isActive = _selectedNavIndex == index;
     return GestureDetector(
       onTap: () {
         if (index == 1) {
-          context.push('/map').then((_) => setState(() => _selectedNavIndex = 0));
+          context
+              .push('/map')
+              .then((_) => setState(() => _selectedNavIndex = 0));
         } else if (index == 2) {
           guardGuestAction(context).then((allowed) {
-            if (allowed && mounted) context.push('/offers').then((_) => setState(() => _selectedNavIndex = 0));
+            if (allowed && mounted)
+              context
+                  .push('/offers')
+                  .then((_) => setState(() => _selectedNavIndex = 0));
           });
         } else if (index == 3) {
           guardGuestAction(context).then((allowed) {
-            if (allowed && mounted) context.push('/profile').then((_) => setState(() => _selectedNavIndex = 0));
+            if (allowed && mounted)
+              context
+                  .push('/profile')
+                  .then((_) => setState(() => _selectedNavIndex = 0));
           });
         } else {
           setState(() => _selectedNavIndex = index);
@@ -882,7 +1016,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Icon(
                 icon,
-                color: isActive ? const Color(0xFF2DD4BF) : const Color(0xFF94A3B8),
+                color: isActive
+                    ? const Color(0xFF2DD4BF)
+                    : const Color(0xFF94A3B8),
                 size: 24,
               ),
               if (isActive)

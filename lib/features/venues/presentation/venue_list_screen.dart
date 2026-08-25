@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_handler.dart';
+import '../../../core/models/venue.dart';
+import '../../../shared/widgets/venue_budget_tag.dart';
 import '../data/venue_management_provider.dart';
 
 class VenueListScreen extends ConsumerWidget {
   const VenueListScreen({super.key});
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final venuesAsync = ref.watch(venueManagementProvider);
-    
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
@@ -21,7 +23,11 @@ class VenueListScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Manage Venues', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+        title: const Text('Manage Venues',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w700)),
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: Colors.white),
@@ -38,10 +44,12 @@ class VenueListScreen extends ConsumerWidget {
                 child: ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: venues.length,
-                  itemBuilder: (context, index) => _buildVenueCard(context, venues[index].toJson()),
+                  itemBuilder: (context, index) =>
+                      _buildVenueCard(context, venues[index]),
                 ),
               ),
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryColor)),
         error: (error, stack) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -54,15 +62,21 @@ class VenueListScreen extends ConsumerWidget {
                     color: Colors.red.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                  child: const Icon(Icons.error_outline,
+                      color: Colors.red, size: 64),
                 ),
                 const SizedBox(height: 24),
-                const Text('Error Loading Venues', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700)),
+                const Text('Error Loading Venues',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700)),
                 const SizedBox(height: 12),
                 Text(
                   ErrorHandler.getErrorMessage(error),
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+                  style: TextStyle(
+                      color: Colors.white.withOpacity(0.7), fontSize: 16),
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton.icon(
@@ -72,8 +86,10 @@ class VenueListScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ],
@@ -95,14 +111,20 @@ class VenueListScreen extends ConsumerWidget {
               color: AppTheme.primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.store_outlined, color: AppTheme.primaryColor, size: 64),
+            child: const Icon(Icons.store_outlined,
+                color: AppTheme.primaryColor, size: 64),
           ),
           const SizedBox(height: 24),
-          const Text('No Venues Found', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700)),
+          const Text('No Venues Found',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           Text(
             'Create your first venue to get started',
-            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+            style:
+                TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
           ),
           const SizedBox(height: 32),
           ElevatedButton.icon(
@@ -113,7 +135,8 @@ class VenueListScreen extends ConsumerWidget {
               backgroundColor: AppTheme.primaryColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ],
@@ -121,10 +144,10 @@ class VenueListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildVenueCard(BuildContext context, Map<String, dynamic> venue) {
-    final busyness = venue['busyness'] ?? 'MODERATE';
-    final vibe = venue['currentVibe'] ?? 'CHILL';
-    
+  Widget _buildVenueCard(BuildContext context, Venue venue) {
+    final busyness = venue.busyness;
+    final vibe = venue.currentVibe;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -136,7 +159,7 @@ class VenueListScreen extends ConsumerWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => context.push('/venue-detail?id=${venue['id']}'),
+          onTap: () => context.push('/venue-detail?id=${venue.id}'),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -151,7 +174,8 @@ class VenueListScreen extends ConsumerWidget {
                         color: AppTheme.primaryColor.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.store, color: AppTheme.primaryColor, size: 28),
+                      child: const Icon(Icons.store,
+                          color: AppTheme.primaryColor, size: 28),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -159,41 +183,53 @@ class VenueListScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            venue['name'] ?? 'Unknown Venue',
-                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+                            venue.name,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            venue['address'] ?? 'No address',
-                            style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+                            venue.address,
+                            style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 14),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios, color: AppTheme.primaryColor, size: 20),
+                    const Icon(Icons.arrow_forward_ios,
+                        color: AppTheme.primaryColor, size: 20),
                   ],
                 ),
                 const SizedBox(height: 16),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     _buildStatusChip(busyness, _getBusynessColor(busyness)),
-                    const SizedBox(width: 8),
-                    _buildStatusChip(vibe, AppTheme.primaryColor.withOpacity(0.8)),
-                    const Spacer(),
-                    if (venue['type'] != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          venue['type'].toString().toUpperCase(),
-                          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.w600),
-                        ),
+                    _buildStatusChip(
+                        vibe, AppTheme.primaryColor.withOpacity(0.8)),
+                    if (venue.priceLevel != null)
+                      VenueBudgetTag(venue: venue, compact: true),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
                       ),
+                      child: Text(
+                        venue.type.toUpperCase(),
+                        style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -214,17 +250,22 @@ class VenueListScreen extends ConsumerWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+        style:
+            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );
   }
 
   Color _getBusynessColor(String busyness) {
     switch (busyness.toUpperCase()) {
-      case 'QUIET': return const Color(0xFF10B981);
-      case 'MODERATE': return const Color(0xFFF59E0B);
-      case 'BUSY': return const Color(0xFFEF4444);
-      default: return Colors.grey;
+      case 'QUIET':
+        return const Color(0xFF10B981);
+      case 'MODERATE':
+        return const Color(0xFFF59E0B);
+      case 'BUSY':
+        return const Color(0xFFEF4444);
+      default:
+        return Colors.grey;
     }
   }
 }

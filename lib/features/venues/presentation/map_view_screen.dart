@@ -8,28 +8,35 @@ import '../data/venue_management_provider.dart';
 import '../../../core/config/env.dart';
 import '../../../core/models/venue.dart';
 import '../../../shared/widgets/app_cached_image.dart';
+import '../../../shared/widgets/venue_budget_tag.dart';
 
 const _ragGreen = Color(0xFF22C55E);
 const _ragAmber = Color(0xFFF59E0B);
-const _ragRed   = Color(0xFFEF4444);
+const _ragRed = Color(0xFFEF4444);
 
 Color _ragColor(String busyness) {
   switch (busyness.toLowerCase()) {
     case 'busy':
-    case 'packed':     return _ragRed;
+    case 'packed':
+      return _ragRed;
     case 'moderate':
-    case 'steady':     return _ragAmber;
-    default:           return _ragGreen;
+    case 'steady':
+      return _ragAmber;
+    default:
+      return _ragGreen;
   }
 }
 
 BitmapDescriptor _markerHue(String busyness) {
   switch (busyness.toLowerCase()) {
     case 'busy':
-    case 'packed':   return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+    case 'packed':
+      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
     case 'moderate':
-    case 'steady':   return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
-    default:         return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+    case 'steady':
+      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
+    default:
+      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
   }
 }
 
@@ -93,7 +100,8 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
         setState(() => _userPosition = pos);
         _mapController?.animateCamera(
           CameraUpdate.newLatLngZoom(
-            LatLng(pos.latitude, pos.longitude), 14,
+            LatLng(pos.latitude, pos.longitude),
+            14,
           ),
         );
       }
@@ -107,7 +115,9 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
   List<Venue> _filteredVenues(List<Venue> venues) {
     var list = _selectedCategory == 'ALL'
         ? venues
-        : venues.where((v) => v.type.toLowerCase() == _selectedCategory).toList();
+        : venues
+            .where((v) => v.type.toLowerCase() == _selectedCategory)
+            .toList();
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       list = list
@@ -164,7 +174,11 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
         icon: _markerHue(venue.busyness),
         infoWindow: InfoWindow(
           title: venue.name,
-          snippet: '${venue.busyness.toUpperCase()} • ${venue.type}',
+          snippet: [
+            venue.busyness.toUpperCase(),
+            venue.type,
+            if (venue.budgetSymbol != null) venue.budgetSymbol!,
+          ].join(' • '),
           onTap: () => context.push('/venue-detail?id=${venue.id}'),
         ),
         zIndex: isSelected ? 2 : 1,
@@ -172,7 +186,8 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
           setState(() => _selectedVenueId = venue.id);
           _mapController?.animateCamera(
             CameraUpdate.newLatLngZoom(
-              LatLng(venue.latitude, venue.longitude), 15,
+              LatLng(venue.latitude, venue.longitude),
+              15,
             ),
           );
         },
@@ -194,63 +209,76 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.map_outlined, color: Color(0xFF64748B), size: 64),
+                  const Icon(Icons.map_outlined,
+                      color: Color(0xFF64748B), size: 64),
                   const SizedBox(height: 16),
-                  const Text('Map unavailable', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                  const Text('Map unavailable',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
-                  Text(_mapError!, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13), textAlign: TextAlign.center),
+                  Text(_mapError!,
+                      style: const TextStyle(
+                          color: Color(0xFF94A3B8), fontSize: 13),
+                      textAlign: TextAlign.center),
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () => context.pop(),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF14B8A6)),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF14B8A6)),
                     child: const Text('Go Back'),
                   ),
                 ],
               ),
             )
           else
-          venuesAsync.when(
-            data: (venues) {
-              try {
-                return GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: widget.venueId != null
-                    ? _venueLatLng(venues, widget.venueId!) ?? _manchesterCenter
-                    : _manchesterCenter,
-                zoom: 14,
-              ),
-              onMapCreated: (c) {
-                _mapController = c;
-                // If specific venue, zoom to it
-                if (widget.venueId != null) {
-                  final ll = _venueLatLng(venues, widget.venueId!);
-                  if (ll != null) {
-                    c.animateCamera(CameraUpdate.newLatLngZoom(ll, 16));
-                  }
+            venuesAsync.when(
+              data: (venues) {
+                try {
+                  return GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: widget.venueId != null
+                          ? _venueLatLng(venues, widget.venueId!) ??
+                              _manchesterCenter
+                          : _manchesterCenter,
+                      zoom: 14,
+                    ),
+                    onMapCreated: (c) {
+                      _mapController = c;
+                      // If specific venue, zoom to it
+                      if (widget.venueId != null) {
+                        final ll = _venueLatLng(venues, widget.venueId!);
+                        if (ll != null) {
+                          c.animateCamera(CameraUpdate.newLatLngZoom(ll, 16));
+                        }
+                      }
+                    },
+                    markers: _buildMarkers(venues),
+                    myLocationEnabled: _userPosition != null,
+                    myLocationButtonEnabled: false,
+                    zoomControlsEnabled: false,
+                    mapToolbarEnabled: false,
+                    mapType: MapType.normal,
+                    onTap: (_) => setState(() {
+                      _selectedVenueId = null;
+                      _showSuggestions = false;
+                      _searchFocus.unfocus();
+                    }),
+                  );
+                } catch (e) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) setState(() => _mapError = e.toString());
+                  });
+                  return const SizedBox.shrink();
                 }
               },
-              markers: _buildMarkers(venues),
-              myLocationEnabled: _userPosition != null,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-              mapToolbarEnabled: false,
-              mapType: MapType.normal,
-              onTap: (_) => setState(() {
-                _selectedVenueId = null;
-                _showSuggestions = false;
-                _searchFocus.unfocus();
-              }),
-            );
-              } catch (e) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) setState(() => _mapError = e.toString());
-                });
-                return const SizedBox.shrink();
-              }
-            },
-            loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
-            error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
-          ),
+              loading: () => const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
+              error: (e, _) => Center(
+                  child: Text('Error: $e',
+                      style: const TextStyle(color: Colors.white))),
+            ),
 
           // ── Top bar ───────────────────────────────────────────────────
           SafeArea(
@@ -270,12 +298,14 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E293B).withOpacity(0.95),
                               borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.1)),
                             ),
                             child: TextField(
                               controller: _searchController,
                               focusNode: _searchFocus,
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 14),
                               onChanged: (v) => _onSearchChanged(v, venues),
                               onTap: () {
                                 if (_searchQuery.isNotEmpty) {
@@ -284,16 +314,20 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                               },
                               decoration: InputDecoration(
                                 hintText: 'Search venues or areas...',
-                                hintStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
-                                prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8), size: 20),
+                                hintStyle: const TextStyle(
+                                    color: Color(0xFF64748B), fontSize: 14),
+                                prefixIcon: const Icon(Icons.search,
+                                    color: Color(0xFF94A3B8), size: 20),
                                 suffixIcon: _searchQuery.isNotEmpty
                                     ? IconButton(
-                                        icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 18),
+                                        icon: const Icon(Icons.close,
+                                            color: Color(0xFF94A3B8), size: 18),
                                         onPressed: _clearSearch,
                                       )
                                     : null,
                                 border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 14),
                               ),
                             ),
                           ),
@@ -309,8 +343,13 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withOpacity(0.1)),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 12)],
+                          border:
+                              Border.all(color: Colors.white.withOpacity(0.1)),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.4),
+                                blurRadius: 12)
+                          ],
                         ),
                         child: Builder(builder: (_) {
                           final suggestions = _filteredVenues(venues);
@@ -318,23 +357,30 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                             return const Padding(
                               padding: EdgeInsets.all(16),
                               child: Text('No venues found',
-                                  style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                                  style: TextStyle(
+                                      color: Color(0xFF64748B), fontSize: 13)),
                             );
                           }
                           return ListView.separated(
                             shrinkWrap: true,
                             padding: const EdgeInsets.symmetric(vertical: 6),
-                            itemCount: suggestions.length > 6 ? 6 : suggestions.length,
+                            itemCount:
+                                suggestions.length > 6 ? 6 : suggestions.length,
                             separatorBuilder: (_, __) => const Divider(
-                                height: 1, color: Color(0xFF334155), indent: 16, endIndent: 16),
+                                height: 1,
+                                color: Color(0xFF334155),
+                                indent: 16,
+                                endIndent: 16),
                             itemBuilder: (_, i) {
                               final v = suggestions[i];
                               return ListTile(
                                 dense: true,
                                 leading: Container(
-                                  width: 32, height: 32,
+                                  width: 32,
+                                  height: 32,
                                   decoration: BoxDecoration(
-                                    color: _ragColor(v.busyness).withOpacity(0.15),
+                                    color:
+                                        _ragColor(v.busyness).withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(Icons.store_outlined,
@@ -351,9 +397,11 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis),
                                 trailing: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: _ragColor(v.busyness).withOpacity(0.15),
+                                    color:
+                                        _ragColor(v.busyness).withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(v.busyness.toUpperCase(),
@@ -381,17 +429,20 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                           const SizedBox(width: 8),
                           _filterChip('Club', Icons.music_note, 'club'),
                           const SizedBox(width: 8),
-                          _filterChip('Restaurant', Icons.restaurant, 'restaurant'),
+                          _filterChip(
+                              'Restaurant', Icons.restaurant, 'restaurant'),
                           const SizedBox(width: 8),
                           _filterChip('Lounge', Icons.weekend, 'lounge'),
                           const SizedBox(width: 8),
-                          _filterChip('Live Music', Icons.queue_music, 'live_music_venue'),
+                          _filterChip('Live Music', Icons.queue_music,
+                              'live_music_venue'),
                           const SizedBox(width: 8),
                           _filterChip('Pub', Icons.sports_bar, 'pub'),
                           const SizedBox(width: 8),
                           _filterChip('Rooftop', Icons.roofing, 'rooftop_bar'),
                           const SizedBox(width: 8),
-                          _filterChip('Cocktail', Icons.local_drink, 'cocktail_bar'),
+                          _filterChip(
+                              'Cocktail', Icons.local_drink, 'cocktail_bar'),
                         ],
                       ),
                     ),
@@ -443,16 +494,24 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                   color: const Color(0xFF1E293B).withOpacity(0.92),
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white.withOpacity(0.1)),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8)],
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.3), blurRadius: 8)
+                  ],
                 ),
                 child: _locationLoading
                     ? const Padding(
                         padding: EdgeInsets.all(12),
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2DD4BF)),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Color(0xFF2DD4BF)),
                       )
                     : Icon(
-                        _userPosition != null ? Icons.my_location : Icons.location_searching,
-                        color: _userPosition != null ? const Color(0xFF2DD4BF) : const Color(0xFF94A3B8),
+                        _userPosition != null
+                            ? Icons.my_location
+                            : Icons.location_searching,
+                        color: _userPosition != null
+                            ? const Color(0xFF2DD4BF)
+                            : const Color(0xFF94A3B8),
                         size: 22,
                       ),
               ),
@@ -477,15 +536,21 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E293B).withOpacity(0.96),
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.white.withOpacity(0.1)),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 20)],
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.1)),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black.withOpacity(0.4),
+                              blurRadius: 20)
+                        ],
                       ),
                       child: Row(
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: AppCachedImage(
-                              url: venue.coverImageUrl != null && venue.coverImageUrl!.isNotEmpty
+                              url: venue.coverImageUrl != null &&
+                                      venue.coverImageUrl!.isNotEmpty
                                   ? (venue.coverImageUrl!.startsWith('http')
                                       ? venue.coverImageUrl!
                                       : '${Env.apiBaseUrl}${venue.coverImageUrl!.startsWith('/') ? '' : '/'}${venue.coverImageUrl}')
@@ -502,23 +567,43 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(venue.name,
-                                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 4),
                                 Row(children: [
-                                  Container(width: 8, height: 8,
-                                      decoration: BoxDecoration(color: _ragColor(venue.busyness), shape: BoxShape.circle)),
+                                  Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                          color: _ragColor(venue.busyness),
+                                          shape: BoxShape.circle)),
                                   const SizedBox(width: 6),
                                   Text(venue.busyness.toUpperCase(),
-                                      style: TextStyle(color: _ragColor(venue.busyness), fontSize: 12, fontWeight: FontWeight.bold)),
+                                      style: TextStyle(
+                                          color: _ragColor(venue.busyness),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
                                 ]),
+                                if (venue.priceLevel != null) ...[
+                                  const SizedBox(height: 4),
+                                  VenueBudgetTag(
+                                    venue: venue,
+                                    compact: true,
+                                  ),
+                                ],
                                 const SizedBox(height: 2),
                                 Text(venue.address,
-                                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
-                                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    style: const TextStyle(
+                                        color: Color(0xFF94A3B8), fontSize: 11),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis),
                               ],
                             ),
                           ),
-                          const Icon(Icons.arrow_forward_ios, color: Color(0xFF94A3B8), size: 14),
+                          const Icon(Icons.arrow_forward_ios,
+                              color: Color(0xFF94A3B8), size: 14),
                         ],
                       ),
                     ),
@@ -539,13 +624,16 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
   }
 
   Widget _imagePlaceholder() => Container(
-        width: 72, height: 72, color: const Color(0xFF334155),
-        child: const Icon(Icons.image, color: Color(0xFF64748B)));
+      width: 72,
+      height: 72,
+      color: const Color(0xFF334155),
+      child: const Icon(Icons.image, color: Color(0xFF64748B)));
 
   Widget _circleButton(IconData icon, VoidCallback onTap) => GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 44, height: 44,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             color: const Color(0xFF1E293B).withOpacity(0.92),
             shape: BoxShape.circle,
@@ -563,18 +651,30 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
         height: 36,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2DD4BF) : const Color(0xFF1E293B).withOpacity(0.92),
+          color: isSelected
+              ? const Color(0xFF2DD4BF)
+              : const Color(0xFF1E293B).withOpacity(0.92),
           borderRadius: BorderRadius.circular(18),
-          border: isSelected ? null : Border.all(color: Colors.white.withOpacity(0.1)),
+          border: isSelected
+              ? null
+              : Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFCFFAFE), size: 15),
+            Icon(icon,
+                color: isSelected
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFCFFAFE),
+                size: 15),
             const SizedBox(width: 5),
-            Text(label, style: TextStyle(
-              color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFCFFAFE),
-              fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(label,
+                style: TextStyle(
+                    color: isSelected
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFFCFFAFE),
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -584,9 +684,13 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
   Widget _legendRow(Color color, String label) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 7),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 11)),
         ],
       );
 }

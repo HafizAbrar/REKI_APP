@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/venue.dart';
 import '../../../core/services/venue_repository.dart';
 
-final venueManagementProvider = StateNotifierProvider<VenueManagementNotifier, AsyncValue<List<Venue>>>((ref) {
+final venueManagementProvider =
+    StateNotifierProvider<VenueManagementNotifier, AsyncValue<List<Venue>>>(
+        (ref) {
   return VenueManagementNotifier(ref.read(venueRepositoryProvider));
 });
 
@@ -31,8 +33,10 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
     );
   }
 
-  Future<bool> updateLiveState(String id, {String? busyness, String? currentVibe}) async {
-    final result = await _repository.updateLiveState(id, busyness: busyness, currentVibe: currentVibe);
+  Future<bool> updateLiveState(String id,
+      {String? busyness, String? currentVibe}) async {
+    final result = await _repository.updateLiveState(id,
+        busyness: busyness, currentVibe: currentVibe);
     return result.when(
       success: (_) {
         loadVenues();
@@ -48,26 +52,49 @@ class FilterState {
   final String busyness;
   final Set<String> vibes;
   final bool offersOnly;
+  final Set<int> priceLevels;
 
   const FilterState({
     this.busyness = '',
     this.vibes = const {},
     this.offersOnly = false,
+    this.priceLevels = const {},
   });
 
-  bool get isActive => busyness.isNotEmpty || vibes.isNotEmpty || offersOnly;
+  bool get isActive =>
+      busyness.isNotEmpty ||
+      vibes.isNotEmpty ||
+      offersOnly ||
+      priceLevels.isNotEmpty;
 
-  FilterState copyWith({String? busyness, Set<String>? vibes, bool? offersOnly}) => FilterState(
-    busyness: busyness ?? this.busyness,
-    vibes: vibes ?? this.vibes,
-    offersOnly: offersOnly ?? this.offersOnly,
-  );
+  FilterState copyWith({
+    String? busyness,
+    Set<String>? vibes,
+    bool? offersOnly,
+    Set<int>? priceLevels,
+  }) =>
+      FilterState(
+        busyness: busyness ?? this.busyness,
+        vibes: vibes ?? this.vibes,
+        offersOnly: offersOnly ?? this.offersOnly,
+        priceLevels: priceLevels ?? this.priceLevels,
+      );
 }
 
 class FilterNotifier extends StateNotifier<FilterState> {
   FilterNotifier() : super(const FilterState());
-  void update({String? busyness, Set<String>? vibes, bool? offersOnly}) =>
-      state = state.copyWith(busyness: busyness, vibes: vibes, offersOnly: offersOnly);
+  void update({
+    String? busyness,
+    Set<String>? vibes,
+    bool? offersOnly,
+    Set<int>? priceLevels,
+  }) =>
+      state = state.copyWith(
+        busyness: busyness,
+        vibes: vibes,
+        offersOnly: offersOnly,
+        priceLevels: priceLevels,
+      );
   void reset() => state = const FilterState();
 }
 
@@ -76,7 +103,8 @@ final filterProvider = StateNotifierProvider<FilterNotifier, FilterState>(
 );
 
 // Search provider — calls GET /venues/search?q=&city=
-final venueSearchProvider = StateNotifierProvider<VenueSearchNotifier, AsyncValue<List<Venue>>>((ref) {
+final venueSearchProvider =
+    StateNotifierProvider<VenueSearchNotifier, AsyncValue<List<Venue>>>((ref) {
   return VenueSearchNotifier(ref.read(venueRepositoryProvider));
 });
 
@@ -100,7 +128,8 @@ class VenueSearchNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   void clear() => state = const AsyncValue.data([]);
 }
 
-final venueDetailProvider = FutureProvider.family<Venue, String>((ref, id) async {
+final venueDetailProvider =
+    FutureProvider.family<Venue, String>((ref, id) async {
   final repository = ref.read(venueRepositoryProvider);
   final result = await repository.getVenueById(id);
   return result.when(

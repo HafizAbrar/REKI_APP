@@ -23,6 +23,7 @@ void main() {
       'updatedAt': '2024-01-01T20:00:00.000Z',
       'postcode': 'M3 3AP',
       'activeOffersCount': 2,
+      'priceLevel': 2,
     };
 
     test('fromJson parses all fields', () {
@@ -37,6 +38,9 @@ void main() {
       expect(v.availableVibes, ['PARTY', 'CHILL']);
       expect(v.postcode, 'M3 3AP');
       expect(v.activeOffersCount, 2);
+      expect(v.priceLevel, 2);
+      expect(v.budgetSymbol, '££');
+      expect(v.budgetLabel, 'Mid-range');
     });
 
     test('fromJson handles legacy type key', () {
@@ -54,6 +58,15 @@ void main() {
       final out = v.toJson();
       expect(out['id'], 'v1');
       expect(out['name'], 'The Alchemist');
+      expect(out['priceLevel'], 2);
+    });
+
+    test('price level accepts API aliases and rejects unsupported values', () {
+      expect(
+          Venue.fromJson({...json, 'priceLevel': null, 'price_level': '4'})
+              .priceLevel,
+          4);
+      expect(Venue.fromJson({...json, 'priceLevel': 9}).priceLevel, isNull);
     });
   });
 

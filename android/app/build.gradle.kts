@@ -16,6 +16,13 @@ val keystoreProperties = Properties().apply {
     }
 }
 
+val hasReleaseSigning = listOf(
+    "keyAlias",
+    "keyPassword",
+    "storeFile",
+    "storePassword",
+).all { !keystoreProperties.getProperty(it).isNullOrBlank() }
+
 android {
     namespace = "com.example.reki_mvp"
     compileSdk = 36
@@ -44,10 +51,18 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties.getProperty("keyAlias")
-            keyPassword = keystoreProperties.getProperty("keyPassword")
-            storeFile = keystoreProperties.getProperty("storeFile")?.let { project.file(it) }
-            storePassword = keystoreProperties.getProperty("storePassword")
+            if (hasReleaseSigning) {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = project.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            } else {
+                initWith(getByName("debug"))
+                logger.warn(
+                    "WARNING: android/key.properties is missing or incomplete; " +
+                        "this release build is signed with the debug certificate and must not be published.",
+                )
+            }
         }
     }
 

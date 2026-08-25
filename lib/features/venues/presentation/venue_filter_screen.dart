@@ -4,8 +4,14 @@ import 'package:go_router/go_router.dart';
 import '../data/venue_management_provider.dart';
 
 const _vibeTags = [
-  'Cocktails', 'Date Night', 'Pub', 'Rooftop',
-  'Live Music', 'Chill', 'Party', 'Sports',
+  'Cocktails',
+  'Date Night',
+  'Pub',
+  'Rooftop',
+  'Live Music',
+  'Chill',
+  'Party',
+  'Sports',
 ];
 
 class VenueFilterScreen extends ConsumerStatefulWidget {
@@ -18,6 +24,7 @@ class VenueFilterScreen extends ConsumerStatefulWidget {
 class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
   String selectedBusyness = '';
   Set<String> selectedVibes = {};
+  Set<int> selectedPriceLevels = {};
   bool offersOnly = false;
   String selectedSort = 'Distance (Nearest)';
 
@@ -27,6 +34,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
     final f = ref.read(filterProvider);
     selectedBusyness = f.busyness;
     selectedVibes = Set.from(f.vibes);
+    selectedPriceLevels = Set.from(f.priceLevels);
     offersOnly = f.offersOnly;
   }
 
@@ -55,16 +63,24 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                 TextButton(
                   onPressed: _resetFilters,
                   child: const Text('Reset',
-                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 16, fontWeight: FontWeight.w500)),
+                      style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500)),
                 ),
                 const Text('Filters',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: const BoxDecoration(color: Color(0xFF1E293B), shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                      color: Color(0xFF1E293B), shape: BoxShape.circle),
                   child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 20),
                     onPressed: () => context.pop(),
                   ),
                 ),
@@ -81,12 +97,16 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('How busy is it?',
-                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(24)),
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(24)),
                           child: Row(children: [
                             _buildBusynessOption('Quiet'),
                             _buildBusynessOption('Moderate'),
@@ -102,8 +122,38 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const Text('What is your budget?',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        const Text('Select one or more price levels',
+                            style: TextStyle(
+                                color: Color(0xFF94A3B8), fontSize: 13)),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: List.generate(
+                            4,
+                            (index) => _buildPriceChip(index + 1),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _divider(),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         const Text("What's the vibe?",
-                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
                         const SizedBox(height: 16),
                         Wrap(
                           spacing: 8,
@@ -124,9 +174,13 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('Offers Available',
-                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
                               Text('Show only venues with active deals',
-                                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14)),
+                                  style: TextStyle(
+                                      color: Color(0xFF94A3B8), fontSize: 14)),
                             ],
                           ),
                         ),
@@ -147,9 +201,13 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Sort by',
-                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
                         const SizedBox(height: 16),
-                        _buildSortOption('Distance (Nearest)', Icons.location_on),
+                        _buildSortOption(
+                            'Distance (Nearest)', Icons.location_on),
                         const SizedBox(height: 8),
                         _buildSortOption('Trending', Icons.trending_up),
                         const SizedBox(height: 8),
@@ -170,7 +228,11 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [const Color(0xFF0F172A).withOpacity(0), const Color(0xFF0F172A), const Color(0xFF0F172A)],
+            colors: [
+              const Color(0xFF0F172A).withOpacity(0),
+              const Color(0xFF0F172A),
+              const Color(0xFF0F172A)
+            ],
           ),
         ),
         child: SafeArea(
@@ -181,7 +243,11 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF14B8A6),
                 borderRadius: BorderRadius.circular(28),
-                boxShadow: [BoxShadow(color: const Color(0xFF14B8A6).withOpacity(0.3), blurRadius: 16)],
+                boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xFF14B8A6).withOpacity(0.3),
+                      blurRadius: 16)
+                ],
               ),
               child: Material(
                 color: Colors.transparent,
@@ -189,25 +255,34 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                   borderRadius: BorderRadius.circular(28),
                   onTap: () {
                     ref.read(filterProvider.notifier).update(
-                      busyness: selectedBusyness,
-                      vibes: selectedVibes,
-                      offersOnly: offersOnly,
-                    );
+                          busyness: selectedBusyness,
+                          vibes: selectedVibes,
+                          offersOnly: offersOnly,
+                          priceLevels: selectedPriceLevels,
+                        );
                     context.pop();
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('Apply Filters',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold)),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25), borderRadius: BorderRadius.circular(12)),
+                            color: Colors.white.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(12)),
                         child: Text(
-                          '${selectedVibes.length + (selectedBusyness.isNotEmpty ? 1 : 0) + (offersOnly ? 1 : 0)}',
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                          '${selectedVibes.length + selectedPriceLevels.length + (selectedBusyness.isNotEmpty ? 1 : 0) + (offersOnly ? 1 : 0)}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -222,13 +297,16 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
   }
 
   Widget _divider() => Container(
-      height: 1, margin: const EdgeInsets.symmetric(horizontal: 16), color: const Color(0xFF1E293B));
+      height: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      color: const Color(0xFF1E293B));
 
   Widget _buildBusynessOption(String option) {
     final isSelected = selectedBusyness == option;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => selectedBusyness = isSelected ? '' : option),
+        onTap: () =>
+            setState(() => selectedBusyness = isSelected ? '' : option),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
@@ -249,15 +327,21 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
   Widget _buildVibeChip(String vibe) {
     final isSelected = selectedVibes.contains(vibe);
     return GestureDetector(
-      onTap: () => setState(() => isSelected ? selectedVibes.remove(vibe) : selectedVibes.add(vibe)),
+      onTap: () => setState(() =>
+          isSelected ? selectedVibes.remove(vibe) : selectedVibes.add(vibe)),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF14B8A6) : const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(20),
-          border: isSelected ? Border.all(color: const Color(0xFF14B8A6)) : null,
+          border:
+              isSelected ? Border.all(color: const Color(0xFF14B8A6)) : null,
           boxShadow: isSelected
-              ? [BoxShadow(color: const Color(0xFF14B8A6).withOpacity(0.2), blurRadius: 8)]
+              ? [
+                  BoxShadow(
+                      color: const Color(0xFF14B8A6).withOpacity(0.2),
+                      blurRadius: 8)
+                ]
               : [],
         ),
         child: Text(vibe,
@@ -265,6 +349,35 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                 color: isSelected ? Colors.white : const Color(0xFF94A3B8),
                 fontSize: 14,
                 fontWeight: FontWeight.w500)),
+      ),
+    );
+  }
+
+  Widget _buildPriceChip(int level) {
+    const labels = ['Budget', 'Mid-range', 'Upscale', 'Luxury'];
+    final isSelected = selectedPriceLevels.contains(level);
+    return GestureDetector(
+      onTap: () => setState(() => isSelected
+          ? selectedPriceLevels.remove(level)
+          : selectedPriceLevels.add(level)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF14B8A6) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color:
+                isSelected ? const Color(0xFF5EEAD4) : const Color(0xFF334155),
+          ),
+        ),
+        child: Text(
+          '${'£' * level}  ${labels[level - 1]}',
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
@@ -278,30 +391,43 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B).withOpacity(0.5),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? const Color(0xFF14B8A6) : Colors.transparent),
+          border: Border.all(
+              color: isSelected ? const Color(0xFF14B8A6) : Colors.transparent),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? const Color(0xFF14B8A6) : const Color(0xFF94A3B8), size: 20),
+            Icon(icon,
+                color: isSelected
+                    ? const Color(0xFF14B8A6)
+                    : const Color(0xFF94A3B8),
+                size: 20),
             const SizedBox(width: 12),
             Expanded(
                 child: Text(option,
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500))),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500))),
             Container(
               width: 20,
               height: 20,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: isSelected ? const Color(0xFF14B8A6) : const Color(0xFF64748B), width: 2),
-                color: isSelected ? const Color(0xFF14B8A6) : Colors.transparent,
+                    color: isSelected
+                        ? const Color(0xFF14B8A6)
+                        : const Color(0xFF64748B),
+                    width: 2),
+                color:
+                    isSelected ? const Color(0xFF14B8A6) : Colors.transparent,
               ),
               child: isSelected
                   ? Center(
                       child: Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)))
+                          decoration: const BoxDecoration(
+                              color: Colors.white, shape: BoxShape.circle)))
                   : null,
             ),
           ],
@@ -314,6 +440,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
     setState(() {
       selectedBusyness = '';
       selectedVibes = {};
+      selectedPriceLevels = {};
       offersOnly = false;
       selectedSort = 'Distance (Nearest)';
     });

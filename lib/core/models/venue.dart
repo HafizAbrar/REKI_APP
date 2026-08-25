@@ -16,6 +16,7 @@ class Venue {
   final String? coverImageUrl;
   final String? description;
   final int activeOffersCount;
+  final int? priceLevel;
 
   Venue({
     required this.id,
@@ -33,7 +34,26 @@ class Venue {
     this.coverImageUrl,
     this.description,
     this.activeOffersCount = 0,
+    this.priceLevel,
   });
+
+  String? get budgetSymbol =>
+      priceLevel == null ? null : '£' * priceLevel!.clamp(1, 4);
+
+  String? get budgetLabel {
+    switch (priceLevel) {
+      case 1:
+        return 'Budget';
+      case 2:
+        return 'Mid-range';
+      case 3:
+        return 'Upscale';
+      case 4:
+        return 'Luxury';
+      default:
+        return null;
+    }
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -51,6 +71,7 @@ class Venue {
         'coverImageUrl': coverImageUrl,
         'description': description,
         'activeOffersCount': activeOffersCount,
+        'priceLevel': priceLevel,
       };
 
   factory Venue.fromJson(Map<String, dynamic> json) {
@@ -92,6 +113,14 @@ class Venue {
       }
     }
 
+    final priceLevelRaw = json['priceLevel'] ??
+        json['price_level'] ??
+        json['budgetLevel'] ??
+        (json['pricing'] is Map ? json['pricing']['priceLevel'] : null);
+    final parsedPriceLevel = priceLevelRaw is num
+        ? priceLevelRaw.toInt()
+        : int.tryParse(priceLevelRaw?.toString() ?? '');
+
     return Venue(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
@@ -119,6 +148,11 @@ class Venue {
       description: json['description']?.toString(),
       activeOffersCount: (json['activeOffersCount'] as num?)?.toInt() ??
           (json['offers'] is List ? (json['offers'] as List).length : 0),
+      priceLevel: parsedPriceLevel != null &&
+              parsedPriceLevel >= 1 &&
+              parsedPriceLevel <= 4
+          ? parsedPriceLevel
+          : null,
     );
   }
 }
