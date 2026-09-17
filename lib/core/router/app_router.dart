@@ -86,6 +86,9 @@ String? _routeGuard(BuildContext context, GoRouterState state) {
       '/business-login',
       '/business-signup',
       '/business-forgot-password',
+      // Shared venue links must remain viewable before authentication. Actions
+      // such as saving and checking in are still protected inside the screen.
+      '/venue/',
     ];
     if (!publicPaths.any((p) => path.startsWith(p))) return '/login';
     return null;

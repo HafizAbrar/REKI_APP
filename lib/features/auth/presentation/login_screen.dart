@@ -47,13 +47,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
     } catch (e) {
       if (mounted) {
-        final message = e is PlatformException &&
-                e.code == 'sign_in_failed' &&
-                (e.message?.contains('12500') ?? false)
-            ? 'Google Sign-In is unavailable on this device. Update Google Play Services or use a current Google Play emulator.'
-            : 'Google sign-in failed: $e';
+        final details = e is PlatformException
+            ? '${e.code} ${e.message}'.toLowerCase()
+            : e.toString().toLowerCase();
+        final message = details.contains('network_error') ||
+                details.contains('apiexception: 7')
+            ? 'No internet connection. Check the device network and try again.'
+            : details.contains('12500')
+                ? 'Google Sign-In is unavailable on this device. Update Google Play Services or use a current Google Play emulator.'
+                : 'Google Sign-In could not be completed. Please try again.';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF1E293B),
+            content: Row(
+              children: [
+                const Icon(Icons.wifi_off_rounded, color: Color(0xFFFCA5A5)),
+                const SizedBox(width: 12),
+                Expanded(child: Text(message)),
+              ],
+            ),
+          ),
         );
       }
     }
@@ -153,17 +167,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
-          // Background image
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(
-                      'https://lh3.googleusercontent.com/aida-public/AB6AXuAbUJHdVYXEM5nb7gdCJuVW7JCDHX57JIbHlYa1QpCwLUn3IQ18tWdOP6jjy3OzZFeql3aQIRSc8wPeA8vaC6vRU3T_5DxF_C73GGcJIfrB1ITMzi9x8PXpXmxXCfSpxFffphHCdnz0ZqfuDGZKFvKzy6FldO8KPMejI_K6IPmQc2plM0xNFnJs5m-WKeFdub0DJzwa6N37lz-xVZjkCCXVWncXp2ZAd7Fua4l0bLXe22WfCLqtsp83Ep1GvowtKY7ZneCKhcWUxEBs'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+          // Keep authentication usable when the device is offline. The
+          // previous remote background emitted an image exception on DNS loss.
+          const Positioned.fill(
+            child: ColoredBox(color: Color(0xFF0F172A)),
           ),
           // Gradient overlay
           Positioned.fill(
@@ -173,8 +180,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF0F172A).withOpacity(0.7),
-                    const Color(0xFF0F172A).withOpacity(0.95),
+                    const Color(0xFF0F172A).withValues(alpha: 0.7),
+                    const Color(0xFF0F172A).withValues(alpha: 0.95),
                     const Color(0xFF0F172A),
                   ],
                 ),
@@ -198,7 +205,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.39),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.39),
                           blurRadius: 14,
                           spreadRadius: 0,
                           offset: const Offset(0, 4),
@@ -274,7 +281,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         borderRadius: BorderRadius.circular(9999),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withOpacity(0.39),
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.39),
                             blurRadius: 14,
                             spreadRadius: 0,
                             offset: const Offset(0, 4),

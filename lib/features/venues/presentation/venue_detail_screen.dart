@@ -95,7 +95,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
   }
 
   Future<void> _shareVenue(Venue venue) async {
-    final url = '${Env.appLinkBaseUrl}/venue/${venue.id}';
+    final url = Uri.parse(Env.appDeepLinkBaseUrl).resolve(
+      '/venue/${Uri.encodeComponent(venue.id)}',
+    );
     final points = await ref
         .read(socialRepositoryProvider)
         .trackShare(venue.id, channel: 'other');

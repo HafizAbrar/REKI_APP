@@ -40,14 +40,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       backgroundColor: const Color(0xFF021218),
       body: Stack(
         children: [
-          // Background image with overlay
-          Positioned.fill(
-            child: Image.network(
-              'https://lh3.googleusercontent.com/aida-public/AB6AXuBzborjAAdzPy8cboHGNn3vzCWGkdUZRSrVYM9692EDdSjJq3vDM0JjjzVv9I5f-vKl2tc3DMSbxe1b9IzsFl9zqjpRCkImdV8wNWbvPlYyFPQ0sFXba-ZauTeINFolzYVnqV7g3HaxopKAoTHS0GfsorznNvYR817DeueCVXm6nPeiWw_z0XnJh2ELFEwZuOVrpy_HQxUrgNJJiTkYDroXCzL6xtVt-_mwTyMMwJ-zJL7DFrF_Nbq664wqJd4ydpDZ3_kydKWqtVBL',
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  const ColoredBox(color: Color(0xFF021218)),
-            ),
+          // Keep startup fully local so the splash screen is reliable when
+          // the device is offline or Google image hosting is unavailable.
+          const Positioned.fill(
+            child: ColoredBox(color: Color(0xFF021218)),
           ),
           // Radial gradient overlay
           Positioned.fill(

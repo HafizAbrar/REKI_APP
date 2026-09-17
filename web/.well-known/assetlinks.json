@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.reki_mvp",
+      "sha256_cert_fingerprints": [
+        "54:13:F4:19:DD:36:81:96:9A:98:65:ED:93:C4:A0:60:B4:B5:5C:89:A3:FA:EF:B6:EC:89:62:12:67:99:EA:65"
+      ]
+    }
+  }
+]

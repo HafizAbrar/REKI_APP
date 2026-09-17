@@ -88,17 +88,10 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: AppTheme.backgroundDark,
       body: Stack(
         children: [
-          // Background image with overlay
-          Positioned.fill(
-            child: Image.network(
-              'https://lh3.googleusercontent.com/aida-public/AB6AXuBzborjAAdzPy8cboHGNn3vzCWGkdUZRSrVYM9692EDdSjJq3vDM0JjjzVv9I5f-vKl2tc3DMSbxe1b9IzsFl9zqjpRCkImdV8wNWbvPlYyFPQ0sFXba-ZauTeINFolzYVnqV7g3HaxopKAoTHS0GfsorznNvYR817DeueCVXm6nPeiWw_z0XnJh2ELFEwZuOVrpy_HQxUrgNJJiTkYDroXCzL6xtVt-_mwTyMMwJ-zJL7DFrF_Nbq664wqJd4ydpDZ3_kydKWqtVBL',
-              fit: BoxFit.cover,
-              opacity: const AlwaysStoppedAnimation(0.4),
-              color: Colors.purple.withValues(alpha: 0.3),
-              colorBlendMode: BlendMode.overlay,
-              errorBuilder: (_, __, ___) =>
-                  const ColoredBox(color: AppTheme.backgroundDark),
-            ),
+          // Keep startup fully local. A remote background makes the first
+          // screen depend on DNS and produces image exceptions when offline.
+          const Positioned.fill(
+            child: ColoredBox(color: AppTheme.backgroundDark),
           ),
           // Radial gradient overlay
           Positioned.fill(

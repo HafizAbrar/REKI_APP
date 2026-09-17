@@ -18,6 +18,13 @@ class Env {
     defaultValue: 'https://reki.uk',
   );
 
+  /// App-only fallback used while the public HTTPS link domain is unavailable.
+  /// `reki://app/venue/{id}` opens the installed app without a web request.
+  static const String appDeepLinkBaseUrl = String.fromEnvironment(
+    'APP_DEEP_LINK_BASE_URL',
+    defaultValue: 'reki://app',
+  );
+
   /// OAuth 2.0 Web client used to request a backend-verifiable Google ID token.
   static const String googleServerClientId = String.fromEnvironment(
     'GOOGLE_SERVER_CLIENT_ID',
