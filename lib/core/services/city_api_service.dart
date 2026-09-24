@@ -85,9 +85,11 @@ class CityApiService {
     final token = await const FlutterSecureStorage().read(key: 'access_token');
     if (token == null) return;
     try {
-      await _dio.put('/users/city', data: {'city': citySlug});
-    } on DioException catch (e) {
-      throw _handleError(e);
+      await _dio.put('/users/city',
+          data: {'city': citySlug},
+          options: Options(extra: {'_authRetried': true}));
+    } on DioException catch (_) {
+      // Best-effort background sync — must not trigger session expiry.
     }
   }
 
@@ -99,7 +101,8 @@ class CityApiService {
           await const FlutterSecureStorage().read(key: 'access_token');
       if (token == null) return;
       await _dio.put('/users/locale',
-          data: {'locale': language, 'timezone': timezone});
+          data: {'locale': language, 'timezone': timezone},
+          options: Options(extra: {'_authRetried': true}));
     } on DioException catch (_) {
       // Best-effort — locale sync failure must not block city selection.
     }
@@ -108,7 +111,8 @@ class CityApiService {
   /// Get user's current city
   Future<City?> getUserCity() async {
     try {
-      final response = await _dio.get('/users/location/city');
+      final response = await _dio.get('/users/location/city',
+          options: Options(extra: {'_authRetried': true}));
       if (response.statusCode == 200 && response.data is Map) {
         final raw = response.data;
         final data = raw['data'] ?? raw['city'] ?? raw;

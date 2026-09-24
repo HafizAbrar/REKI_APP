@@ -101,14 +101,21 @@ class CompactCitySelector extends ConsumerWidget {
     return TextButton.icon(
       icon: const Icon(Icons.location_city),
       label: Text(city?.name ?? 'Choose city'),
-      onPressed: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => SizedBox(
-            height: MediaQuery.sizeOf(context).height * .75,
-            child:
-                CitySelectionScreen(showAsModal: true, onCitySelected: onTap)),
-      ),
+      onPressed: () {
+        final container = ProviderScope.containerOf(context);
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          builder: (_) => UncontrolledProviderScope(
+            container: container,
+            child: SizedBox(
+              height: MediaQuery.sizeOf(context).height * .75,
+              child: CitySelectionScreen(
+                  showAsModal: true, onCitySelected: onTap),
+            ),
+          ),
+        );
+      },
     );
   }
 }

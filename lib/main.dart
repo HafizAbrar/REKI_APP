@@ -12,6 +12,7 @@ import 'core/services/fcm_service.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/offline_sync_service.dart';
 import 'core/utils/app_logger.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'core/network/interceptors/auth_interceptor.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/device_registration_service.dart';
@@ -84,8 +85,18 @@ class _RekiAppState extends ConsumerState<RekiApp> {
       _subscriptions.add(sessionExpiredStream.stream.listen((_) async {
         if (_handlingExpiry) return;
         _handlingExpiry = true;
+        // Verify both tokens are truly gone before logging out.
+        // A 401 on a non-critical endpoint (e.g. /live/snapshot) can fire
+        // this stream even when the session is still valid.
+        const storage = FlutterSecureStorage();
+        final accessToken = await storage.read(key: 'access_token');
+        final refreshToken = await storage.read(key: 'refresh_token');
+        if (accessToken != null || refreshToken != null) {
+          // Tokens still present — this was a spurious 401, not a real expiry.
+          _handlingExpiry = false;
+          return;
+        }
         appLogger.w('Session expired — redirecting to login');
-        // Clear local state only — do NOT call logout() API (token already invalid)
         final authService = AuthService();
         await authService.clearSession();
         appRouter.go('/login');

@@ -90,7 +90,9 @@ class AuthInterceptor extends Interceptor {
   Future<String?> _refreshTokens() async {
     final refreshToken = await _storage.read(key: 'refresh_token');
     if (refreshToken == null) {
-      await _expire();
+      // No refresh token — this is not a session expiry, just a 401 on an
+      // endpoint the current access token doesn't have permission for.
+      // Do NOT fire sessionExpiredStream or delete the access token.
       return null;
     }
     Response<dynamic> response;
