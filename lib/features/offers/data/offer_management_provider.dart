@@ -1,9 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/city_providers.dart';
 import '../../../core/models/offer.dart';
 import '../../../core/services/offer_repository.dart';
 
-final offerManagementProvider = StateNotifierProvider<OfferManagementNotifier, AsyncValue<List<Offer>>>((ref) {
-  return OfferManagementNotifier(ref.read(offerRepositoryProvider));
+final offerManagementProvider =
+    StateNotifierProvider<OfferManagementNotifier, AsyncValue<List<Offer>>>(
+        (ref) {
+  ref.watch(selectedCityProvider);
+  final notifier = OfferManagementNotifier(ref.read(offerRepositoryProvider));
+  Future.microtask(notifier.loadOffers);
+  return notifier;
 });
 
 class OfferManagementNotifier extends StateNotifier<AsyncValue<List<Offer>>> {
@@ -12,8 +18,10 @@ class OfferManagementNotifier extends StateNotifier<AsyncValue<List<Offer>>> {
   OfferManagementNotifier(this._repository) : super(const AsyncValue.loading());
 
   Future<void> loadOffers() async {
+    if (!mounted) return;
     state = const AsyncValue.loading();
     final result = await _repository.getAllOffers();
+    if (!mounted) return;
     state = result.when(
       success: (offers) => AsyncValue.data(offers),
       failure: (error) => AsyncValue.error(error, StackTrace.current),
@@ -63,7 +71,9 @@ class OfferManagementNotifier extends StateNotifier<AsyncValue<List<Offer>>> {
   }
 }
 
-final venueOffersProvider = FutureProvider.family<List<Offer>, String>((ref, venueId) async {
+final venueOffersProvider =
+    FutureProvider.family<List<Offer>, String>((ref, venueId) async {
+  await ref.watch(selectedCityProvider.future);
   final repository = ref.read(offerRepositoryProvider);
   final result = await repository.getOffersByVenue(venueId);
   return result.when(
@@ -72,7 +82,8 @@ final venueOffersProvider = FutureProvider.family<List<Offer>, String>((ref, ven
   );
 });
 
-final offerDetailProvider = FutureProvider.family<Offer, String>((ref, id) async {
+final offerDetailProvider =
+    FutureProvider.family<Offer, String>((ref, id) async {
   final repository = ref.read(offerRepositoryProvider);
   final result = await repository.getOfferById(id);
   return result.when(
@@ -81,7 +92,8 @@ final offerDetailProvider = FutureProvider.family<Offer, String>((ref, id) async
   );
 });
 
-final offerStatsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
+final offerStatsProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
   final repository = ref.read(offerRepositoryProvider);
   final result = await repository.getOfferStats(id);
   return result.when(

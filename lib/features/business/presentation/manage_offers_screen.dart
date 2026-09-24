@@ -19,7 +19,11 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
   String? get _venueId {
     final fromProvider = ref.read(selectedVenueIdProvider);
     if (fromProvider != null && fromProvider.isNotEmpty) return fromProvider;
-    return ref.read(myVenuesProvider).valueOrNull?.firstOrNull?['id']?.toString();
+    return ref
+        .read(myVenuesProvider)
+        .valueOrNull
+        ?.firstOrNull?['id']
+        ?.toString();
   }
 
   @override
@@ -52,7 +56,9 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
         ),
         title: const Text('Manage Offers',
             style: TextStyle(
-                color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: AppTheme.primaryColor),
@@ -80,16 +86,17 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
         ),
       ),
       body: offersAsync.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryColor)),
         error: (e, _) => _buildError(ErrorHandler.getErrorMessage(e), venueId),
         data: (data) {
           final activeDeals =
               (data['activeDeals'] as List? ?? []).cast<Map<String, dynamic>>();
-          final upcomingAndPast =
-              (data['upcomingAndPast'] as List? ?? []).cast<Map<String, dynamic>>();
+          final upcomingAndPast = (data['upcomingAndPast'] as List? ?? [])
+              .cast<Map<String, dynamic>>();
           final pagination = data['pagination'] as Map<String, dynamic>? ?? {};
-          final total = pagination['total'] ?? (activeDeals.length + upcomingAndPast.length);
+          final total = pagination['total'] ??
+              (activeDeals.length + upcomingAndPast.length);
 
           return Column(
             children: [
@@ -111,7 +118,8 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
                       onRefresh: () async => ref
                           .read(businessVenueOffersProvider(venueId).notifier)
                           .load(),
-                      onToggle: (id, isActive) => _toggleOffer(id, venueId, isActive),
+                      onToggle: (id, isActive) =>
+                          _toggleOffer(id, venueId, isActive),
                       onDelete: (id, title) => _deleteOffer(id, title, venueId),
                       onEdit: (id) => _editOffer(id, activeDeals, venueId),
                     ),
@@ -123,7 +131,8 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
                       onRefresh: () async => ref
                           .read(businessVenueOffersProvider(venueId).notifier)
                           .load(),
-                      onToggle: (id, isActive) => _toggleOffer(id, venueId, isActive),
+                      onToggle: (id, isActive) =>
+                          _toggleOffer(id, venueId, isActive),
                       onDelete: (id, title) => _deleteOffer(id, title, venueId),
                       onEdit: (id) => _editOffer(id, upcomingAndPast, venueId),
                     ),
@@ -135,11 +144,13 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/create-offer?venueId=${_venueId ?? ''}'),
+        onPressed: () =>
+            context.push('/create-offer?venueId=${_venueId ?? ''}'),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: AppTheme.backgroundDark,
         icon: const Icon(Icons.add),
-        label: const Text('New Offer', style: TextStyle(fontWeight: FontWeight.w700)),
+        label: const Text('New Offer',
+            style: TextStyle(fontWeight: FontWeight.w700)),
       ),
     );
   }
@@ -194,8 +205,10 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
         ]),
       );
 
-  Future<void> _editOffer(String id, List<Map<String, dynamic>> offers, String venueId) async {
-    final offer = offers.firstWhere((o) => o['id'].toString() == id, orElse: () => {});
+  Future<void> _editOffer(
+      String id, List<Map<String, dynamic>> offers, String venueId) async {
+    final offer =
+        offers.firstWhere((o) => o['id'].toString() == id, orElse: () => {});
     if (offer.isEmpty) return;
     await showModalBottomSheet(
       context: context,
@@ -209,10 +222,13 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
               .updateOffer(id, data);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(success ? 'Offer updated' : 'Failed to update offer'),
-              backgroundColor: success ? const Color(0xFF10B981) : Colors.red[700],
+              content:
+                  Text(success ? 'Offer updated' : 'Failed to update offer'),
+              backgroundColor:
+                  success ? const Color(0xFF10B981) : Colors.red[700],
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ));
           }
         },
@@ -220,7 +236,8 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
     );
   }
 
-  Future<void> _toggleOffer(String id, String venueId, bool currentIsActive) async {
+  Future<void> _toggleOffer(
+      String id, String venueId, bool currentIsActive) async {
     final success = await ref
         .read(businessVenueOffersProvider(venueId).notifier)
         .toggleOffer(id, isActive: !currentIsActive);
@@ -266,10 +283,8 @@ class _ManageOffersScreenState extends ConsumerState<ManageOffersScreen>
           .deleteOffer(id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              success ? 'Offer deleted' : 'Failed to delete offer'),
-          backgroundColor:
-              success ? const Color(0xFF10B981) : Colors.red[700],
+          content: Text(success ? 'Offer deleted' : 'Failed to delete offer'),
+          backgroundColor: success ? const Color(0xFF10B981) : Colors.red[700],
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -299,8 +314,7 @@ class _SummaryBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surface,
         border: Border(
-            bottom: BorderSide(
-                color: Colors.white.withValues(alpha: 0.06))),
+            bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
       ),
       child: Row(children: [
         _stat('Total', total.toString(), const Color(0xFF94A3B8)),
@@ -318,18 +332,14 @@ class _SummaryBar extends StatelessWidget {
           Container(
               width: 8,
               height: 8,
-              decoration:
-                  BoxDecoration(color: color, shape: BoxShape.circle)),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 6),
           Text(value,
               style: TextStyle(
-                  color: color,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800)),
+                  color: color, fontSize: 15, fontWeight: FontWeight.w800)),
           const SizedBox(width: 4),
           Text(label,
-              style: const TextStyle(
-                  color: Color(0xFF64748B), fontSize: 12)),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
         ],
       );
 }
@@ -362,8 +372,7 @@ class _OffersList extends StatelessWidget {
     if (offers.isEmpty) {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(emptyIcon,
-              color: Colors.white.withValues(alpha: 0.2), size: 56),
+          Icon(emptyIcon, color: Colors.white.withValues(alpha: 0.2), size: 56),
           const SizedBox(height: 14),
           Text(emptyMessage,
               style: const TextStyle(color: Color(0xFF64748B), fontSize: 15)),
@@ -381,9 +390,9 @@ class _OffersList extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (_, i) => _OfferCard(
           offer: offers[i],
-          onToggle: (isActive) => onToggle(offers[i]['id'].toString(), isActive),
-          onDelete: () => onDelete(
-              offers[i]['id'].toString(),
+          onToggle: (isActive) =>
+              onToggle(offers[i]['id'].toString(), isActive),
+          onDelete: () => onDelete(offers[i]['id'].toString(),
               offers[i]['title']?.toString() ?? 'Offer'),
           onEdit: () => onEdit(offers[i]['id'].toString()),
         ),
@@ -467,8 +476,7 @@ class _OfferCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                      color: statusColor.withValues(alpha: 0.4)),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.4)),
                 ),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Container(
@@ -552,8 +560,8 @@ class _OfferCard extends StatelessWidget {
               GestureDetector(
                 onTap: () => onToggle(isActive),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: isActive
                         ? const Color(0xFF475569).withValues(alpha: 0.2)
@@ -595,8 +603,8 @@ class _OfferCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                        color: Colors.red.withValues(alpha: 0.3)),
+                    border:
+                        Border.all(color: Colors.red.withValues(alpha: 0.3)),
                   ),
                   child: const Icon(Icons.delete_outline,
                       color: Colors.red, size: 16),
@@ -654,10 +662,10 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
 
     _titleCtrl = TextEditingController(text: o['title']?.toString() ?? '');
     _descCtrl = TextEditingController(text: o['description']?.toString() ?? '');
-    _maxRedCtrl = TextEditingController(
-        text: (o['maxRedemptions'] ?? 100).toString());
-    _savingCtrl = TextEditingController(
-        text: (o['savingValue'] ?? 0).toString());
+    _maxRedCtrl =
+        TextEditingController(text: (o['maxRedemptions'] ?? 100).toString());
+    _savingCtrl =
+        TextEditingController(text: (o['savingValue'] ?? 0).toString());
 
     _offerType = o['type']?.toString() ?? '2-for-1';
 
@@ -678,10 +686,12 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
     // Parse expiry
     final exp = o['expiresAt']?.toString();
     _expiresAt = exp != null
-        ? DateTime.tryParse(exp) ?? DateTime.now().add(const Duration(days: 365))
+        ? DateTime.tryParse(exp) ??
+            DateTime.now().add(const Duration(days: 365))
         : DateTime.now().add(const Duration(days: 365));
 
-    _isAvailableNow = o['isAvailableNow'] as bool? ?? o['isActive'] as bool? ?? true;
+    _isAvailableNow =
+        o['isAvailableNow'] as bool? ?? o['isActive'] as bool? ?? true;
   }
 
   TimeOfDay? _parseTime(String? s) {
@@ -788,7 +798,8 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
               child: Column(children: [
                 Center(
                   child: Container(
-                    width: 40, height: 4,
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
                       color: const Color(0xFF334155),
                       borderRadius: BorderRadius.circular(2),
@@ -807,10 +818,10 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
                     onPressed: _isLoading ? null : _save,
                     child: _isLoading
                         ? const SizedBox(
-                            width: 18, height: 18,
+                            width: 18,
+                            height: 18,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppTheme.primaryColor))
+                                strokeWidth: 2, color: AppTheme.primaryColor))
                         : const Text('SAVE',
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
@@ -862,16 +873,16 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
                                   color: sel ? t.$4 : const Color(0xFF334155),
                                   width: sel ? 1.5 : 1),
                             ),
-                            child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
                               Icon(t.$3,
                                   color: sel ? t.$4 : const Color(0xFF64748B),
                                   size: 15),
                               const SizedBox(width: 6),
                               Text(t.$2,
                                   style: TextStyle(
-                                      color: sel
-                                          ? t.$4
-                                          : const Color(0xFF94A3B8),
+                                      color:
+                                          sel ? t.$4 : const Color(0xFF94A3B8),
                                       fontSize: 12,
                                       fontWeight: sel
                                           ? FontWeight.w700
@@ -891,8 +902,9 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
                         final sel = _validDays.contains(day);
                         return Expanded(
                           child: GestureDetector(
-                            onTap: () => setState(() =>
-                                sel ? _validDays.remove(day) : _validDays.add(day)),
+                            onTap: () => setState(() => sel
+                                ? _validDays.remove(day)
+                                : _validDays.add(day)),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 120),
                               margin: EdgeInsets.only(
@@ -900,7 +912,8 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
                                 color: sel
-                                    ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                                    ? AppTheme.primaryColor
+                                        .withValues(alpha: 0.15)
                                     : const Color(0xFF0F172A),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
@@ -930,15 +943,17 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
                   // Time window
                   _section('TIME WINDOW', [
                     Row(children: [
-                      Expanded(child: _timeTile('Start', _fmt(_timeStart),
-                          () => _pickTime(true))),
+                      Expanded(
+                          child: _timeTile('Start', _fmt(_timeStart),
+                              () => _pickTime(true))),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: Icon(Icons.arrow_forward,
                             color: Color(0xFF475569), size: 16),
                       ),
-                      Expanded(child: _timeTile('End', _fmt(_timeEnd),
-                          () => _pickTime(false))),
+                      Expanded(
+                          child: _timeTile(
+                              'End', _fmt(_timeEnd), () => _pickTime(false))),
                     ]),
                   ]),
                   const SizedBox(height: 14),
@@ -948,21 +963,25 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
                     Row(children: [
                       Expanded(
                         child: _field(
-                          _maxRedCtrl, 'Max Redemptions',
+                          _maxRedCtrl,
+                          'Max Redemptions',
                           Icons.confirmation_number_outlined,
                           keyboardType: TextInputType.number,
-                          validator: (v) =>
-                              int.tryParse(v ?? '') == null ? 'Number required' : null,
+                          validator: (v) => int.tryParse(v ?? '') == null
+                              ? 'Number required'
+                              : null,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _field(
-                          _savingCtrl, 'Saving Value (£)',
+                          _savingCtrl,
+                          'Saving Value (£)',
                           Icons.savings_outlined,
                           keyboardType: TextInputType.number,
-                          validator: (v) =>
-                              int.tryParse(v ?? '') == null ? 'Number required' : null,
+                          validator: (v) => int.tryParse(v ?? '') == null
+                              ? 'Number required'
+                              : null,
                         ),
                       ),
                     ]),
@@ -1075,7 +1094,8 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
                       ),
                       icon: _isLoading
                           ? const SizedBox(
-                              width: 18, height: 18,
+                              width: 18,
+                              height: 18,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   color: AppTheme.backgroundDark))
@@ -1166,10 +1186,10 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: const Color(0xFF334155)),
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(label,
-                style: const TextStyle(
-                    color: Color(0xFF64748B), fontSize: 10)),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 10)),
             const SizedBox(height: 4),
             Row(children: [
               const Icon(Icons.access_time_outlined,

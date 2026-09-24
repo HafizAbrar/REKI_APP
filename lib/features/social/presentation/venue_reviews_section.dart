@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import '../../../core/utils/city_date_format.dart';
+import '../../../core/services/city_providers.dart';
 import '../../../core/models/social_models.dart';
 import '../../../shared/widgets/guest_guard.dart';
 import '../data/social_provider.dart';
@@ -99,7 +100,11 @@ class VenueReviewsSection extends ConsumerWidget {
                                       color: Colors.white,
                                       fontWeight: FontWeight.w700)),
                             ),
-                            Text(DateFormat('d MMM').format(review.createdAt),
+                            Text(
+                                CityDateFormat.date(
+                                    review.createdAt,
+                                    ref.watch(selectedCityProvider).valueOrNull,
+                                    Localizations.localeOf(context).toString()),
                                 style: const TextStyle(
                                     color: Color(0xFF64748B), fontSize: 11)),
                             if (review.isMine)
@@ -263,7 +268,7 @@ class _ReviewSheetState extends ConsumerState<_ReviewSheet> {
                   borderRadius: BorderRadius.circular(2))),
           const SizedBox(height: 18),
           Text(widget.review == null ? 'Share your experience' : 'Edit review',
-              style: TextStyle(
+              style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.w800)),
@@ -312,7 +317,7 @@ class _ReviewSheetState extends ConsumerState<_ReviewSheet> {
                       child: CircularProgressIndicator(strokeWidth: 2))
                   : Text(
                       widget.review == null ? 'Publish review' : 'Save changes',
-                      style: TextStyle(fontWeight: FontWeight.w800)),
+                      style: const TextStyle(fontWeight: FontWeight.w800)),
             ),
           ),
         ]),

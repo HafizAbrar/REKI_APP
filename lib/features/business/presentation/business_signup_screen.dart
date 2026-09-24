@@ -8,7 +8,8 @@ class BusinessSignupScreen extends ConsumerStatefulWidget {
   const BusinessSignupScreen({super.key});
 
   @override
-  ConsumerState<BusinessSignupScreen> createState() => _BusinessSignupScreenState();
+  ConsumerState<BusinessSignupScreen> createState() =>
+      _BusinessSignupScreenState();
 }
 
 class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
@@ -42,14 +43,18 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
       _passwordError = password.isEmpty ? 'Please enter a password.' : null;
     });
 
-    if (_nameError != null || _emailError != null || _passwordError != null) return;
+    if (_nameError != null || _emailError != null || _passwordError != null) {
+      return;
+    }
 
     await ref.read(authStateProvider.notifier).registerBusiness(
-      email: email,
-      password: password,
-      name: name,
-      phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
-    );
+          email: email,
+          password: password,
+          name: name,
+          phone: _phoneController.text.trim().isNotEmpty
+              ? _phoneController.text.trim()
+              : null,
+        );
   }
 
   @override
@@ -61,18 +66,25 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
           barrierDismissible: false,
           builder: (_) => AlertDialog(
             backgroundColor: const Color(0xFF1E293B),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle, color: Color(0xFF2DD4BF), size: 56),
+                const Icon(Icons.check_circle,
+                    color: Color(0xFF2DD4BF), size: 56),
                 const SizedBox(height: 16),
                 const Text('Business Registered!',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700),
                     textAlign: TextAlign.center),
                 const SizedBox(height: 8),
-                const Text('Your business account has been approved. You can now log in.',
-                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, height: 1.5),
+                const Text(
+                    'Your business account has been approved. You can now log in.',
+                    style: TextStyle(
+                        color: Color(0xFF94A3B8), fontSize: 14, height: 1.5),
                     textAlign: TextAlign.center),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -81,11 +93,16 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2DD4BF),
                       foregroundColor: const Color(0xFF0F172A),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(9999)),
                       elevation: 0,
                     ),
-                    onPressed: () { Navigator.pop(context); context.go('/business-login'); },
-                    child: const Text('Go to Login', style: TextStyle(fontWeight: FontWeight.w700)),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      context.go('/business-login');
+                    },
+                    child: const Text('Go to Login',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),
               ],
@@ -94,7 +111,8 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
         );
       } else if (next is AuthStateError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message), backgroundColor: Colors.red[700]),
+          SnackBar(
+              content: Text(next.message), backgroundColor: Colors.red[700]),
         );
       }
     });
@@ -142,8 +160,8 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppTheme.darkBg.withOpacity(0.7),
-                    AppTheme.darkBg.withOpacity(0.95),
+                    AppTheme.darkBg.withValues(alpha: 0.7),
+                    AppTheme.darkBg.withValues(alpha: 0.95),
                     AppTheme.darkBg,
                   ],
                 ),
@@ -165,29 +183,41 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
                   ),
                   const SizedBox(height: 16),
                   Container(
-                    width: 64, height: 64,
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [AppTheme.primaryColor, AppTheme.primaryHover]),
+                      gradient: const LinearGradient(colors: [
+                        AppTheme.primaryColor,
+                        AppTheme.primaryHover
+                      ]),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.39),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.39),
                           blurRadius: 14,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.business_center, size: 32, color: Colors.white),
+                    child: const Icon(Icons.business_center,
+                        size: 32, color: Colors.white),
                   ),
                   const SizedBox(height: 24),
                   const Text(
                     'Register Business',
-                    style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5),
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     'Create your business account.',
-                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 18, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 40),
 
@@ -221,7 +251,8 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
                     icon: Icons.lock,
                     isPassword: true,
                     obscureText: _obscurePassword,
-                    onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
+                    onToggleVisibility: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                     errorText: _passwordError,
                     onChanged: (_) => setState(() => _passwordError = null),
                   ),
@@ -236,7 +267,8 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
                         borderRadius: BorderRadius.circular(9999),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withOpacity(0.39),
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.39),
                             blurRadius: 14,
                             offset: const Offset(0, 4),
                           ),
@@ -246,15 +278,20 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primaryColor,
                           foregroundColor: AppTheme.darkBg,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(9999)),
                           elevation: 0,
                         ),
                         onPressed: isLoading || !canSubmit ? null : _register,
                         child: isLoading
-                            ? const SizedBox(height: 20, width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.darkBg))
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: AppTheme.darkBg))
                             : const Text('Create Business Account',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w700)),
                       ),
                     ),
                   ),
@@ -262,11 +299,16 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Already registered? ', style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                      const Text('Already registered? ',
+                          style: TextStyle(
+                              color: Color(0xFF64748B), fontSize: 13)),
                       GestureDetector(
                         onTap: () => context.go('/business-login'),
                         child: const Text('Log In',
-                            style: TextStyle(color: AppTheme.primaryColor, fontSize: 13, fontWeight: FontWeight.w600)),
+                            style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600)),
                       ),
                     ],
                   ),
@@ -299,7 +341,8 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(9999),
             border: Border.all(
-              color: hasError ? const Color(0xFFEF4444) : const Color(0xFF334155),
+              color:
+                  hasError ? const Color(0xFFEF4444) : const Color(0xFF334155),
             ),
           ),
           child: TextField(
@@ -314,22 +357,29 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
               prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
               suffixIcon: isPassword
                   ? IconButton(
-                      icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility,
-                          color: const Color(0xFF64748B), size: 20),
+                      icon: Icon(
+                          obscureText ? Icons.visibility_off : Icons.visibility,
+                          color: const Color(0xFF64748B),
+                          size: 20),
                       onPressed: onToggleVisibility,
                     )
                   : null,
               filled: true,
               fillColor: AppTheme.surface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(9999), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(9999),
+                  borderSide: BorderSide.none),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(9999),
                 borderSide: BorderSide(
-                  color: hasError ? const Color(0xFFEF4444) : AppTheme.primaryColor,
+                  color: hasError
+                      ? const Color(0xFFEF4444)
+                      : AppTheme.primaryColor,
                   width: 1,
                 ),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
             ),
           ),
         ),
@@ -338,9 +388,12 @@ class _BusinessSignupScreenState extends ConsumerState<BusinessSignupScreen> {
             padding: const EdgeInsets.only(left: 16, top: 6),
             child: Row(
               children: [
-                const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 13),
+                const Icon(Icons.error_outline,
+                    color: Color(0xFFEF4444), size: 13),
                 const SizedBox(width: 4),
-                Text(errorText, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+                Text(errorText,
+                    style: const TextStyle(
+                        color: Color(0xFFEF4444), fontSize: 12)),
               ],
             ),
           ),

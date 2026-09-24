@@ -14,7 +14,8 @@ class NotificationRepository {
 
   NotificationRepository(this._apiService);
 
-  Future<Result<Map<String, List<AppNotification>>>> getAllNotifications() async {
+  Future<Result<Map<String, List<AppNotification>>>>
+      getAllNotifications() async {
     try {
       final raw = await _apiService.getAllNotifications();
       appLogger.d('Notifications raw response: $raw');
@@ -83,7 +84,8 @@ class NotificationRepository {
     }
   }
 
-  Future<Result<AppNotification>> testNotification(Map<String, dynamic> data) async {
+  Future<Result<AppNotification>> testNotification(
+      Map<String, dynamic> data) async {
     try {
       final notification = await _apiService.testNotification(data);
       return Result.success(notification);

@@ -31,13 +31,13 @@ class AppNotification {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'message': message,
-    'type': type.name,
-    'timestamp': timestamp.toIso8601String(),
-    'isRead': isRead,
-  };
+        'id': id,
+        'title': title,
+        'message': message,
+        'type': type.name,
+        'timestamp': timestamp.toIso8601String(),
+        'isRead': isRead,
+      };
 
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     final data = json['data'] is Map<String, dynamic>
@@ -46,22 +46,37 @@ class AppNotification {
 
     NotificationType resolveType(dynamic raw) {
       switch (raw?.toString().toLowerCase()) {
-        case 'offer': return NotificationType.offer;
-        case 'venue': return NotificationType.venue;
-        case 'welcome': return NotificationType.welcome;
-        case 'vibe': return NotificationType.vibe;
-        case 'alert': return NotificationType.alert;
+        case 'offer':
+          return NotificationType.offer;
+        case 'venue':
+          return NotificationType.venue;
+        case 'welcome':
+          return NotificationType.welcome;
+        case 'vibe':
+          return NotificationType.vibe;
+        case 'alert':
+          return NotificationType.alert;
         default:
-          if (raw?.toString().toLowerCase().contains('offer') == true) return NotificationType.offer;
-          if (raw?.toString().toLowerCase().contains('venue') == true) return NotificationType.venue;
-          if (raw?.toString().toLowerCase().contains('vibe') == true) return NotificationType.vibe;
+          if (raw?.toString().toLowerCase().contains('offer') == true) {
+            return NotificationType.offer;
+          }
+          if (raw?.toString().toLowerCase().contains('venue') == true) {
+            return NotificationType.venue;
+          }
+          if (raw?.toString().toLowerCase().contains('vibe') == true) {
+            return NotificationType.vibe;
+          }
           return NotificationType.system;
       }
     }
 
     DateTime resolveTimestamp(dynamic raw) {
       if (raw == null) return DateTime.now();
-      try { return DateTime.parse(raw.toString()); } catch (_) { return DateTime.now(); }
+      try {
+        return DateTime.parse(raw.toString());
+      } catch (_) {
+        return DateTime.now();
+      }
     }
 
     return AppNotification(

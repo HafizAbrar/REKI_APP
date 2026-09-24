@@ -17,7 +17,9 @@ class RetryInterceptor extends Interceptor {
     // Never retry multipart/form-data — stream cannot be replayed
     final isMultipart = err.requestOptions.data is FormData;
 
-    final shouldRetry = !isMultipart &&
+    final shouldRetry = const ['GET', 'HEAD', 'OPTIONS']
+            .contains(err.requestOptions.method.toUpperCase()) &&
+        !isMultipart &&
         attempt < maxRetries &&
         (err.type == DioExceptionType.connectionTimeout ||
             err.type == DioExceptionType.receiveTimeout ||
@@ -30,8 +32,7 @@ class RetryInterceptor extends Interceptor {
     }
 
     final delayMs = 500 * (1 << attempt); // 500ms, 1s, 2s
-    appLogger.w(
-        'Request failed (attempt ${attempt + 1}/$maxRetries). '
+    appLogger.w('Request failed (attempt ${attempt + 1}/$maxRetries). '
         'Retrying in ${delayMs}ms — ${err.requestOptions.path}');
 
     await Future.delayed(Duration(milliseconds: delayMs));

@@ -64,12 +64,14 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<void> loadRealtimeStats() async {
     state = state.copyWith(realtimeStats: const AsyncValue.loading());
-    state = state.copyWith(realtimeStats: await AsyncValue.guard(_api.getRealtimeStats));
+    state = state.copyWith(
+        realtimeStats: await AsyncValue.guard(_api.getRealtimeStats));
   }
 
   Future<void> loadOfflineStats() async {
     state = state.copyWith(offlineStats: const AsyncValue.loading());
-    state = state.copyWith(offlineStats: await AsyncValue.guard(_api.getOfflineStats));
+    state = state.copyWith(
+        offlineStats: await AsyncValue.guard(_api.getOfflineStats));
   }
 
   Future<void> loadUsers() async {
@@ -81,32 +83,41 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<void> loadVenues({int page = 1}) async {
     state = state.copyWith(venues: const AsyncValue.loading());
-    state = state.copyWith(venues: await AsyncValue.guard(() => _api.getVenues(page: page)));
+    state = state.copyWith(
+        venues: await AsyncValue.guard(() => _api.getVenues(page: page)));
   }
 
   Future<void> loadOffers({int page = 1}) async {
     state = state.copyWith(offers: const AsyncValue.loading());
-    state = state.copyWith(offers: await AsyncValue.guard(() => _api.getOffers(page: page)));
+    state = state.copyWith(
+        offers: await AsyncValue.guard(() => _api.getOffers(page: page)));
   }
 
   Future<void> loadRedemptions({int page = 1}) async {
     state = state.copyWith(redemptions: const AsyncValue.loading());
-    state = state.copyWith(redemptions: await AsyncValue.guard(() => _api.getRedemptions(page: page)));
+    state = state.copyWith(
+        redemptions:
+            await AsyncValue.guard(() => _api.getRedemptions(page: page)));
   }
 
   Future<void> loadActivityLogs({int page = 1}) async {
     state = state.copyWith(activityLogs: const AsyncValue.loading());
-    state = state.copyWith(activityLogs: await AsyncValue.guard(() => _api.getActivityLogs(page: page)));
+    state = state.copyWith(
+        activityLogs:
+            await AsyncValue.guard(() => _api.getActivityLogs(page: page)));
   }
 
   Future<void> loadNotificationLogs({int page = 1}) async {
     state = state.copyWith(notificationLogs: const AsyncValue.loading());
-    state = state.copyWith(notificationLogs: await AsyncValue.guard(() => _api.getNotificationLogs(page: page)));
+    state = state.copyWith(
+        notificationLogs:
+            await AsyncValue.guard(() => _api.getNotificationLogs(page: page)));
   }
 
   Future<void> loadLocationStats() async {
     state = state.copyWith(locationStats: const AsyncValue.loading());
-    state = state.copyWith(locationStats: await AsyncValue.guard(_api.getLocationStats));
+    state = state.copyWith(
+        locationStats: await AsyncValue.guard(_api.getLocationStats));
   }
 
   /// Fetches all data in parallel with a single loading state update
@@ -130,16 +141,16 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
     // Update state once with all results
     state = AdminState(
-      stats:             results[0] as AsyncValue<AdminStats>,
-      realtimeStats:     results[1] as AsyncValue<RealtimeStats>,
-      offlineStats:      results[2] as AsyncValue<OfflineStats>,
-      users:             results[3] as AsyncValue<List<AdminUser>>,
-      venues:            results[4] as AsyncValue<AdminVenuesPage>,
-      offers:            results[5] as AsyncValue<AdminOffersPage>,
-      redemptions:       results[6] as AsyncValue<AdminRedemptionsPage>,
-      activityLogs:      results[7] as AsyncValue<ActivityLogsPage>,
-      notificationLogs:  results[8] as AsyncValue<AdminNotificationsPage>,
-      locationStats:     results[9] as AsyncValue<LocationStats>,
+      stats: results[0] as AsyncValue<AdminStats>,
+      realtimeStats: results[1] as AsyncValue<RealtimeStats>,
+      offlineStats: results[2] as AsyncValue<OfflineStats>,
+      users: results[3] as AsyncValue<List<AdminUser>>,
+      venues: results[4] as AsyncValue<AdminVenuesPage>,
+      offers: results[5] as AsyncValue<AdminOffersPage>,
+      redemptions: results[6] as AsyncValue<AdminRedemptionsPage>,
+      activityLogs: results[7] as AsyncValue<ActivityLogsPage>,
+      notificationLogs: results[8] as AsyncValue<AdminNotificationsPage>,
+      locationStats: results[9] as AsyncValue<LocationStats>,
     );
   }
 
@@ -156,8 +167,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<VenueLogsData> getVenueLogs(String venueId) =>
       _api.getVenueLogs(venueId);
 
-  Future<Map<String, dynamic>> getAdminProfile() =>
-      _api.getAdminProfile();
+  Future<Map<String, dynamic>> getAdminProfile() => _api.getAdminProfile();
 
   Future<Map<String, dynamic>> updateAdminProfile({
     String? name,
@@ -175,7 +185,6 @@ class AdminNotifier extends StateNotifier<AdminState> {
       );
 }
 
-final adminProvider =
-    StateNotifierProvider<AdminNotifier, AdminState>((ref) {
+final adminProvider = StateNotifierProvider<AdminNotifier, AdminState>((ref) {
   return AdminNotifier(ref.read(adminApiServiceProvider));
 });

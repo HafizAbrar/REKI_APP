@@ -63,7 +63,8 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
         _isVerified = profile['isVerified'] as bool? ?? false;
         _savedVenuesCount = profile['savedVenuesCount'] as int? ?? 0;
         _locationEnabled = loc['locationEnabled'] as bool? ?? false;
-        _backgroundLocationEnabled = loc['backgroundLocationEnabled'] as bool? ?? false;
+        _backgroundLocationEnabled =
+            loc['backgroundLocationEnabled'] as bool? ?? false;
         _currentLat = (loc['currentLat'] as num?)?.toDouble();
         _currentLng = (loc['currentLng'] as num?)?.toDouble();
         _locationUpdatedAt = loc['locationUpdatedAt']?.toString();
@@ -89,7 +90,9 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
       final userApi = ref.read(userApiServiceProvider);
       await userApi.updateProfile(
         name: _nameController.text.trim(),
-        phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+        phone: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
         locationEnabled: _locationEnabled,
         backgroundLocationEnabled: _backgroundLocationEnabled,
         currentLat: _currentLat,
@@ -124,7 +127,9 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
       if (mounted) {
         setState(() => _avatarUrl = result['avatar']?.toString());
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Avatar updated'), backgroundColor: Color(0xFF10B981)),
+          const SnackBar(
+              content: Text('Avatar updated'),
+              backgroundColor: Color(0xFF10B981)),
         );
       }
     } catch (e) {
@@ -160,23 +165,35 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('My Profile',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700)),
         actions: [
           if (!_isSaving)
             TextButton(
               onPressed: _saveProfile,
               child: const Text('Save',
-                  style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w700, fontSize: 15)),
+                  style: TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15)),
             )
           else
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppTheme.primaryColor, strokeWidth: 2))),
+              child: Center(
+                  child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          color: AppTheme.primaryColor, strokeWidth: 2))),
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : RefreshIndicator(
               color: AppTheme.primaryColor,
               backgroundColor: AppTheme.surface,
@@ -199,12 +216,15 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
                               height: 100,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: AppTheme.primaryColor, width: 3),
+                                border: Border.all(
+                                    color: AppTheme.primaryColor, width: 3),
                               ),
                               child: ClipOval(
                                 child: _avatarUrl != null
-                                    ? Image.network(_avatarUrl!, fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => _avatarFallback())
+                                    ? Image.network(_avatarUrl!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            _avatarFallback())
                                     : _avatarFallback(),
                               ),
                             ),
@@ -216,9 +236,11 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
                                 decoration: BoxDecoration(
                                   color: AppTheme.primaryColor,
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: AppTheme.backgroundDark, width: 2),
+                                  border: Border.all(
+                                      color: AppTheme.backgroundDark, width: 2),
                                 ),
-                                child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                                child: const Icon(Icons.camera_alt,
+                                    color: Colors.white, size: 16),
                               ),
                             ),
                           ],
@@ -229,10 +251,12 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
                       Center(
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
                           if (_isVerified)
-                            _badge('Verified', const Color(0xFF10B981), Icons.verified),
+                            _badge('Verified', const Color(0xFF10B981),
+                                Icons.verified),
                           if (_authProvider != null) ...[
                             const SizedBox(width: 8),
-                            _badge(_authProvider!, const Color(0xFF8B5CF6), Icons.lock_outline),
+                            _badge(_authProvider!, const Color(0xFF8B5CF6),
+                                Icons.lock_outline),
                           ],
                         ]),
                       ),
@@ -245,7 +269,8 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
                         controller: _nameController,
                         label: 'Full Name',
                         icon: Icons.person_outline,
-                        validator: (v) => v!.trim().isEmpty ? 'Name is required' : null,
+                        validator: (v) =>
+                            v!.trim().isEmpty ? 'Name is required' : null,
                       ),
                       const SizedBox(height: 12),
                       _buildField(
@@ -275,16 +300,20 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
                           border: Border.all(color: const Color(0xFF334155)),
                         ),
                         child: Column(children: [
-                          _infoRow(Icons.bookmark_outline, 'Saved Venues', '$_savedVenuesCount'),
+                          _infoRow(Icons.bookmark_outline, 'Saved Venues',
+                              '$_savedVenuesCount'),
                           const Divider(color: Color(0xFF334155), height: 20),
-                          _infoRow(Icons.calendar_today_outlined, 'Member Since', _formatDate(_createdAt)),
+                          _infoRow(Icons.calendar_today_outlined,
+                              'Member Since', _formatDate(_createdAt)),
                           if (_vibes.isNotEmpty) ...[
                             const Divider(color: Color(0xFF334155), height: 20),
-                            _infoRow(Icons.bolt_outlined, 'Vibe Prefs', _vibes.join(', ')),
+                            _infoRow(Icons.bolt_outlined, 'Vibe Prefs',
+                                _vibes.join(', ')),
                           ],
                           if (_music.isNotEmpty) ...[
                             const Divider(color: Color(0xFF334155), height: 20),
-                            _infoRow(Icons.music_note_outlined, 'Music Prefs', _music.join(', ')),
+                            _infoRow(Icons.music_note_outlined, 'Music Prefs',
+                                _music.join(', ')),
                           ],
                         ]),
                       ),
@@ -305,14 +334,16 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
                             icon: Icons.location_on_outlined,
                             label: 'Location Enabled',
                             value: _locationEnabled,
-                            onChanged: (v) => setState(() => _locationEnabled = v),
+                            onChanged: (v) =>
+                                setState(() => _locationEnabled = v),
                           ),
                           const Divider(color: Color(0xFF334155), height: 20),
                           _switchRow(
                             icon: Icons.location_searching,
                             label: 'Background Location',
                             value: _backgroundLocationEnabled,
-                            onChanged: (v) => setState(() => _backgroundLocationEnabled = v),
+                            onChanged: (v) =>
+                                setState(() => _backgroundLocationEnabled = v),
                           ),
                           const Divider(color: Color(0xFF334155), height: 20),
                           _infoRow(
@@ -324,7 +355,8 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
                           ),
                           if (_locationUpdatedAt != null) ...[
                             const Divider(color: Color(0xFF334155), height: 20),
-                            _infoRow(Icons.update_outlined, 'Last Updated', _formatDate(_locationUpdatedAt)),
+                            _infoRow(Icons.update_outlined, 'Last Updated',
+                                _formatDate(_locationUpdatedAt)),
                           ],
                         ]),
                       ),
@@ -338,48 +370,80 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
   }
 
   Widget _avatarFallback() {
-    final initial = _nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'A';
+    final initial = _nameController.text.isNotEmpty
+        ? _nameController.text[0].toUpperCase()
+        : 'A';
     return Container(
       color: AppTheme.primaryColor.withValues(alpha: 0.15),
       child: Center(
-        child: Text(initial, style: const TextStyle(color: AppTheme.primaryColor, fontSize: 36, fontWeight: FontWeight.w700)),
+        child: Text(initial,
+            style: const TextStyle(
+                color: AppTheme.primaryColor,
+                fontSize: 36,
+                fontWeight: FontWeight.w700)),
       ),
     );
   }
 
   Widget _sectionLabel(String label) => Text(label,
-      style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5));
+      style: const TextStyle(
+          color: Color(0xFF64748B),
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.5));
 
   Widget _badge(String label, Color color, IconData icon) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
-    child: Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(icon, color: color, size: 13),
-      const SizedBox(width: 5),
-      Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
-    ]),
-  );
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(20)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, color: color, size: 13),
+          const SizedBox(width: 5),
+          Text(label,
+              style: TextStyle(
+                  color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+        ]),
+      );
 
   Widget _infoRow(IconData icon, String label, String value) => Row(children: [
-    Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-      child: Icon(icon, color: AppTheme.primaryColor, size: 18),
-    ),
-    const SizedBox(width: 12),
-    Expanded(child: Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13))),
-    Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
-  ]);
-
-  Widget _switchRow({required IconData icon, required String label, required bool value, required ValueChanged<bool> onChanged}) =>
-      Row(children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8)),
           child: Icon(icon, color: AppTheme.primaryColor, size: 18),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13))),
+        Expanded(
+            child: Text(label,
+                style:
+                    const TextStyle(color: Color(0xFF94A3B8), fontSize: 13))),
+        Text(value,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600)),
+      ]);
+
+  Widget _switchRow(
+          {required IconData icon,
+          required String label,
+          required bool value,
+          required ValueChanged<bool> onChanged}) =>
+      Row(children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8)),
+          child: Icon(icon, color: AppTheme.primaryColor, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+            child: Text(label,
+                style:
+                    const TextStyle(color: Color(0xFF94A3B8), fontSize: 13))),
         Switch(
           value: value,
           onChanged: onChanged,
@@ -401,7 +465,8 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
         readOnly: readOnly,
         keyboardType: keyboardType,
         validator: validator,
-        style: TextStyle(color: readOnly ? const Color(0xFF64748B) : Colors.white),
+        style:
+            TextStyle(color: readOnly ? const Color(0xFF64748B) : Colors.white),
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
@@ -410,9 +475,16 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
           prefixIcon: Icon(icon, color: AppTheme.primaryColor, size: 20),
           filled: true,
           fillColor: AppTheme.surface,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF334155))),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF334155))),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2)),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF334155))),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF334155))),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide:
+                  const BorderSide(color: AppTheme.primaryColor, width: 2)),
         ),
       );
 }

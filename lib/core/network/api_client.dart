@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/env.dart';
+import '../services/city_providers.dart';
+import 'interceptors/city_interceptor.dart';
 import '../utils/app_logger.dart';
 import 'interceptors/auth_interceptor.dart';
 import 'interceptors/retry_interceptor.dart';
@@ -17,8 +19,13 @@ final apiClientProvider = Provider<Dio>((ref) {
     },
   ));
 
+  dio.interceptors
+      .add(CityInterceptor(() => ref.read(selectedCityProvider.future)));
+
   // Auth token injection + 401 refresh
-  dio.interceptors.add(AuthInterceptor());
+  final auth = AuthInterceptor();
+  dio.interceptors.add(auth);
+  ref.onDispose(auth.dispose);
 
   // Exponential backoff retry (Week 7)
   dio.interceptors.add(RetryInterceptor(dio: dio, maxRetries: 3));
@@ -27,8 +34,8 @@ final apiClientProvider = Provider<Dio>((ref) {
   if (kDebugMode) {
     dio.interceptors.add(PrettyDioLogger(
       requestHeader: false,
-      requestBody: true,
-      responseBody: true,
+      requestBody: false,
+      responseBody: false,
       responseHeader: false,
       error: true,
       compact: true,
@@ -36,5 +43,6 @@ final apiClientProvider = Provider<Dio>((ref) {
     ));
   }
 
+  ref.onDispose(() => dio.close(force: true));
   return dio;
 });

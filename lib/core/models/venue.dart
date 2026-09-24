@@ -1,6 +1,7 @@
 import 'offer.dart';
 
 class Venue {
+  final String city;
   final String id;
   final String name;
   final String type;
@@ -19,6 +20,7 @@ class Venue {
   final int? priceLevel;
 
   Venue({
+    this.city = '',
     required this.id,
     required this.name,
     required this.type,
@@ -56,6 +58,7 @@ class Venue {
   }
 
   Map<String, dynamic> toJson() => {
+        'city': city,
         'id': id,
         'name': name,
         'type': type,
@@ -122,6 +125,7 @@ class Venue {
         : int.tryParse(priceLevelRaw?.toString() ?? '');
 
     return Venue(
+      city: json['city']?.toString() ?? '',
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       type: json['type']?.toString() ?? json['category']?.toString() ?? 'bar',

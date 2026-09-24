@@ -1,0 +1,67 @@
+*** Begin Patch
+*** Update File: test/unit/services/worker_login_flow_test.dart
+@@
+ import 'package:flutter_test/flutter_test.dart';
++import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+ import 'package:reki_mvp/core/models/user.dart';
+ import 'package:reki_mvp/core/network/auth_api_service.dart';
+ import 'package:reki_mvp/core/router/role_navigation.dart';
++import 'package:reki_mvp/core/services/auth_service.dart';
+@@
+ void main() {
++  TestWidgetsFlutterBinding.ensureInitialized();
+   late Dio dio;
+@@
+   group('worker role routing', () {
+@@
+     test('BUSINESS role routes to business dashboard', () {
+@@
+       expect(roleHome(user.role), '/business-dashboard');
+     });
++
++    test('STAFF role maps to WORKER', () {
++      final user = User.fromJson({
++        'id': 'w1',
++        'role': 'BUSINESS',
++        'businessUser': {'staff_role': 'STAFF'},
++      });
++      expect(user.role, UserRole.WORKER);
++      expect(roleHome(user.role), '/worker-home');
++    });
++
++    test('staff JWT wins when profile only exposes BUSINESS', () {
++      final payload = base64Url.encode(utf8.encode(jsonEncode({
++        'sub': 'w1',
++        'role': 'STAFF',
++      }))).replaceAll('=', '');
++      final user = User.fromJson(
++        {'id': 'w1', 'role': 'BUSINESS'},
++        accessToken: 'header.$payload.signature',
++      );
++      expect(user.role, UserRole.WORKER);
++      expect(roleHome(user.role), '/worker-home');
++    });
++
++    test('login identity is preserved when auth profile is generic BUSINESS',
++        () async {
++      FlutterSecureStorage.setMockInitialValues({});
++      dio.httpClientAdapter = StubAdapter((options) => body({
++            'id': 'w1',
++            'email': 'staff@example.test',
++            'role': 'BUSINESS',
++          }));
++      final service = AuthService(apiService: AuthApiService(dio));
++      await service.clearSession();
++      await service.setAccessToken('not-a-jwt');
++      final user = await service.fetchCurrentUser(loginUser: {
++        'id': 'w1',
++        'email': 'staff@example.test',
++        'role': 'STAFF',
++      });
++      expect(user?.role, UserRole.WORKER);
++      expect(roleHome(user!.role), '/worker-home');
++      await service.clearSession();
++    });
+   });
+ }
+*** End Patch

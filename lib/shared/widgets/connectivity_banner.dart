@@ -9,7 +9,8 @@ class ConnectivityBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final connectivity = ref.watch(connectivityStatusProvider);
-    final isOffline = connectivity.whenOrNull(data: (online) => !online) ?? false;
+    final isOffline =
+        connectivity.whenOrNull(data: (online) => !online) ?? false;
 
     return Column(
       children: [
@@ -25,7 +26,10 @@ class ConnectivityBanner extends ConsumerWidget {
                     SizedBox(width: 8),
                     Text(
                       'No internet connection',
-                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600),
                     ),
                   ],
                 )

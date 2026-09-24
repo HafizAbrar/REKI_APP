@@ -24,28 +24,36 @@ class VibeSchedule {
   });
 
   factory VibeSchedule.fromJson(Map<String, dynamic> json) => VibeSchedule(
-    id: json['id'],
-    venueId: json['venueId'],
-    dayOfWeek: json['dayOfWeek'],
-    startTime: json['startTime'],
-    endTime: json['endTime'],
-    vibe: json['vibe'],
-    priority: json['priority'],
-    isActive: json['isActive'],
-    createdAt: DateTime.parse(json['createdAt']),
-    updatedAt: DateTime.parse(json['updatedAt']),
-  );
+        id: json['id'],
+        venueId: json['venueId'],
+        dayOfWeek: json['dayOfWeek'],
+        startTime: json['startTime'],
+        endTime: json['endTime'],
+        vibe: json['vibe'],
+        priority: json['priority'],
+        isActive: json['isActive'],
+        createdAt: DateTime.parse(json['createdAt']),
+        updatedAt: DateTime.parse(json['updatedAt']),
+      );
 
   String get dayName {
     switch (dayOfWeek) {
-      case 0: return 'Sunday';
-      case 1: return 'Monday';
-      case 2: return 'Tuesday';
-      case 3: return 'Wednesday';
-      case 4: return 'Thursday';
-      case 5: return 'Friday';
-      case 6: return 'Saturday';
-      default: return '';
+      case 0:
+        return 'Sunday';
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      default:
+        return '';
     }
   }
 }

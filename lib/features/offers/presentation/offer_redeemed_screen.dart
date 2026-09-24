@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../data/offer_detail_provider.dart';
 
 class OfferRedeemedScreen extends ConsumerStatefulWidget {
@@ -15,18 +17,22 @@ class OfferRedeemedScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<OfferRedeemedScreen> createState() => _OfferRedeemedScreenState();
+  ConsumerState<OfferRedeemedScreen> createState() =>
+      _OfferRedeemedScreenState();
 }
 
 class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
   bool _redeemed = false;
 
-  String get _voucherCode =>
-      widget.claimData?['voucherCode'] as String? ?? '';
+  String get _voucherCode => widget.claimData?['voucherCode'] as String? ?? '';
   String get _transactionId =>
       widget.claimData?['transactionId'] as String? ?? '';
-  String get _qrCodeData =>
-      widget.claimData?['qrCodeData'] as String? ?? _voucherCode;
+  String get _qrCodeData {
+    final signed = widget.claimData?['qrCodeData'] as String? ?? '';
+    return signed.isNotEmpty
+        ? signed
+        : jsonEncode({'voucherCode': _voucherCode, 'offerId': widget.offerId});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +56,8 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: _redeemed
-                    ? const Color(0xFF10B981).withOpacity(0.15)
-                    : const Color(0xFF2DD4BF).withOpacity(0.15),
+                    ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                    : const Color(0xFF2DD4BF).withValues(alpha: 0.15),
               ),
             ),
           ),
@@ -64,8 +70,7 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _iconBtn(Icons.arrow_back_ios_new,
-                          () => context.pop()),
+                      _iconBtn(Icons.arrow_back_ios_new, () => context.pop()),
                       const SizedBox(),
                     ],
                   ),
@@ -113,7 +118,8 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
                         onPressed: actionState.isLoading ? null : _onRedeem,
                         child: actionState.isLoading
                             ? const SizedBox(
-                                width: 22, height: 22,
+                                width: 22,
+                                height: 22,
                                 child: CircularProgressIndicator(
                                     color: Color(0xFF0F172A), strokeWidth: 2))
                             : const Row(
@@ -166,12 +172,12 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
-          colors: [color, color.withOpacity(0.7)],
+          colors: [color, color.withValues(alpha: 0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
-          BoxShadow(color: color.withOpacity(0.4), blurRadius: 32),
+          BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 32),
         ],
       ),
       child: Icon(
@@ -187,9 +193,9 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.07)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 20),
         ],
       ),
       child: Column(
@@ -222,8 +228,7 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
                 // Transaction ID
                 if (_transactionId.isNotEmpty)
                   _infoRow('Transaction', _transactionId),
-                _infoRow('Status',
-                    _redeemed ? '✓ Redeemed' : '● Active',
+                _infoRow('Status', _redeemed ? '✓ Redeemed' : '● Active',
                     valueColor: _redeemed
                         ? const Color(0xFF10B981)
                         : const Color(0xFF2DD4BF)),
@@ -256,20 +261,29 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
                         width: 140,
                         height: 140,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            const Icon(Icons.qr_code_2,
-                                color: Colors.white, size: 100),
+                            QrImageView(
+                              data: _qrCodeData,
+                              version: QrVersions.auto,
+                              size: 128,
+                              eyeStyle: const QrEyeStyle(
+                                  eyeShape: QrEyeShape.square,
+                                  color: Color(0xFF0F172A)),
+                              dataModuleStyle: const QrDataModuleStyle(
+                                  dataModuleShape: QrDataModuleShape.square,
+                                  color: Color(0xFF0F172A)),
+                            ),
                             if (_redeemed)
                               Container(
                                 width: 140,
                                 height: 140,
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.7),
+                                  color: Colors.black.withValues(alpha: 0.7),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(Icons.check_circle,
@@ -304,7 +318,8 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
                       color: const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                          color: const Color(0xFF2DD4BF).withOpacity(0.3)),
+                          color:
+                              const Color(0xFF2DD4BF).withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -328,8 +343,7 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
                 ),
                 const SizedBox(height: 6),
                 const Text('Tap to copy code',
-                    style: TextStyle(
-                        color: Color(0xFF475569), fontSize: 11)),
+                    style: TextStyle(color: Color(0xFF475569), fontSize: 11)),
               ],
             ),
           ),
@@ -345,20 +359,24 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
         Container(
           height: 1,
           margin: const EdgeInsets.symmetric(horizontal: 24),
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
         ),
         Positioned(
-          left: -12, top: -12,
+          left: -12,
+          top: -12,
           child: Container(
-            width: 24, height: 24,
+            width: 24,
+            height: 24,
             decoration: const BoxDecoration(
                 color: Color(0xFF0F172A), shape: BoxShape.circle),
           ),
         ),
         Positioned(
-          right: -12, top: -12,
+          right: -12,
+          top: -12,
           child: Container(
-            width: 24, height: 24,
+            width: 24,
+            height: 24,
             decoration: const BoxDecoration(
                 color: Color(0xFF0F172A), shape: BoxShape.circle),
           ),
@@ -374,8 +392,7 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(
-                  color: Color(0xFF64748B), fontSize: 13)),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
           Text(value,
               style: TextStyle(
                   color: valueColor ?? Colors.white,
@@ -390,9 +407,10 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 38, height: 38,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white, size: 18),

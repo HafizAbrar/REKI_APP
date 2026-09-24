@@ -8,7 +8,8 @@ class VenueLiveStateScreen extends ConsumerStatefulWidget {
   const VenueLiveStateScreen({super.key, required this.venueId});
 
   @override
-  ConsumerState<VenueLiveStateScreen> createState() => _VenueLiveStateScreenState();
+  ConsumerState<VenueLiveStateScreen> createState() =>
+      _VenueLiveStateScreenState();
 }
 
 class _VenueLiveStateScreenState extends ConsumerState<VenueLiveStateScreen> {
@@ -30,32 +31,39 @@ class _VenueLiveStateScreenState extends ConsumerState<VenueLiveStateScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(venue.name, style: Theme.of(context).textTheme.headlineSmall),
+              Text(venue.name,
+                  style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 24),
-              const Text('Busyness Level', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Busyness Level',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 children: _busynessLevels.map((level) {
-                  final isSelected = _selectedBusyness == level || (_selectedBusyness == null && venue.busyness == level);
+                  final isSelected = _selectedBusyness == level ||
+                      (_selectedBusyness == null && venue.busyness == level);
                   return ChoiceChip(
                     label: Text(level),
                     selected: isSelected,
-                    onSelected: (selected) => setState(() => _selectedBusyness = level),
+                    onSelected: (selected) =>
+                        setState(() => _selectedBusyness = level),
                   );
                 }).toList(),
               ),
               const SizedBox(height: 24),
-              const Text('Current Vibe', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Current Vibe',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 children: _vibes.map((vibe) {
-                  final isSelected = _selectedVibe == vibe || (_selectedVibe == null && venue.currentVibe == vibe);
+                  final isSelected = _selectedVibe == vibe ||
+                      (_selectedVibe == null && venue.currentVibe == vibe);
                   return ChoiceChip(
                     label: Text(vibe),
                     selected: isSelected,
-                    onSelected: (selected) => setState(() => _selectedVibe = vibe),
+                    onSelected: (selected) =>
+                        setState(() => _selectedVibe = vibe),
                   );
                 }).toList(),
               ),
@@ -77,11 +85,12 @@ class _VenueLiveStateScreenState extends ConsumerState<VenueLiveStateScreen> {
   }
 
   Future<void> _updateLiveState() async {
-    final success = await ref.read(venueManagementProvider.notifier).updateLiveState(
-      widget.venueId,
-      busyness: _selectedBusyness,
-      currentVibe: _selectedVibe,
-    );
+    final success =
+        await ref.read(venueManagementProvider.notifier).updateLiveState(
+              widget.venueId,
+              busyness: _selectedBusyness,
+              currentVibe: _selectedVibe,
+            );
 
     if (mounted) {
       if (success) {

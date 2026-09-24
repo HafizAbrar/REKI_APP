@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/features/auth/presentation/auth_provider.dart
+@@
+       final user = response['user'];
+       if (user is Map<String, dynamic>) {
+         _authService.setCurrentUserFromJson(user);
+-      } else {
+-        // Token-only responses happen on some deployments â€” the role must
+-        // be fetched from the profile endpoint, otherwise role-based
+-        // routing would send a WORKER to the wrong home screen.
+-        await _authService.fetchCurrentUser();
+       }
+*** End Patch

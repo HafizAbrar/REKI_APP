@@ -13,11 +13,26 @@ class AppTheme {
   static const cardDark = surface; // Add cardDark alias
   static const accentPurple = Color(0xFF9D4EDD);
   static const accentPink = Color(0xFFFF006E);
-  
+
   static ThemeData darkTheme = ThemeData.dark().copyWith(
     scaffoldBackgroundColor: darkBg,
     primaryColor: primaryColor,
     cardColor: cardBg,
+    colorScheme: const ColorScheme.dark(
+      primary: primaryColor,
+      secondary: primaryColor,
+      surface: surface,
+      error: Color(0xFFEF4444),
+      onError: Colors.white,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      errorStyle: const TextStyle(
+        color: Color(0xFFEF4444),
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+      errorMaxLines: 2,
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: darkBg,
       elevation: 0,
@@ -30,7 +45,7 @@ class GlowContainer extends StatelessWidget {
   final Color glowColor;
   final double glowRadius;
   final double glowSpread;
-  
+
   const GlowContainer({
     super.key,
     required this.child,
@@ -38,14 +53,14 @@ class GlowContainer extends StatelessWidget {
     this.glowRadius = 20,
     this.glowSpread = 5,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: glowColor.withOpacity(0.5),
+            color: glowColor.withValues(alpha: 0.5),
             blurRadius: glowRadius,
             spreadRadius: glowSpread,
           ),
@@ -60,20 +75,22 @@ class NeonText extends StatelessWidget {
   final String text;
   final TextStyle? style;
   final Color glowColor;
-  
-  const NeonText(this.text, {super.key, this.style, this.glowColor = AppTheme.primaryColor});
-  
+
+  const NeonText(this.text,
+      {super.key, this.style, this.glowColor = AppTheme.primaryColor});
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Text(text, style: style?.copyWith(
-          foreground: Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2
-            ..color = glowColor.withOpacity(0.5)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 10),
-        )),
+        Text(text,
+            style: style?.copyWith(
+              foreground: Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 2
+                ..color = glowColor.withValues(alpha: 0.5)
+                ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 10),
+            )),
         Text(text, style: style),
       ],
     );
@@ -86,7 +103,7 @@ class GlowButton extends StatelessWidget {
   final Color color;
   final bool isLoading;
   final Color? textColor;
-  
+
   const GlowButton({
     super.key,
     required this.text,
@@ -95,7 +112,7 @@ class GlowButton extends StatelessWidget {
     this.isLoading = false,
     this.textColor,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -103,7 +120,7 @@ class GlowButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.6),
+            color: color.withValues(alpha: 0.6),
             blurRadius: 25,
             spreadRadius: 2,
           ),
@@ -112,14 +129,23 @@ class GlowButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           padding: const EdgeInsets.symmetric(vertical: 16),
           elevation: 0,
         ),
         onPressed: isLoading ? null : onPressed,
         child: isLoading
-            ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: textColor ?? Colors.white))
-            : Text(text, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor ?? Colors.white)),
+            ? SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: textColor ?? Colors.white))
+            : Text(text,
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: textColor ?? Colors.white)),
       ),
     );
   }
@@ -128,9 +154,9 @@ class GlowButton extends StatelessWidget {
 class GlowCard extends StatelessWidget {
   final Widget child;
   final Color? glowColor;
-  
+
   const GlowCard({super.key, required this.child, this.glowColor});
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -139,7 +165,7 @@ class GlowCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: (glowColor ?? AppTheme.primaryColor).withOpacity(0.3),
+            color: (glowColor ?? AppTheme.primaryColor).withValues(alpha: 0.3),
             blurRadius: 20,
             spreadRadius: 1,
           ),

@@ -4,13 +4,29 @@ import 'package:go_router/go_router.dart';
 import '../data/user_preferences_provider.dart';
 
 const _allVibes = [
-  'Chill', 'Party', 'Romantic', 'Energetic', 'Rooftop',
-  'Date Night', 'Live Music', 'Underground', 'Industrial', 'Intimate',
+  'Chill',
+  'Party',
+  'Romantic',
+  'Energetic',
+  'Rooftop',
+  'Date Night',
+  'Live Music',
+  'Underground',
+  'Industrial',
+  'Intimate',
 ];
 
 const _allMusic = [
-  'Hip-Hop', 'House', 'R&B', 'Techno', 'Pop',
-  'Jazz', 'Live Band', 'Drum & Bass', 'Afrobeats', 'Indie',
+  'Hip-Hop',
+  'House',
+  'R&B',
+  'Techno',
+  'Pop',
+  'Jazz',
+  'Live Band',
+  'Drum & Bass',
+  'Afrobeats',
+  'Indie',
 ];
 
 class UserPreferencesScreen extends ConsumerStatefulWidget {
@@ -21,8 +37,7 @@ class UserPreferencesScreen extends ConsumerStatefulWidget {
       _UserPreferencesScreenState();
 }
 
-class _UserPreferencesScreenState
-    extends ConsumerState<UserPreferencesScreen> {
+class _UserPreferencesScreenState extends ConsumerState<UserPreferencesScreen> {
   Set<String> _selectedVibes = {};
   Set<String> _selectedMusic = {};
   bool _loaded = false;
@@ -78,10 +93,11 @@ class _UserPreferencesScreenState
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2DD4BF).withOpacity(0.08),
+                      color: const Color(0xFF2DD4BF).withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                          color: const Color(0xFF2DD4BF).withOpacity(0.2)),
+                          color:
+                              const Color(0xFF2DD4BF).withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
@@ -101,7 +117,7 @@ class _UserPreferencesScreenState
                               Text(
                                 'Select your vibes and music to get better recommendations',
                                 style: TextStyle(
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: Colors.white.withValues(alpha: 0.5),
                                     fontSize: 12,
                                     height: 1.4),
                               ),
@@ -114,8 +130,7 @@ class _UserPreferencesScreenState
                   const SizedBox(height: 28),
 
                   // Vibes
-                  _sectionHeader(
-                      Icons.local_fire_department_outlined, 'Vibes',
+                  _sectionHeader(Icons.local_fire_department_outlined, 'Vibes',
                       '${_selectedVibes.length} selected'),
                   const SizedBox(height: 12),
                   Wrap(
@@ -125,18 +140,17 @@ class _UserPreferencesScreenState
                         .map((v) => _Chip(
                               label: v,
                               selected: _selectedVibes.contains(v),
-                              onTap: () => setState(() => _selectedVibes
-                                  .contains(v)
-                                  ? _selectedVibes.remove(v)
-                                  : _selectedVibes.add(v)),
+                              onTap: () => setState(() =>
+                                  _selectedVibes.contains(v)
+                                      ? _selectedVibes.remove(v)
+                                      : _selectedVibes.add(v)),
                             ))
                         .toList(),
                   ),
                   const SizedBox(height: 28),
 
                   // Music
-                  _sectionHeader(
-                      Icons.music_note_outlined, 'Music',
+                  _sectionHeader(Icons.music_note_outlined, 'Music',
                       '${_selectedMusic.length} selected'),
                   const SizedBox(height: 12),
                   Wrap(
@@ -147,10 +161,10 @@ class _UserPreferencesScreenState
                               label: m,
                               selected: _selectedMusic.contains(m),
                               color: const Color(0xFF8B5CF6),
-                              onTap: () => setState(() => _selectedMusic
-                                  .contains(m)
-                                  ? _selectedMusic.remove(m)
-                                  : _selectedMusic.add(m)),
+                              onTap: () => setState(() =>
+                                  _selectedMusic.contains(m)
+                                      ? _selectedMusic.remove(m)
+                                      : _selectedMusic.add(m)),
                             ))
                         .toList(),
                   ),
@@ -171,7 +185,8 @@ class _UserPreferencesScreenState
                       onPressed: notifierState.isLoading ? null : _save,
                       child: notifierState.isLoading
                           ? const SizedBox(
-                              width: 22, height: 22,
+                              width: 22,
+                              height: 22,
                               child: CircularProgressIndicator(
                                   color: Color(0xFF0F172A), strokeWidth: 2))
                           : const Text('Save Preferences',
@@ -197,8 +212,7 @@ class _UserPreferencesScreenState
                 fontWeight: FontWeight.bold)),
         const Spacer(),
         Text(subtitle,
-            style: const TextStyle(
-                color: Color(0xFF64748B), fontSize: 12)),
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
       ],
     );
   }
@@ -218,13 +232,11 @@ class _UserPreferencesScreenState
     if (!mounted) return;
     if (success) setState(() => _hasPreferences = true);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(
-          success ? 'Preferences saved!' : 'Failed to save preferences'),
-      backgroundColor:
-          success ? const Color(0xFF10B981) : Colors.red,
+      content:
+          Text(success ? 'Preferences saved!' : 'Failed to save preferences'),
+      backgroundColor: success ? const Color(0xFF10B981) : Colors.red,
       behavior: SnackBarBehavior.floating,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ));
     if (success) context.pop();
   }
@@ -249,15 +261,15 @@ class _Chip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(0.15) : const Color(0xFF1E293B),
+          color: selected
+              ? color.withValues(alpha: 0.15)
+              : const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-              color: selected ? color : const Color(0xFF334155)),
+          border: Border.all(color: selected ? color : const Color(0xFF334155)),
           boxShadow: selected
-              ? [BoxShadow(color: color.withOpacity(0.2), blurRadius: 8)]
+              ? [BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 8)]
               : [],
         ),
         child: Text(
@@ -265,8 +277,7 @@ class _Chip extends StatelessWidget {
           style: TextStyle(
             color: selected ? color : const Color(0xFF94A3B8),
             fontSize: 13,
-            fontWeight:
-                selected ? FontWeight.w600 : FontWeight.normal,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
       ),

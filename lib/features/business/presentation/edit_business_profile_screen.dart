@@ -21,7 +21,7 @@ class _EditBusinessProfileScreenState
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
 
-  String? _avatarPath;   // local file path picked by user
+  String? _avatarPath; // local file path picked by user
   String? _currentAvatarUrl; // existing remote URL
   bool _saving = false;
   bool _loaded = false;
@@ -228,7 +228,8 @@ class _EditBusinessProfileScreenState
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
-              child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+              child:
+                  const Icon(Icons.camera_alt, color: Colors.white, size: 16),
             ),
           ),
         ],
@@ -239,8 +240,8 @@ class _EditBusinessProfileScreenState
   Widget _avatarWidget() {
     // Newly picked local file takes priority
     if (_avatarPath != null) {
-      return Image.file(File(_avatarPath!), fit: BoxFit.cover,
-          width: 100, height: 100);
+      return Image.file(File(_avatarPath!),
+          fit: BoxFit.cover, width: 100, height: 100);
     }
     // Existing remote avatar
     if (_currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty) {
@@ -248,7 +249,10 @@ class _EditBusinessProfileScreenState
           ? _currentAvatarUrl!
           : '${Env.apiBaseUrl}${_currentAvatarUrl!.startsWith('/') ? '' : '/'}$_currentAvatarUrl';
       return AppCachedImage(
-          url: url, width: 100, height: 100, fit: BoxFit.cover,
+          url: url,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
           placeholder: _fallback());
     }
     return _fallback();
@@ -270,9 +274,7 @@ class _EditBusinessProfileScreenState
 
   Widget _label(String text) => Text(text,
       style: const TextStyle(
-          color: Color(0xFF374151),
-          fontSize: 13,
-          fontWeight: FontWeight.w600));
+          color: Color(0xFF374151), fontSize: 13, fontWeight: FontWeight.w600));
 
   Widget _field({
     required TextEditingController controller,
@@ -304,8 +306,7 @@ class _EditBusinessProfileScreenState
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide:
-              const BorderSide(color: Color(0xFF14B8A6), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF14B8A6), width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

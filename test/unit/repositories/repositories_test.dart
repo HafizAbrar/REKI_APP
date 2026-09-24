@@ -100,12 +100,20 @@ class MockOfferApi implements OfferApiService {
   @override
   Future<Offer> updateOfferStatus(String id, bool a) async => _offer(id);
   @override
-  Future<Map<String, dynamic>> redeemByCode(String code) async => {};
+  Future<Map<String, dynamic>> redeemByCode(String code,
+          {String? venueId}) async =>
+      {};
 }
 
 // ── Mock: VenueApiService ─────────────────────────────────────────────────────
 
 class MockVenueApi implements VenueApiService {
+  @override
+  Future<Map<String, dynamic>> getLiveSnapshot({String? city}) async {
+    if (throws) throw Exception('err');
+    return {'venues': []};
+  }
+
   bool throws = false;
 
   @override
@@ -124,7 +132,9 @@ class MockVenueApi implements VenueApiService {
     int limit = 20,
   }) async {
     if (throws) throw Exception('err');
-    return {'data': []};
+    return {
+      'venues': [_venue('v1').toJson()]
+    };
   }
 
   @override
@@ -308,7 +318,7 @@ class MockUserApi implements UserApiService {
   @override
   Future<NotificationPreferences> getNotificationPreferences() async {
     if (throws) throw Exception('err');
-    return NotificationPreferences(
+    return const NotificationPreferences(
       id: 'np1',
       userId: 'u1',
       vibeAlerts: true,

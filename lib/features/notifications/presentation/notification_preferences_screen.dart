@@ -140,8 +140,8 @@ class _NotificationPreferencesScreenState
                 fontWeight: FontWeight.bold)),
       ),
       body: state.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -255,8 +255,8 @@ class _NotificationPreferencesScreenState
                       child: CircularProgressIndicator(
                           color: Color(0xFF0F172A), strokeWidth: 2))
                   : const Text('Save Preferences',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -268,10 +268,10 @@ class _NotificationPreferencesScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2DD4BF).withOpacity(0.08),
+        color: const Color(0xFF2DD4BF).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
         border:
-            Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.2)),
+            Border.all(color: const Color(0xFF2DD4BF).withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -291,7 +291,7 @@ class _NotificationPreferencesScreenState
                 Text(
                   'Choose what you want to be notified about',
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 12,
                       height: 1.4),
                 ),
@@ -327,17 +327,16 @@ class _NotificationPreferencesScreenState
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
             color: value
-                ? iconColor.withOpacity(0.3)
+                ? iconColor.withValues(alpha: 0.3)
                 : const Color(0xFF334155)),
       ),
       child: SwitchListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         secondary: Container(
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.12),
+            color: iconColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: iconColor, size: 20),
@@ -349,7 +348,7 @@ class _NotificationPreferencesScreenState
                 fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle,
             style: TextStyle(
-                color: Colors.white.withOpacity(0.45), fontSize: 12)),
+                color: Colors.white.withValues(alpha: 0.45), fontSize: 12)),
         value: value,
         onChanged: onChanged,
         activeColor: iconColor,
@@ -367,7 +366,7 @@ class _NotificationPreferencesScreenState
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
             color: enabled
-                ? const Color(0xFF2DD4BF).withOpacity(0.3)
+                ? const Color(0xFF2DD4BF).withValues(alpha: 0.3)
                 : const Color(0xFF334155)),
       ),
       child: Column(
@@ -379,7 +378,7 @@ class _NotificationPreferencesScreenState
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2DD4BF).withOpacity(0.12),
+                  color: const Color(0xFF2DD4BF).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.bedtime_outlined,
@@ -397,7 +396,7 @@ class _NotificationPreferencesScreenState
                             fontWeight: FontWeight.w600)),
                     Text('Silence notifications during set hours',
                         style: TextStyle(
-                            color: Colors.white.withOpacity(0.45),
+                            color: Colors.white.withValues(alpha: 0.45),
                             fontSize: 12)),
                   ],
                 ),

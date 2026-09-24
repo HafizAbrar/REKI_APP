@@ -25,7 +25,8 @@ class VenueApiService {
       if (category != null) 'category': category,
       if (busyness != null) 'busyness': busyness,
       if (vibe != null) 'vibe': vibe,
-      if (cityId != null) 'cityId': cityId,
+      // Backend (NestJS) expects ?city=<slug|name> — verified against live API
+      if (cityId != null) 'city': cityId,
       'page': page,
       'limit': limit,
     });
@@ -59,7 +60,7 @@ class VenueApiService {
   // GET /venues/filter-options - Get available filter options for a city
   Future<Map<String, dynamic>> getFilterOptions({String? cityId}) async {
     final response = await _dio.get('/venues/filter-options', queryParameters: {
-      if (cityId != null) 'cityId': cityId,
+      if (cityId != null) 'city': cityId,
     });
     return response.data as Map<String, dynamic>;
   }
@@ -67,7 +68,7 @@ class VenueApiService {
   // GET /venues/trending - Top 5 trending venues by busyness
   Future<List<Venue>> getTrendingVenues({String? cityId}) async {
     final response = await _dio.get('/venues/trending', queryParameters: {
-      if (cityId != null) 'cityId': cityId,
+      if (cityId != null) 'city': cityId,
     });
     final data = response.data is Map
         ? response.data['data'] ?? response.data['venues'] ?? response.data
@@ -84,7 +85,7 @@ class VenueApiService {
     double? neLng,
   }) async {
     final response = await _dio.get('/venues/map-markers', queryParameters: {
-      if (cityId != null) 'cityId': cityId,
+      if (cityId != null) 'city': cityId,
       if (swLat != null) 'swLat': swLat,
       if (swLng != null) 'swLng': swLng,
       if (neLat != null) 'neLat': neLat,
@@ -185,5 +186,13 @@ class VenueApiService {
       return List<Map<String, dynamic>>.from(list as List);
     }
     return [];
+  }
+
+  // GET /live/snapshot - Current city live feed snapshot
+  Future<Map<String, dynamic>> getLiveSnapshot({String? city}) async {
+    final response = await _dio.get('/live/snapshot',
+        queryParameters: {if (city != null) 'city': city});
+    final raw = response.data;
+    return raw is Map ? Map<String, dynamic>.from(raw) : {};
   }
 }

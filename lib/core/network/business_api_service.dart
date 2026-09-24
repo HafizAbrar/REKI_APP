@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -65,14 +66,16 @@ class BusinessApiService {
   }
 
   // POST /auth/business/register - Business registration
-  Future<Map<String, dynamic>> businessRegister(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> businessRegister(
+      Map<String, dynamic> data) async {
     final response = await _dio.post('/auth/business/register', data: data);
     return response.data as Map<String, dynamic>;
   }
 
   // POST /auth/business/forgot-password - Business forgot password
   Future<Map<String, dynamic>> businessForgotPassword(String email) async {
-    final response = await _dio.post('/auth/business/forgot-password', data: {'email': email});
+    final response = await _dio
+        .post('/auth/business/forgot-password', data: {'email': email});
     return response.data as Map<String, dynamic>;
   }
 
@@ -120,12 +123,11 @@ class BusinessApiService {
       ..add(MapEntry('closingTime', data['closingTime'].toString()));
 
     if (data['priceLevel'] != null) {
-      formData.fields.add(MapEntry('priceLevel', data['priceLevel'].toString()));
+      formData.fields
+          .add(MapEntry('priceLevel', data['priceLevel'].toString()));
     }
     if (data['tags'] is List && (data['tags'] as List).isNotEmpty) {
-      for (final tag in (data['tags'] as List)) {
-        formData.fields.add(MapEntry('tags[]', tag.toString()));
-      }
+      formData.fields.add(MapEntry('tags', jsonEncode(data['tags'])));
     }
     for (final img in images) {
       formData.files.add(MapEntry(
@@ -142,8 +144,13 @@ class BusinessApiService {
       if (body is Map) return Map<String, dynamic>.from(body);
       return {};
     }
-    final msg = (res.data is Map) ? res.data['message']?.toString() : null;
-    throw Exception(msg ?? 'Failed to create venue (${res.statusCode})');
+    String? msg;
+    if (res.data is Map) {
+      final m = res.data['message'];
+      msg = m is List ? m.join(', ') : m?.toString();
+    }
+    throw Exception(
+        msg ?? 'Failed to create venue (${res.statusCode}): ${res.data}');
   }
 
   // POST /upload/image - Upload a single image, returns { url: '...' }
@@ -153,7 +160,10 @@ class BusinessApiService {
     });
     final res = await _dio.post('/upload/image', data: formData);
     final data = res.data as Map<String, dynamic>;
-    return data['url']?.toString() ?? data['imageUrl']?.toString() ?? data['path']?.toString() ?? '';
+    return data['url']?.toString() ??
+        data['imageUrl']?.toString() ??
+        data['path']?.toString() ??
+        '';
   }
 
   // GET /business/venues - Get all my venues
@@ -176,7 +186,8 @@ class BusinessApiService {
   }
 
   // PUT /business/venues/{id} - Update venue details
-  Future<Map<String, dynamic>> updateVenue(String id, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> updateVenue(
+      String id, Map<String, dynamic> data) async {
     final res = await _dio.put('/business/venues/$id', data: data);
     return res.data as Map<String, dynamic>;
   }
@@ -193,7 +204,8 @@ class BusinessApiService {
   }
 
   // GET /business/analytics/{venueId}?period=today|week|month
-  Future<Map<String, dynamic>> getAnalytics(String venueId, {String period = 'week'}) async {
+  Future<Map<String, dynamic>> getAnalytics(String venueId,
+      {String period = 'week'}) async {
     final response = await _dio.get(
       '/business/analytics/$venueId',
       queryParameters: {'period': period},
@@ -213,13 +225,20 @@ class BusinessApiService {
     return List<Map<String, dynamic>>.from(res.data as List);
   }
 
-  // PUT /business/venues/{id}/status
-  // Accepted fields: busyness (required), vibes (optional string[])
+  // PUT /business/venues/{id}/status (owner) or POST /worker/venues/{id}/status (worker)
   Future<Map<String, dynamic>> updateVenueStatus(
     String venueId, {
     required String busyness,
     List<String>? vibes,
+    bool isWorker = false,
   }) async {
+    if (isWorker) {
+      final response = await _dio.post('/worker/venues/$venueId/status', data: {
+        'busyness': busyness,
+        // Worker status contract only accepts busyness.
+      });
+      return response.data as Map<String, dynamic>;
+    }
     final response = await _dio.put('/business/venues/$venueId/status', data: {
       'busyness': busyness,
       if (vibes != null) 'vibes': vibes,
@@ -228,7 +247,24 @@ class BusinessApiService {
   }
 
   // GET /business/venues/{id}/status - Get current venue status
-  Future<Map<String, dynamic>> getVenueStatus(String venueId) async {
+  Future<Map<String, dynamic>> getVenueStatus(String venueId,
+      {bool isWorker = false}) async {
+    if (isWorker) {
+      final response = await _dio.get('/worker/venues');
+      final raw = response.data;
+      final list = raw is List
+          ? raw
+          : raw is Map
+              ? raw['data'] ?? raw['venues'] ?? raw['items']
+              : null;
+      if (list is List) {
+        for (final item in list.whereType<Map>()) {
+          final venue = item['venue'] is Map ? item['venue'] as Map : item;
+          if (venue['id'] == venueId) return Map<String, dynamic>.from(venue);
+        }
+      }
+      throw StateError('Venue is no longer assigned to this account.');
+    }
     final response = await _dio.get('/business/venues/$venueId/status');
     return response.data as Map<String, dynamic>;
   }
@@ -258,7 +294,8 @@ class BusinessApiService {
   }
 
   // POST /business/offers - Create new offer
-  Future<Map<String, dynamic>> createOffer(Map<String, dynamic> offerData) async {
+  Future<Map<String, dynamic>> createOffer(
+      Map<String, dynamic> offerData) async {
     final response = await _dio.post(
       '/business/offers',
       data: offerData,
@@ -274,7 +311,8 @@ class BusinessApiService {
   }
 
   // PUT /business/offers/{id} - Update an offer
-  Future<Map<String, dynamic>> updateOffer(String id, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> updateOffer(
+      String id, Map<String, dynamic> data) async {
     final response = await _dio.put('/business/offers/$id', data: data);
     return response.data as Map<String, dynamic>;
   }
@@ -285,8 +323,10 @@ class BusinessApiService {
   }
 
   // PUT /business/offers/{id}/toggle - Toggle offer active/inactive
-  Future<Map<String, dynamic>> toggleOffer(String id, {required bool isActive}) async {
-    final response = await _dio.put('/business/offers/$id/toggle', data: {'isActive': isActive});
+  Future<Map<String, dynamic>> toggleOffer(String id,
+      {required bool isActive}) async {
+    final response = await _dio
+        .put('/business/offers/$id/toggle', data: {'isActive': isActive});
     return response.data as Map<String, dynamic>;
   }
 }

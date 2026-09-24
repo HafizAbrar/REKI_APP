@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/network/auth_api_service.dart';
+import '../../../core/models/user.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/device_registration_service.dart';
 
@@ -38,15 +39,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
           : null;
       switch (statusCode) {
         case 400:
-          return serverMessage ?? 'Invalid request. Please check your details and try again.';
+          return serverMessage ??
+              'Invalid request. Please check your details and try again.';
         case 401:
           return 'Incorrect email or password. Please try again.';
         case 404:
-          return serverMessage ?? 'Account not found. Please check your email or sign up.';
+          return serverMessage ??
+              'Account not found. Please check your email or sign up.';
         case 409:
           return serverMessage ?? 'An account with this email already exists.';
         case 422:
-          return serverMessage ?? 'Please fill in all required fields correctly.';
+          return serverMessage ??
+              'Please fill in all required fields correctly.';
         case 429:
           return 'Too many attempts. Please wait a moment and try again.';
         case 500:
@@ -113,19 +117,55 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = const AuthStateLoading();
     try {
-      final response = await _apiService.businessLogin(email: email, password: password);
+      // Defensive: clear any stale session first, otherwise a previous
+      // account's role (e.g. a BUSINESS owner) can leak into a WORKER
+      // login whenever the backend omits the user object.
+      await _authService.clearSession();
+
+      final response =
+          await _apiService.businessLogin(email: email, password: password);
       // Response: { user: {...}, tokens: { accessToken, refreshToken } }
-      final tokens = response['tokens'] as Map<String, dynamic>;
+      // (envelope already unwrapped by AuthApiService).
+      final tokens = response['tokens'] as Map<String, dynamic>?;
+      final accessToken = tokens?['accessToken'] ?? response['access_token'];
+      final refreshToken = tokens?['refreshToken'] ?? response['refresh_token'];
+      if (accessToken == null) {
+        throw DioException(
+          requestOptions: RequestOptions(path: '/auth/business/login'),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(path: '/auth/business/login'),
+            statusCode: 500,
+          ),
+        );
+      }
       const storage = FlutterSecureStorage();
-      await storage.write(key: 'access_token', value: tokens['accessToken']);
-      await storage.write(key: 'refresh_token', value: tokens['refreshToken']);
-      await _authService.setAccessToken(tokens['accessToken']);
-      if (response['user'] != null) {
-        _authService.setCurrentUserFromJson(response['user'] as Map<String, dynamic>);
+      await storage.write(key: 'access_token', value: accessToken.toString());
+      if (refreshToken != null) {
+        await storage.write(
+            key: 'refresh_token', value: refreshToken.toString());
+      }
+      await _authService.setAccessToken(accessToken.toString());
+      final user = response['user'];
+      if (user is Map<String, dynamic>) {
+        _authService.setCurrentUserFromJson(user);
+      } else {
+        // Token-only responses happen on some deployments — the role must
+        // be fetched from the profile endpoint, otherwise role-based
+        // routing would send a WORKER to the wrong home screen.
+        await _authService.fetchCurrentUser();
+      }
+      // Reconcile the login payload, /auth/me response, and JWT claims before
+      // emitting success. Staff is represented as STAFF on some deployments.
+      final authenticatedUser = await _authService.fetchCurrentUser(
+        loginUser: user is Map ? Map<String, dynamic>.from(user) : null,
+      );
+      if (authenticatedUser == null) {
+        throw StateError('Authenticated account profile is unavailable.');
       }
       // Register device for push notifications
       _deviceReg.register();
-      state = const AuthStateLoginSuccess();
+      state = AuthStateLoginSuccess(authenticatedUser);
     } catch (e) {
       state = AuthStateError(_parseError(e));
     }
@@ -134,10 +174,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> login({
     required String email,
     required String password,
-    }) async {
+  }) async {
     state = const AuthStateLoading();
     try {
-      final response = await _apiService.login(email: email, password: password);
+      final response =
+          await _apiService.login(email: email, password: password);
       await _handleTokenResponse(response);
       state = const AuthStateLoginSuccess();
     } catch (e) {
@@ -156,7 +197,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> loginWithApple({required String identityToken, String? fullName}) async {
+  Future<void> loginWithApple(
+      {required String identityToken, String? fullName}) async {
     state = const AuthStateLoading();
     try {
       final response = await _apiService.loginWithApple(
@@ -203,7 +245,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> changePassword(String currentPassword, String newPassword) async {
+  Future<void> changePassword(
+      String currentPassword, String newPassword) async {
     state = const AuthStateLoading();
     try {
       await _apiService.changePassword(
@@ -220,7 +263,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _deviceReg.deactivate();
     try {
       await _apiService.logout();
-    } catch (e) {}
+    } catch (e) {
+      // Local logout must complete even when the server cannot be reached.
+    }
     const storage = FlutterSecureStorage();
     await storage.delete(key: 'access_token');
     await storage.delete(key: 'refresh_token');
@@ -236,7 +281,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> _handleTokenResponse(Map<String, dynamic> response, {String? photoUrl}) async {
+  Future<void> _handleTokenResponse(Map<String, dynamic> response,
+      {String? photoUrl}) async {
     const storage = FlutterSecureStorage();
     final tokens = response['tokens'] as Map<String, dynamic>?;
     final accessToken = tokens?['accessToken'] ?? response['access_token'];
@@ -249,7 +295,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await storage.write(key: 'refresh_token', value: refreshToken);
     }
     if (response['user'] != null) {
-      _authService.setCurrentUserFromJson(response['user'] as Map<String, dynamic>);
+      _authService
+          .setCurrentUserFromJson(response['user'] as Map<String, dynamic>);
     } else {
       await _authService.fetchCurrentUser();
     }
@@ -259,7 +306,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // Register device for push notifications after every successful auth
     _deviceReg.register();
   }
-
 }
 
 sealed class AuthState {
@@ -288,7 +334,8 @@ class AuthStateRegisterSuccess extends AuthState {
 }
 
 class AuthStateLoginSuccess extends AuthState {
-  const AuthStateLoginSuccess();
+  final User? user;
+  const AuthStateLoginSuccess([this.user]);
 }
 
 class AuthStateForgotPasswordSuccess extends AuthState {

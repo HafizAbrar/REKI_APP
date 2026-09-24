@@ -59,7 +59,7 @@ class VenueListScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.error_outline,
@@ -76,7 +76,7 @@ class VenueListScreen extends ConsumerWidget {
                   ErrorHandler.getErrorMessage(error),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.7), fontSize: 16),
+                      color: Colors.white.withValues(alpha: 0.7), fontSize: 16),
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton.icon(
@@ -108,7 +108,7 @@ class VenueListScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.store_outlined,
@@ -123,8 +123,8 @@ class VenueListScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           Text(
             'Create your first venue to get started',
-            style:
-                TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7), fontSize: 16),
           ),
           const SizedBox(height: 32),
           ElevatedButton.icon(
@@ -153,7 +153,7 @@ class VenueListScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppTheme.cardDark,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -171,7 +171,7 @@ class VenueListScreen extends ConsumerWidget {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.2),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(Icons.store,
@@ -193,7 +193,7 @@ class VenueListScreen extends ConsumerWidget {
                           Text(
                             venue.address,
                             style: TextStyle(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                                 fontSize: 14),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -212,20 +212,20 @@ class VenueListScreen extends ConsumerWidget {
                   children: [
                     _buildStatusChip(busyness, _getBusynessColor(busyness)),
                     _buildStatusChip(
-                        vibe, AppTheme.primaryColor.withOpacity(0.8)),
+                        vibe, AppTheme.primaryColor.withValues(alpha: 0.8)),
                     if (venue.priceLevel != null)
                       VenueBudgetTag(venue: venue, compact: true),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         venue.type.toUpperCase(),
                         style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 11,
                             fontWeight: FontWeight.w600),
                       ),
@@ -244,9 +244,9 @@ class VenueListScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         label,

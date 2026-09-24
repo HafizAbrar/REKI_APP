@@ -45,14 +45,18 @@ class _GuestDialog extends StatelessWidget {
                 color: AppTheme.primaryColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.lock_outline, color: AppTheme.primaryColor, size: 32),
+              child: const Icon(Icons.lock_outline,
+                  color: AppTheme.primaryColor, size: 32),
             ),
             const SizedBox(height: 20),
 
             // Title
             const Text(
               'Login Required',
-              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 10),
 
@@ -60,7 +64,8 @@ class _GuestDialog extends StatelessWidget {
             const Text(
               'Please login to complete this action, or continue exploring as a guest.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, height: 1.5),
+              style: TextStyle(
+                  color: Color(0xFF94A3B8), fontSize: 14, height: 1.5),
             ),
             const SizedBox(height: 28),
 
@@ -72,14 +77,17 @@ class _GuestDialog extends StatelessWidget {
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: AppTheme.backgroundDark,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
                 onPressed: () {
                   Navigator.of(context).pop();
                   context.go('/login');
                 },
-                child: const Text('Login', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                child: const Text('Login',
+                    style:
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
               ),
             ),
             const SizedBox(height: 12),
@@ -92,10 +100,13 @@ class _GuestDialog extends StatelessWidget {
                   foregroundColor: Colors.white,
                   side: const BorderSide(color: Color(0xFF334155)),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Continue as Guest', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                child: const Text('Continue as Guest',
+                    style:
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
             ),
           ],

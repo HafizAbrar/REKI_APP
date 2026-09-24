@@ -28,8 +28,12 @@ class VenueService {
 
   void _simulateBusynessChanges() {
     final random = Random();
-    final busynessLevels = [AppConstants.quiet, AppConstants.moderate, AppConstants.busy];
-    
+    final busynessLevels = [
+      AppConstants.quiet,
+      AppConstants.moderate,
+      AppConstants.busy
+    ];
+
     for (var venue in _venues) {
       if (random.nextBool()) {
         venue.busyness = busynessLevels[random.nextInt(busynessLevels.length)];

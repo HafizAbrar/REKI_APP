@@ -1,6 +1,8 @@
+import '../models/voucher_scan.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/offer.dart';
+import '../utils/async_ttl_cache.dart';
 import 'api_client.dart';
 
 final offerApiServiceProvider = Provider<OfferApiService>((ref) {
@@ -9,6 +11,8 @@ final offerApiServiceProvider = Provider<OfferApiService>((ref) {
 
 class OfferApiService {
   final Dio _dio;
+  final _venueCities =
+      AsyncTtlCache<String, String>(ttl: const Duration(minutes: 5));
 
   OfferApiService(this._dio);
 
@@ -17,7 +21,38 @@ class OfferApiService {
     final data = response.data is Map
         ? (response.data['offers'] ?? response.data['data'] ?? [])
         : response.data;
-    return (data as List).map((json) => Offer.fromJson(json as Map<String, dynamic>)).toList();
+    final city = response.requestOptions.queryParameters['city']
+        ?.toString()
+        .toLowerCase();
+    final rows = data as List;
+    final scoped = <Offer>[];
+    // Bound network fan-out even when the backend returns a large offer list.
+    for (var offset = 0; offset < rows.length; offset += 4) {
+      final batch =
+          await Future.wait(rows.skip(offset).take(4).map((raw) async {
+        final json = raw as Map<String, dynamic>;
+        if (city == null) return Offer.fromJson(json);
+        final venue = json['venue'];
+        if (venue is! Map) return null;
+        var venueCity = venue['city']?.toString().toLowerCase();
+        final id = venue['id']?.toString();
+        if (venueCity == null && id != null) {
+          venueCity = await _venueCities.get(id, () async {
+            final detail = await _dio.get('/venues/$id');
+            final body = detail.data;
+            final record =
+                body is Map ? (body['venue'] ?? body['data'] ?? body) : null;
+            final resolved =
+                record is Map ? record['city']?.toString().toLowerCase() : null;
+            if (resolved == null) throw StateError('Venue city unavailable');
+            return resolved;
+          });
+        }
+        return venueCity == city ? Offer.fromJson(json) : null;
+      }));
+      scoped.addAll(batch.whereType<Offer>());
+    }
+    return scoped;
   }
 
   Future<Offer> createOffer(Map<String, dynamic> offerData) async {
@@ -26,7 +61,7 @@ class OfferApiService {
   }
 
   Future<List<Offer>> getOffersByVenue(String venueId) async {
-    final response = await _dio.get('/offers/by-venue/$venueId');
+    final response = await _dio.get('/venues/$venueId/offers');
     return (response.data as List).map((json) => Offer.fromJson(json)).toList();
   }
 
@@ -46,8 +81,10 @@ class OfferApiService {
   }
 
   // POST /offers/{id}/redeem - Redeem a claimed offer
-  Future<Map<String, dynamic>> redeemOffer(String id, {required String voucherCode}) async {
-    final response = await _dio.post('/offers/$id/redeem', data: {'voucherCode': voucherCode});
+  Future<Map<String, dynamic>> redeemOffer(String id,
+      {required String voucherCode}) async {
+    final response = await _dio
+        .post('/offers/$id/redeem', data: {'voucherCode': voucherCode});
     return response.data as Map<String, dynamic>;
   }
 
@@ -71,14 +108,31 @@ class OfferApiService {
     return response.data;
   }
 
-  // POST /offers/redeem-by-code - Worker scans customer QR (Phase 6)
-  Future<Map<String, dynamic>> redeemByCode(String code) async {
-    final response = await _dio.post('/offers/redeem-by-code', data: {'code': code});
-    return response.data as Map<String, dynamic>;
+  // POST /worker/venues/{venueId}/redemptions/scan - Worker scans customer QR (Phase 6)
+  Future<Map<String, dynamic>> redeemByCode(String code,
+      {String? venueId}) async {
+    if (venueId == null || venueId.isEmpty) {
+      throw StateError('Venue ID required for worker redemption.');
+    }
+    final response = await _dio.post('/worker/venues/$venueId/redemptions/scan',
+        data: VoucherScan.redemptionPayload(code),
+        options: Options(
+            sendTimeout: const Duration(seconds: 8),
+            receiveTimeout: const Duration(seconds: 8)));
+    final raw = response.data;
+    final data = raw is Map ? raw['data'] ?? raw : null;
+    if (data is! Map ||
+        data['transactionId'] == null ||
+        data['success'] == false) {
+      throw StateError(
+          'Redemption confirmation missing; check status before retrying.');
+    }
+    return Map<String, dynamic>.from(data);
   }
 
   Future<Offer> updateOfferStatus(String id, bool isActive) async {
-    final response = await _dio.patch('/offers/$id/status', data: {'isActive': isActive});
+    final response =
+        await _dio.patch('/offers/$id/status', data: {'isActive': isActive});
     return Offer.fromJson(response.data);
   }
 }

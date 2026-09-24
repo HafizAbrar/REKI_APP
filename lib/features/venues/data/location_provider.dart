@@ -3,9 +3,8 @@ import 'package:geolocator/geolocator.dart';
 import '../../../core/services/location_repository.dart';
 import '../../../core/utils/app_logger.dart';
 
-final locationProvider =
-    StateNotifierProvider<LocationNotifier, LocationState>(
-        (ref) => LocationNotifier(ref.read(locationRepositoryProvider)));
+final locationProvider = StateNotifierProvider<LocationNotifier, LocationState>(
+    (ref) => LocationNotifier(ref.read(locationRepositoryProvider)));
 
 // Sorted-by-distance venue IDs (populated after GPS fix)
 final nearbyVenueIdsProvider = StateProvider<List<String>>((ref) => []);
@@ -80,7 +79,8 @@ class LocationNotifier extends StateNotifier<LocationState> {
     if (permission == LocationPermission.deniedForever) {
       state = state.copyWith(
         permissionStatus: LocationPermissionStatus.deniedForever,
-        error: 'Location permission permanently denied. Enable in app Settings.',
+        error:
+            'Location permission permanently denied. Enable in app Settings.',
       );
       await _repository.updateLocationConsent(false);
       return;

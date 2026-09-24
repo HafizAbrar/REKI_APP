@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../../core/utils/city_date_format.dart';
+import '../../../core/services/city_providers.dart';
 import '../../../core/models/social_models.dart';
 import '../data/social_provider.dart';
 
@@ -75,7 +76,10 @@ class _ActivityTab extends ConsumerWidget {
                       return _ActivityTile(
                         icon: Icons.history,
                         title: item['venue_name'] as String,
-                        subtitle: DateFormat('d MMM, h:mm a').format(visited),
+                        subtitle: CityDateFormat.dateTime(
+                            visited,
+                            ref.watch(selectedCityProvider).valueOrNull,
+                            Localizations.localeOf(context).toString()),
                         onTap: () => context.push('/venue/${item['venue_id']}'),
                       );
                     }).toList(),
@@ -94,8 +98,10 @@ class _ActivityTab extends ConsumerWidget {
                         .map((item) => _ActivityTile(
                               icon: Icons.location_on,
                               title: item.venueName,
-                              subtitle: DateFormat('d MMM, h:mm a')
-                                  .format(item.checkedInAt),
+                              subtitle: CityDateFormat.dateTime(
+                                  item.checkedInAt,
+                                  ref.watch(selectedCityProvider).valueOrNull,
+                                  Localizations.localeOf(context).toString()),
                               onTap: () =>
                                   context.push('/venue/${item.venueId}'),
                             ))

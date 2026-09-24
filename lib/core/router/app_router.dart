@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'role_navigation.dart';
+import '../../features/business/presentation/worker_home_screen.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/models/user.dart';
 import '../../core/services/auth_service.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/splash/presentation/loading_screen.dart';
@@ -28,7 +29,6 @@ import '../../features/business/presentation/edit_business_profile_screen.dart';
 import '../../features/business/presentation/business_venue_detail_screen.dart';
 import '../../features/business/presentation/venue_analytics_screen.dart';
 import '../../features/business/presentation/venue_status_screen.dart';
-import '../../features/business/presentation/business_update_screen.dart';
 import '../../features/business/presentation/manage_offers_screen.dart';
 import '../../features/business/presentation/create_offer_screen.dart';
 import '../../features/business/presentation/my_venues_screen.dart';
@@ -36,82 +36,14 @@ import '../../features/users/presentation/user_preferences_screen.dart';
 import '../../features/users/presentation/user_profile_screen.dart';
 import '../../features/users/presentation/edit_profile_screen.dart';
 import '../../features/business/presentation/business_forgot_password_screen.dart';
+import '../../features/business/presentation/qr_scanner_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/business/presentation/create_venue_screen.dart';
 import '../../features/social/presentation/social_hub_screen.dart';
+import '../../features/business/presentation/staff_management_screen.dart';
 
-// Routes that require a fully logged-in (non-guest) user
-const _guestBlockedRoutes = [
-  '/notifications',
-  '/profile',
-  '/edit-profile',
-  '/offer-redeemed',
-  '/user-preferences',
-  '/notification-preferences',
-  '/social',
-];
-
-// Routes only accessible to BUSINESS role
-const _businessRoutes = [
-  '/business-dashboard',
-  '/business-profile',
-  '/edit-business-profile',
-  '/business-venue',
-  '/venue-analytics',
-  '/venue-status',
-  '/business-update',
-  '/manage-offers',
-  '/create-offer',
-  '/vibe-schedules',
-  '/admin/create-venue',
-];
-
-// Routes only accessible to ADMIN role
-const _adminRoutes = [
-  '/admin-dashboard',
-];
-
-String? _routeGuard(BuildContext context, GoRouterState state) {
-  final user = AuthService().currentUser;
-  final path = state.matchedLocation;
-
-  if (user == null) {
-    const publicPaths = [
-      '/splash',
-      '/loading',
-      '/login',
-      '/signup',
-      '/forgot-password',
-      '/code-verification',
-      '/business-login',
-      '/business-signup',
-      '/business-forgot-password',
-      // Shared venue links must remain viewable before authentication. Actions
-      // such as saving and checking in are still protected inside the screen.
-      '/venue/',
-    ];
-    if (!publicPaths.any((p) => path.startsWith(p))) return '/login';
-    return null;
-  }
-
-  if (user.isGuest && _guestBlockedRoutes.any((r) => path.startsWith(r))) {
-    return '/home';
-  }
-
-  final isBusinessOrAdmin =
-      user.role == UserRole.BUSINESS || user.role == UserRole.ADMIN;
-  final isAdmin = user.role == UserRole.ADMIN;
-
-  if (_businessRoutes.any((r) => path.startsWith(r)) && !isBusinessOrAdmin) {
-    return '/home';
-  }
-
-  if (_adminRoutes.any((r) => path.startsWith(r)) && !isAdmin) {
-    return '/home';
-  }
-
-  return null;
-}
+String? _routeGuard(BuildContext context, GoRouterState state) =>
+    roleRedirect(AuthService().currentUser, state.matchedLocation);
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -217,6 +149,7 @@ final appRouter = GoRouter(
     GoRoute(
         path: '/business-dashboard',
         builder: (_, __) => const BusinessDashboardScreen()),
+    GoRoute(path: '/worker-home', builder: (_, __) => const WorkerHomeScreen()),
     GoRoute(
         path: '/business-profile',
         builder: (_, __) => const BusinessProfileScreen()),
@@ -246,10 +179,15 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
-        path: '/business-update',
-        builder: (_, __) => const BusinessUpdateScreen()),
+        path: '/business-update', redirect: (_, __) => '/business-dashboard'),
     GoRoute(
         path: '/manage-offers', builder: (_, __) => const ManageOffersScreen()),
+    // Phase 6 — Worker QR scanner for instant offer redemption
+    GoRoute(
+      path: '/qr-scan',
+      builder: (_, state) =>
+          QrScannerScreen(venueId: state.uri.queryParameters['venueId']),
+    ),
     GoRoute(path: '/my-venues', builder: (_, __) => const MyVenuesScreen()),
     GoRoute(
       path: '/create-offer',
@@ -263,5 +201,8 @@ final appRouter = GoRouter(
     GoRoute(
         path: '/admin/create-venue',
         builder: (_, __) => const CreateVenueScreen()),
+    GoRoute(
+        path: '/staff-management',
+        builder: (_, __) => const StaffManagementScreen()),
   ],
 );

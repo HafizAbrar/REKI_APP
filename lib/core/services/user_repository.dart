@@ -32,7 +32,8 @@ class UserRepository {
     }
   }
 
-  Future<Result<User>> updateUser(String id, Map<String, dynamic> updates) async {
+  Future<Result<User>> updateUser(
+      String id, Map<String, dynamic> updates) async {
     try {
       final user = await _apiService.updateUser(id, updates);
       return Result.success(user);
@@ -93,7 +94,8 @@ class UserRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> savePreferences(Map<String, dynamic> preferences) async {
+  Future<Result<Map<String, dynamic>>> savePreferences(
+      Map<String, dynamic> preferences) async {
     try {
       final prefs = await _apiService.savePreferences(preferences);
       return Result.success(prefs);
@@ -102,7 +104,8 @@ class UserRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> updatePreferences(Map<String, dynamic> preferences) async {
+  Future<Result<Map<String, dynamic>>> updatePreferences(
+      Map<String, dynamic> preferences) async {
     try {
       final prefs = await _apiService.updatePreferences(preferences);
       return Result.success(prefs);
@@ -168,7 +171,8 @@ class UserRepository {
   Future<Result<NotificationPreferences>> updateNotificationPreferences(
       Map<String, dynamic> preferences) async {
     try {
-      final prefs = await _apiService.updateNotificationPreferences(preferences);
+      final prefs =
+          await _apiService.updateNotificationPreferences(preferences);
       return Result.success(prefs);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));

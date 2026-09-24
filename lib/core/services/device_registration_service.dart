@@ -7,7 +7,8 @@ import '../network/api_client.dart';
 import '../services/fcm_service.dart';
 import '../utils/app_logger.dart';
 
-final deviceRegistrationServiceProvider = Provider<DeviceRegistrationService>((ref) {
+final deviceRegistrationServiceProvider =
+    Provider<DeviceRegistrationService>((ref) {
   return DeviceRegistrationService(
     ref.read(apiClientProvider),
     ref.read(fcmServiceProvider),
@@ -34,7 +35,11 @@ class DeviceRegistrationService {
   }
 
   /// Call this after every successful login / token refresh.
-  Future<void> register() async {
+  Future<void>? _registration;
+  Future<void> register() =>
+      _registration ??= _register().whenComplete(() => _registration = null);
+
+  Future<void> _register() async {
     try {
       if (!_fcm.isAvailable) {
         appLogger.w('DeviceRegistration: FCM not available, skipping');

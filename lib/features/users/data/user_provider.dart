@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/user.dart';
 import '../../../core/services/user_repository.dart';
 
-final userListProvider = StateNotifierProvider<UserListNotifier, AsyncValue<List<User>>>((ref) {
+final userListProvider =
+    StateNotifierProvider<UserListNotifier, AsyncValue<List<User>>>((ref) {
   return UserListNotifier(ref.read(userRepositoryProvider));
 });
 

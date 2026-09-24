@@ -83,7 +83,8 @@ class _VenueLogsScreenState extends ConsumerState<VenueLogsScreen> {
                 child: Row(children: [
                   const Icon(Icons.history, color: Color(0xFF2DD4BF), size: 16),
                   const SizedBox(width: 8),
-                  Text('${data.count} log${data.count == 1 ? '' : 's'} recorded',
+                  Text(
+                      '${data.count} log${data.count == 1 ? '' : 's'} recorded',
                       style: const TextStyle(
                           color: Color(0xFF94A3B8), fontSize: 13)),
                 ]),
@@ -131,29 +132,27 @@ class _VenueLogsScreenState extends ConsumerState<VenueLogsScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(actionMeta.label,
-                      style: TextStyle(
-                          color: actionMeta.color,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13)),
-                  const SizedBox(height: 2),
-                  Row(children: [
-                    _roleBadge(log.actorRole),
-                    const SizedBox(width: 6),
-                    Text(
-                      log.actorId.substring(0, 8) + '...',
-                      style: const TextStyle(
-                          color: Color(0xFF64748B), fontSize: 11),
-                    ),
-                  ]),
-                ]),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(actionMeta.label,
+                  style: TextStyle(
+                      color: actionMeta.color,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13)),
+              const SizedBox(height: 2),
+              Row(children: [
+                _roleBadge(log.actorRole),
+                const SizedBox(width: 6),
+                Text(
+                  '${log.actorId.substring(0, 8)}...',
+                  style:
+                      const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                ),
+              ]),
+            ]),
           ),
           Text(_formatDateTime(log.createdAt),
-              style: const TextStyle(
-                  color: Color(0xFF64748B), fontSize: 11)),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
         ]),
 
         // Details
@@ -177,7 +176,6 @@ class _VenueLogsScreenState extends ConsumerState<VenueLogsScreen> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       if (d.name != null)
         _detailRow(Icons.store_outlined, 'Name', d.name!, accentColor),
-
       if (d.busyness != null || d.percentage != null) ...[
         if (d.name != null) const SizedBox(height: 8),
         Row(children: [
@@ -199,15 +197,14 @@ class _VenueLogsScreenState extends ConsumerState<VenueLogsScreen> {
                   value: (d.percentage ?? 0) / 100,
                   minHeight: 5,
                   backgroundColor: const Color(0xFF0F172A),
-                  valueColor: AlwaysStoppedAnimation(
-                      _busynessColor(d.busyness ?? '')),
+                  valueColor:
+                      AlwaysStoppedAnimation(_busynessColor(d.busyness ?? '')),
                 ),
               ),
             ),
           ],
         ]),
       ],
-
       if (d.vibes.isNotEmpty) ...[
         const SizedBox(height: 10),
         const Text('VIBES',
@@ -220,9 +217,8 @@ class _VenueLogsScreenState extends ConsumerState<VenueLogsScreen> {
         Wrap(
           spacing: 6,
           runSpacing: 6,
-          children: d.vibes
-              .map((v) => _chip(v, const Color(0xFF3B82F6)))
-              .toList(),
+          children:
+              d.vibes.map((v) => _chip(v, const Color(0xFF3B82F6))).toList(),
         ),
       ],
     ]);
@@ -281,28 +277,28 @@ class _VenueLogsScreenState extends ConsumerState<VenueLogsScreen> {
   _ActionMeta _actionMeta(String action) {
     switch (action) {
       case 'STATUS_UPDATE':
-        return _ActionMeta(
+        return const _ActionMeta(
           icon: Icons.update,
           label: 'Status Update',
-          color: const Color(0xFF3B82F6),
+          color: Color(0xFF3B82F6),
         );
       case 'VENUE_CREATED':
-        return _ActionMeta(
+        return const _ActionMeta(
           icon: Icons.add_business,
           label: 'Venue Created',
-          color: const Color(0xFF10B981),
+          color: Color(0xFF10B981),
         );
       case 'VENUE_DELETED':
-        return _ActionMeta(
+        return const _ActionMeta(
           icon: Icons.delete_outline,
           label: 'Venue Deleted',
-          color: const Color(0xFFEF4444),
+          color: Color(0xFFEF4444),
         );
       case 'OFFER_CREATED':
-        return _ActionMeta(
+        return const _ActionMeta(
           icon: Icons.local_offer_outlined,
           label: 'Offer Created',
-          color: const Color(0xFF2DD4BF),
+          color: Color(0xFF2DD4BF),
         );
       default:
         return _ActionMeta(
@@ -325,5 +321,6 @@ class _ActionMeta {
   final IconData icon;
   final String label;
   final Color color;
-  const _ActionMeta({required this.icon, required this.label, required this.color});
+  const _ActionMeta(
+      {required this.icon, required this.label, required this.color});
 }

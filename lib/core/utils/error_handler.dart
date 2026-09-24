@@ -27,10 +27,18 @@ class ErrorHandler {
             final messages = data['message'] as List;
             if (messages.isNotEmpty) {
               final firstError = messages.first.toString();
-              if (firstError.contains('fullName')) return 'Please enter your full name (at least 2 characters).';
-              if (firstError.contains('phone')) return 'Please enter a valid phone number.';
-              if (firstError.contains('email')) return 'Please enter a valid email address.';
-              if (firstError.contains('password')) return 'Password must be at least 8 characters.';
+              if (firstError.contains('fullName')) {
+                return 'Please enter your full name (at least 2 characters).';
+              }
+              if (firstError.contains('phone')) {
+                return 'Please enter a valid phone number.';
+              }
+              if (firstError.contains('email')) {
+                return 'Please enter a valid email address.';
+              }
+              if (firstError.contains('password')) {
+                return 'Password must be at least 8 characters.';
+              }
             }
           }
           return serverMessage ?? 'Invalid request. Please check your input.';
@@ -43,7 +51,8 @@ class ErrorHandler {
         case 409:
           return serverMessage ?? 'This email is already registered.';
         case 422:
-          return serverMessage ?? 'Please fill in all required fields correctly.';
+          return serverMessage ??
+              'Please fill in all required fields correctly.';
         case 429:
           return 'Too many requests. Please wait a moment and try again.';
         case 500:

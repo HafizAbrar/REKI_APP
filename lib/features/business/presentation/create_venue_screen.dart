@@ -1,4 +1,7 @@
 import 'dart:io';
+import '../../../core/constants/city_areas.dart';
+import '../../../core/models/city.dart';
+import '../../../core/services/city_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,8 +22,6 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
 
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
-  final _cityController = TextEditingController(text: 'Manchester');
-  final _areaController = TextEditingController();
   final _latController = TextEditingController();
   final _lngController = TextEditingController();
   final _openingHoursController = TextEditingController();
@@ -31,29 +32,75 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
   final List<String> _tags = [];
   final List<XFile> _pendingFiles = [];
   bool _isLoading = false;
+  City? _selectedCity;
+  CityArea? _selectedArea;
 
   static const _categories = [
-    'bar', 'club', 'restaurant', 'lounge',
-    'live_music_venue', 'pub', 'rooftop_bar', 'cocktail_bar'
+    'bar',
+    'club',
+    'restaurant',
+    'lounge',
+    'live_music_venue',
+    'pub',
+    'rooftop_bar',
+    'cocktail_bar'
   ];
 
   static const _categoryLabels = {
-    'bar': 'Bar', 'club': 'Club', 'restaurant': 'Restaurant',
-    'lounge': 'Lounge', 'live_music_venue': 'Live Music Venue',
-    'pub': 'Pub', 'rooftop_bar': 'Rooftop Bar', 'cocktail_bar': 'Cocktail Bar',
+    'bar': 'Bar',
+    'club': 'Club',
+    'restaurant': 'Restaurant',
+    'lounge': 'Lounge',
+    'live_music_venue': 'Live Music Venue',
+    'pub': 'Pub',
+    'rooftop_bar': 'Rooftop Bar',
+    'cocktail_bar': 'Cocktail Bar',
   };
 
   static const _availableTags = [
-    'Chill', 'Party', 'Romantic', 'Business', 'Energetic',
-    'Social', 'Live Music', 'Sports', 'Cocktails', 'Dining'
+    'Chill',
+    'Party',
+    'Romantic',
+    'Business',
+    'Energetic',
+    'Social',
+    'Live Music',
+    'Sports',
+    'Cocktails',
+    'Dining'
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(selectedCityProvider.future).then((city) {
+      if (mounted && city != null && _selectedCity == null) {
+        final areas = kCityAreas[city.slug] ?? [];
+        final firstArea = areas.isNotEmpty ? areas.first : null;
+        setState(() {
+          _selectedCity = city;
+          _selectedArea = firstArea;
+        });
+        _applyCoords(
+          firstArea?.lat ?? city.defaultLat,
+          firstArea?.lng ?? city.defaultLng,
+        );
+      }
+    });
+  }
+
+  void _applyCoords(double lat, double lng) {
+    _latController.text = lat.toString();
+    _lngController.text = lng.toString();
+  }
+
+  List<CityArea> get _areasForCity =>
+      kCityAreas[_selectedCity?.slug] ?? [];
 
   @override
   void dispose() {
     _nameController.dispose();
     _addressController.dispose();
-    _cityController.dispose();
-    _areaController.dispose();
     _latController.dispose();
     _lngController.dispose();
     _openingHoursController.dispose();
@@ -76,10 +123,9 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
       ),
     );
     if (picked != null) {
-      final hour = picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
+      final hour = picked.hour.toString().padLeft(2, '0');
       final minute = picked.minute.toString().padLeft(2, '0');
-      final period = picked.period == DayPeriod.am ? 'AM' : 'PM';
-      controller.text = '$hour:$minute $period';
+      controller.text = '$hour:$minute';
     }
   }
 
@@ -106,7 +152,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
           children: [
             const SizedBox(height: 8),
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: const Color(0xFF334155),
                 borderRadius: BorderRadius.circular(2),
@@ -114,18 +161,22 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: AppTheme.primaryColor),
+              leading:
+                  const Icon(Icons.camera_alt, color: AppTheme.primaryColor),
               title: const Text('Take Photo',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: AppTheme.primaryColor),
+              leading:
+                  const Icon(Icons.photo_library, color: AppTheme.primaryColor),
               title: const Text('Choose from Gallery',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -160,8 +211,9 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
         {
           'name': _nameController.text.trim(),
           'address': _addressController.text.trim(),
-          'city': _cityController.text.trim(),
-          'area': _areaController.text.trim(),
+          'city': _selectedCity?.name ?? '',
+          'cityId': _selectedCity?.id ?? '',
+          'area': _selectedArea?.name ?? '',
           'category': _selectedCategory,
           'lat': double.tryParse(_latController.text.trim()) ?? 0.0,
           'lng': double.tryParse(_lngController.text.trim()) ?? 0.0,
@@ -180,7 +232,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red[700]),
+          SnackBar(
+              content: Text(e.toString()), backgroundColor: Colors.red[700]),
         );
       }
     } finally {
@@ -212,14 +265,17 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                 icon: Icons.store,
                 title: 'Venue Details',
                 children: [
-                  _field(_nameController, 'Venue Name', Icons.store_mall_directory, required: true),
+                  _field(
+                      _nameController, 'Venue Name', Icons.store_mall_directory,
+                      required: true),
                   const SizedBox(height: 14),
-                  _field(_addressController, 'Address', Icons.location_on, required: true),
+                  _field(_addressController, 'Address', Icons.location_on,
+                      required: true),
                   const SizedBox(height: 14),
                   Row(children: [
-                    Expanded(child: _field(_cityController, 'City', Icons.location_city, required: true)),
+                    Expanded(child: _cityDropdown()),
                     const SizedBox(width: 12),
-                    Expanded(child: _field(_areaController, 'Area', Icons.map_outlined)),
+                    Expanded(child: _areaDropdown()),
                   ]),
                 ],
               ),
@@ -241,14 +297,20 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                         value: _selectedCategory,
                         dropdownColor: const Color(0xFF1E293B),
                         isExpanded: true,
-                        style: const TextStyle(color: Colors.white, fontSize: 15),
-                        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
-                        items: _categories.map((c) => DropdownMenuItem(
-                          value: c,
-                          child: Text(_categoryLabels[c] ?? c,
-                              style: const TextStyle(color: Colors.white)),
-                        )).toList(),
-                        onChanged: (v) => setState(() => _selectedCategory = v!),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 15),
+                        icon: const Icon(Icons.keyboard_arrow_down,
+                            color: Color(0xFF64748B)),
+                        items: _categories
+                            .map((c) => DropdownMenuItem(
+                                  value: c,
+                                  child: Text(_categoryLabels[c] ?? c,
+                                      style:
+                                          const TextStyle(color: Colors.white)),
+                                ))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _selectedCategory = v!),
                       ),
                     ),
                   ),
@@ -260,24 +322,42 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                 icon: Icons.my_location,
                 title: 'Location Coordinates',
                 children: [
+                  if (_selectedCity != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.auto_fix_high, color: AppTheme.primaryColor, size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            _selectedArea != null
+                                ? 'Coords from ${_selectedArea!.name}, ${_selectedCity!.name}'
+                                : 'Auto-filled from ${_selectedCity!.name}. Edit if needed.',
+                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
                   Row(children: [
-                    Expanded(child: _field(_latController, 'Latitude', Icons.north,
-                        required: true,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Required';
-                          if (double.tryParse(v) == null) return 'Invalid number';
-                          return null;
-                        })),
+                    Expanded(
+                        child: _field(_latController, 'Latitude', Icons.north,
+                            required: true,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true, signed: true), validator: (v) {
+                      if (v == null || v.isEmpty) return 'Required';
+                      if (double.tryParse(v) == null) return 'Invalid number';
+                      return null;
+                    })),
                     const SizedBox(width: 12),
-                    Expanded(child: _field(_lngController, 'Longitude', Icons.east,
-                        required: true,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Required';
-                          if (double.tryParse(v) == null) return 'Invalid number';
-                          return null;
-                        })),
+                    Expanded(
+                        child: _field(_lngController, 'Longitude', Icons.east,
+                            required: true,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true, signed: true), validator: (v) {
+                      if (v == null || v.isEmpty) return 'Required';
+                      if (double.tryParse(v) == null) return 'Invalid number';
+                      return null;
+                    })),
                   ]),
                 ],
               ),
@@ -288,9 +368,15 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                 title: 'Hours & Pricing',
                 children: [
                   Row(children: [
-                    Expanded(child: _timeField(_openingHoursController, 'Opening Time (e.g. 9:00 AM)', required: true)),
+                    Expanded(
+                        child: _timeField(_openingHoursController,
+                            'Opening Time (e.g. 9:00 AM)',
+                            required: true)),
                     const SizedBox(width: 12),
-                    Expanded(child: _timeField(_closingTimeController, 'Closing Time (e.g. 2:00 AM)', required: true)),
+                    Expanded(
+                        child: _timeField(_closingTimeController,
+                            'Closing Time (e.g. 2:00 AM)',
+                            required: true)),
                   ]),
                   const SizedBox(height: 16),
                   _sectionLabel('PRICE LEVEL'),
@@ -306,10 +392,14 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                             margin: EdgeInsets.only(right: i < 3 ? 8 : 0),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: selected ? AppTheme.primaryColor : const Color(0xFF0F172A),
+                              color: selected
+                                  ? AppTheme.primaryColor
+                                  : const Color(0xFF0F172A),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: selected ? AppTheme.primaryColor : const Color(0xFF334155),
+                                color: selected
+                                    ? AppTheme.primaryColor
+                                    : const Color(0xFF334155),
                               ),
                             ),
                             child: Column(
@@ -317,7 +407,9 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                                 Text(
                                   '£' * level,
                                   style: TextStyle(
-                                    color: selected ? AppTheme.darkBg : const Color(0xFF94A3B8),
+                                    color: selected
+                                        ? AppTheme.darkBg
+                                        : const Color(0xFF94A3B8),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -326,7 +418,9 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                                 Text(
                                   ['Budget', 'Mid', 'Upscale', 'Luxury'][i],
                                   style: TextStyle(
-                                    color: selected ? AppTheme.darkBg : const Color(0xFF64748B),
+                                    color: selected
+                                        ? AppTheme.darkBg
+                                        : const Color(0xFF64748B),
                                     fontSize: 9,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -355,22 +449,28 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                         onTap: () => setState(() =>
                             selected ? _tags.remove(tag) : _tags.add(tag)),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
                             color: selected
-                                ? AppTheme.primaryColor.withOpacity(0.15)
+                                ? AppTheme.primaryColor.withValues(alpha: 0.15)
                                 : const Color(0xFF0F172A),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: selected ? AppTheme.primaryColor : const Color(0xFF334155),
+                              color: selected
+                                  ? AppTheme.primaryColor
+                                  : const Color(0xFF334155),
                             ),
                           ),
                           child: Text(
                             tag,
                             style: TextStyle(
-                              color: selected ? AppTheme.primaryColor : const Color(0xFF94A3B8),
+                              color: selected
+                                  ? AppTheme.primaryColor
+                                  : const Color(0xFF94A3B8),
                               fontSize: 13,
-                              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                              fontWeight:
+                                  selected ? FontWeight.w700 : FontWeight.w500,
                             ),
                           ),
                         ),
@@ -396,32 +496,36 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                         color: const Color(0xFF0F172A),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppTheme.primaryColor.withOpacity(0.4),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
                           style: BorderStyle.solid,
                         ),
                       ),
                       child: Column(
-                              children: [
-                                Icon(Icons.add_photo_alternate_outlined,
-                                    color: AppTheme.primaryColor.withOpacity(0.7), size: 32),
-                                const SizedBox(height: 6),
-                                Text(
-                                  totalImages == 0
-                                      ? 'Tap to add photos'
-                                      : 'Add more photos ($totalImages added)',
-                                  style: TextStyle(
-                                    color: AppTheme.primaryColor.withOpacity(0.8),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                const Text(
-                                  'Camera or Gallery',
-                                  style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
-                                ),
-                              ],
+                        children: [
+                          Icon(Icons.add_photo_alternate_outlined,
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.7),
+                              size: 32),
+                          const SizedBox(height: 6),
+                          Text(
+                            totalImages == 0
+                                ? 'Tap to add photos'
+                                : 'Add more photos ($totalImages added)',
+                            style: TextStyle(
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.8),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
                             ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Camera or Gallery',
+                            style: TextStyle(
+                                color: Color(0xFF64748B), fontSize: 11),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
@@ -435,7 +539,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                         itemCount: _pendingFiles.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 8),
                         itemBuilder: (_, i) => _imageThumb(
-                          child: Image.file(File(_pendingFiles[i].path), fit: BoxFit.cover),
+                          child: Image.file(File(_pendingFiles[i].path),
+                              fit: BoxFit.cover),
                           onRemove: () => _removeImage(i),
                         ),
                       ),
@@ -453,7 +558,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.35),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.35),
                           blurRadius: 16,
                           offset: const Offset(0, 4)),
                     ],
@@ -462,17 +567,20 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
                       foregroundColor: AppTheme.darkBg,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
                       elevation: 0,
                     ),
                     onPressed: _isLoading ? null : _submit,
                     child: _isLoading
                         ? const SizedBox(
-                            height: 22, width: 22,
+                            height: 22,
+                            width: 22,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2.5, color: AppTheme.darkBg))
                         : const Text('Create Venue',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w800)),
                   ),
                 ),
               ),
@@ -480,6 +588,163 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _areaDropdown() {
+    final areas = _areasForCity;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF334155)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.map_outlined, color: Color(0xFF64748B), size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: areas.isEmpty
+                    ? const Text('No areas', style: TextStyle(color: Color(0xFF64748B), fontSize: 14))
+                    : DropdownButtonHideUnderline(
+                        child: DropdownButton<CityArea>(
+                          value: _selectedArea,
+                          isExpanded: true,
+                          dropdownColor: const Color(0xFF1E293B),
+                          style: const TextStyle(color: Colors.white, fontSize: 15),
+                          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
+                          hint: const Text('Select Area', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+                          items: areas
+                              .map((a) => DropdownMenuItem(
+                                    value: a,
+                                    child: Text(a.name, style: const TextStyle(color: Colors.white)),
+                                  ))
+                              .toList(),
+                          onChanged: (area) {
+                            if (area == null) return;
+                            setState(() => _selectedArea = area);
+                            _applyCoords(area.lat, area.lng);
+                          },
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _cityDropdown() {
+    final citiesAsync = ref.watch(availableCitiesProvider);
+    return citiesAsync.when(
+      loading: () => _cityDropdownShell(
+        child: const SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primaryColor),
+        ),
+      ),
+      error: (_, __) => _cityDropdownShell(
+        child: const Text('Failed to load', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
+      ),
+      data: (cities) {
+        // Ensure _selectedCity is valid within the loaded list
+        final validCity = cities.isEmpty
+            ? null
+            : cities.firstWhere(
+                (c) => c.id == _selectedCity?.id,
+                orElse: () => cities.first,
+              );
+        if (validCity != null && validCity.id != _selectedCity?.id) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              final areas = kCityAreas[validCity.slug] ?? [];
+              final firstArea = areas.isNotEmpty ? areas.first : null;
+              setState(() {
+                _selectedCity = validCity;
+                _selectedArea = firstArea;
+              });
+              _applyCoords(
+                firstArea?.lat ?? validCity.defaultLat,
+                firstArea?.lng ?? validCity.defaultLng,
+              );
+            }
+          });
+        }
+        return _cityDropdownShell(
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<City>(
+              value: validCity,
+              isExpanded: true,
+              dropdownColor: const Color(0xFF1E293B),
+              style: const TextStyle(color: Colors.white, fontSize: 15),
+              icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
+              hint: const Text('Select City', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+              items: cities
+                  .map((c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(c.name, style: const TextStyle(color: Colors.white)),
+                      ))
+                  .toList(),
+              onChanged: (city) {
+                if (city == null) return;
+                final areas = kCityAreas[city.slug] ?? [];
+                final firstArea = areas.isNotEmpty ? areas.first : null;
+                setState(() {
+                  _selectedCity = city;
+                  _selectedArea = firstArea;
+                });
+                _applyCoords(
+                  firstArea?.lat ?? city.defaultLat,
+                  firstArea?.lng ?? city.defaultLng,
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _cityDropdownShell({required Widget child}) {
+    return FormField<City>(
+      validator: (_) => _selectedCity == null ? 'Required' : null,
+      builder: (state) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: state.hasError
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFF334155),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.location_city, color: Color(0xFF64748B), size: 20),
+                const SizedBox(width: 8),
+                Expanded(child: child),
+              ],
+            ),
+          ),
+          if (state.hasError)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, left: 12),
+              child: Text(state.errorText!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+            ),
+        ],
       ),
     );
   }
@@ -495,11 +760,13 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
           child: SizedBox(width: 90, height: 90, child: child),
         ),
         Positioned(
-          top: 4, right: 4,
+          top: 4,
+          right: 4,
           child: GestureDetector(
             onTap: onRemove,
             child: Container(
-              width: 22, height: 22,
+              width: 22,
+              height: 22,
               decoration: const BoxDecoration(
                 color: Colors.black54,
                 shape: BoxShape.circle,
@@ -522,7 +789,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+        border:
+            Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -559,16 +827,19 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
       controller: controller,
       readOnly: true,
       style: const TextStyle(color: Colors.white),
-      validator: required ? (v) => (v == null || v.isEmpty) ? 'Required' : null : null,
+      validator:
+          required ? (v) => (v == null || v.isEmpty) ? 'Required' : null : null,
       onTap: () => _pickTime(controller),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(color: Color(0xFF64748B)),
-        prefixIcon: const Icon(Icons.access_time, color: Color(0xFF64748B), size: 20),
+        prefixIcon:
+            const Icon(Icons.access_time, color: Color(0xFF64748B), size: 20),
         filled: true,
         fillColor: const Color(0xFF0F172A),
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1),
@@ -580,7 +851,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1)),
         errorStyle: const TextStyle(color: Color(0xFFEF4444)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
@@ -600,7 +872,9 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
       keyboardType: keyboardType,
       style: const TextStyle(color: Colors.white),
       validator: validator ??
-          (required ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null : null),
+          (required
+              ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
+              : null),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(color: Color(0xFF64748B)),
@@ -608,7 +882,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
         filled: true,
         fillColor: const Color(0xFF0F172A),
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1),
@@ -620,7 +895,8 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1)),
         errorStyle: const TextStyle(color: Color(0xFFEF4444)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }

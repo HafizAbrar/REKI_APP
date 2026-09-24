@@ -36,7 +36,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<Map<String, dynamic>>> login(String email, String password) async {
+  Future<Result<Map<String, dynamic>>> login(
+      String email, String password) async {
     try {
       final response = await _remoteDataSource.login(email, password);
       return Result.success(response['data']);

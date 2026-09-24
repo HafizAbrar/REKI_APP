@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/city_date_format.dart';
+import '../../../core/services/city_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/offer_detail_provider.dart';
@@ -31,8 +33,8 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: offerAsync.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: Color(0xFF2DD4BF))),
         error: (e, _) => _buildError(e),
         data: (offer) => Stack(
           children: [
@@ -58,7 +60,9 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
                         const SizedBox(height: 10),
                         Text(offer.description,
                             style: const TextStyle(
-                                color: Color(0xFF94A3B8), fontSize: 15, height: 1.5)),
+                                color: Color(0xFF94A3B8),
+                                fontSize: 15,
+                                height: 1.5)),
                         const SizedBox(height: 24),
                         _buildVenueCard(offer),
                         const SizedBox(height: 16),
@@ -79,7 +83,9 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
             ),
             // Bottom CTA
             Positioned(
-              bottom: 0, left: 0, right: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
               child: _buildBottomBar(offer, actionState),
             ),
           ],
@@ -99,22 +105,22 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [color.withOpacity(0.3), const Color(0xFF1E293B)],
+          colors: [color.withValues(alpha: 0.3), const Color(0xFF1E293B)],
         ),
       ),
       child: Stack(
         children: [
           Center(
-            child: Icon(_typeIcon(offer.type), size: 80,
-                color: color.withOpacity(0.4)),
+            child: Icon(_typeIcon(offer.type),
+                size: 80, color: color.withValues(alpha: 0.4)),
           ),
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.transparent, const Color(0xFF0F172A)],
-                stops: const [0.4, 1.0],
+                colors: [Colors.transparent, Color(0xFF0F172A)],
+                stops: [0.4, 1.0],
               ),
             ),
           ),
@@ -156,12 +162,14 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
       child: Row(
         children: [
           Container(
-            width: 44, height: 44,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFF2DD4BF).withOpacity(0.15),
+              color: const Color(0xFF2DD4BF).withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.store_outlined, color: Color(0xFF2DD4BF), size: 22),
+            child: const Icon(Icons.store_outlined,
+                color: Color(0xFF2DD4BF), size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -170,7 +178,9 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
               children: [
                 Text(name,
                     style: const TextStyle(
-                        color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600)),
                 if (address.isNotEmpty) ...[
                   const SizedBox(height: 3),
                   Row(children: [
@@ -208,7 +218,9 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
           const _Divider(),
           _detailRow(Icons.calendar_today_outlined, 'Valid Days', daysLabel),
           const _Divider(),
-          _detailRow(Icons.savings_outlined, 'Saving',
+          _detailRow(
+              Icons.savings_outlined,
+              'Saving',
               offer.savingValue != null && offer.savingValue! > 0
                   ? '£${offer.savingValue} GBP'
                   : 'Varies'),
@@ -221,12 +233,13 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
 
   Widget _buildValidityCard(offer) {
     final expires = offer.validUntil;
-    final formatted =
-        '${expires.day.toString().padLeft(2, '0')}/${expires.month.toString().padLeft(2, '0')}/${expires.year}';
+    final formatted = CityDateFormat.date(
+        expires,
+        ref.read(selectedCityProvider).valueOrNull,
+        Localizations.localeOf(context).toString());
 
     return _card(
-      child: _detailRow(
-          Icons.event_outlined, 'Expires', formatted),
+      child: _detailRow(Icons.event_outlined, 'Expires', formatted),
     );
   }
 
@@ -239,7 +252,8 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.08))),
+        border: Border(
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
       ),
       child: SafeArea(
         child: Column(
@@ -282,7 +296,8 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
                 onPressed: actionState.isLoading ? null : _onRedeem,
                 child: actionState.isLoading
                     ? const SizedBox(
-                        width: 22, height: 22,
+                        width: 22,
+                        height: 22,
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2))
                     : Row(
@@ -295,7 +310,9 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
                                   : const Color(0xFF64748B)),
                           const SizedBox(width: 8),
                           Text(
-                            isAvailableNow ? 'Redeem Offer' : 'Not Available Now',
+                            isAvailableNow
+                                ? 'Redeem Offer'
+                                : 'Not Available Now',
                             style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
@@ -335,7 +352,8 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
           content: Text(err ?? 'Failed to claim offer'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -362,8 +380,8 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
           TextButton(
             onPressed: () =>
                 ref.invalidate(offerDetailProvider(widget.offerId)),
-            child: const Text('Retry',
-                style: TextStyle(color: Color(0xFF2DD4BF))),
+            child:
+                const Text('Retry', style: TextStyle(color: Color(0xFF2DD4BF))),
           ),
         ],
       ),
@@ -378,7 +396,7 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: child,
       );
@@ -401,7 +419,7 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
   Widget _badge(String label, Color color, {bool dot = false}) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -409,16 +427,15 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
           children: [
             if (dot) ...[
               Container(
-                  width: 6, height: 6,
+                  width: 6,
+                  height: 6,
                   decoration:
                       BoxDecoration(color: color, shape: BoxShape.circle)),
               const SizedBox(width: 5),
             ],
             Text(label,
                 style: TextStyle(
-                    color: color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600)),
+                    color: color, fontSize: 11, fontWeight: FontWeight.w600)),
           ],
         ),
       );
@@ -426,11 +443,12 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
   Widget _iconBtn(IconData icon, VoidCallback onTap) => GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 38, height: 38,
+          width: 38,
+          height: 38,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.black.withValues(alpha: 0.35),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: Icon(icon, color: Colors.white, size: 18),
         ),
@@ -438,31 +456,45 @@ class _OfferDetailScreenState extends ConsumerState<OfferDetailScreen> {
 
   Color _typeColor(String type) {
     switch (type) {
-      case '2-for-1': return const Color(0xFF2DD4BF);
-      case 'discount': return const Color(0xFFF59E0B);
-      case 'freebie': return const Color(0xFF10B981);
-      case 'guestlist': return const Color(0xFF8B5CF6);
-      case 'happy-hour': return const Color(0xFFEF4444);
-      default: return const Color(0xFF2DD4BF);
+      case '2-for-1':
+        return const Color(0xFF2DD4BF);
+      case 'discount':
+        return const Color(0xFFF59E0B);
+      case 'freebie':
+        return const Color(0xFF10B981);
+      case 'guestlist':
+        return const Color(0xFF8B5CF6);
+      case 'happy-hour':
+        return const Color(0xFFEF4444);
+      default:
+        return const Color(0xFF2DD4BF);
     }
   }
 
   IconData _typeIcon(String type) {
     switch (type) {
-      case '2-for-1': return Icons.people_outline;
-      case 'discount': return Icons.percent;
-      case 'freebie': return Icons.card_giftcard_outlined;
-      case 'guestlist': return Icons.playlist_add_check;
-      case 'happy-hour': return Icons.local_bar_outlined;
-      default: return Icons.local_activity_outlined;
+      case '2-for-1':
+        return Icons.people_outline;
+      case 'discount':
+        return Icons.percent;
+      case 'freebie':
+        return Icons.card_giftcard_outlined;
+      case 'guestlist':
+        return Icons.playlist_add_check;
+      case 'happy-hour':
+        return Icons.local_bar_outlined;
+      default:
+        return Icons.local_activity_outlined;
     }
   }
 
   Color _statusColor(String status, bool isAvailableNow) {
     if (isAvailableNow) return const Color(0xFF10B981);
     switch (status) {
-      case 'upcoming': return const Color(0xFFF59E0B);
-      default: return const Color(0xFF64748B);
+      case 'upcoming':
+        return const Color(0xFFF59E0B);
+      default:
+        return const Color(0xFF64748B);
     }
   }
 
@@ -476,5 +508,5 @@ class _Divider extends StatelessWidget {
   Widget build(BuildContext context) => Container(
       height: 1,
       margin: const EdgeInsets.symmetric(vertical: 10),
-      color: Colors.white.withOpacity(0.06));
+      color: Colors.white.withValues(alpha: 0.06));
 }

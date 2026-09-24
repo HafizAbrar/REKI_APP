@@ -11,15 +11,18 @@ class LocationRepository {
   final LocationApiService _api;
   LocationRepository(this._api);
 
-  Future<Result<Map<String, dynamic>>> updateLocation(double lat, double lng) async {
+  Future<Result<Map<String, dynamic>>> updateLocation(
+      double lat, double lng) async {
     try {
-      return Result.success(await _api.updateLocation(latitude: lat, longitude: lng));
+      return Result.success(
+          await _api.updateLocation(latitude: lat, longitude: lng));
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }
   }
 
-  Future<Result<Map<String, dynamic>>> updateLocationConsent(bool granted) async {
+  Future<Result<Map<String, dynamic>>> updateLocationConsent(
+      bool granted) async {
     try {
       return Result.success(await _api.updateLocationConsent(granted));
     } catch (e) {
@@ -27,9 +30,11 @@ class LocationRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> checkGeofence(double lat, double lng) async {
+  Future<Result<Map<String, dynamic>>> checkGeofence(
+      double lat, double lng) async {
     try {
-      return Result.success(await _api.checkGeofence(latitude: lat, longitude: lng));
+      return Result.success(
+          await _api.checkGeofence(latitude: lat, longitude: lng));
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }

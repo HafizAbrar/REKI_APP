@@ -53,8 +53,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   center: const Alignment(0, -0.4),
                   radius: 1.2,
                   colors: [
-                    AppTheme.primaryColor.withOpacity(0.25),
-                    const Color(0xFF021218).withOpacity(0.8),
+                    AppTheme.primaryColor.withValues(alpha: 0.25),
+                    const Color(0xFF021218).withValues(alpha: 0.8),
                     const Color(0xFF021218),
                   ],
                   stops: const [0, 0.6, 1],
@@ -70,7 +70,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF021218).withOpacity(0.3),
+                    const Color(0xFF021218).withValues(alpha: 0.3),
                     Colors.transparent,
                     const Color(0xFF021218),
                   ],
@@ -97,7 +97,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryColor.withOpacity(0.6),
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.6),
                                 blurRadius: 80,
                                 spreadRadius: 40,
                               ),
@@ -111,8 +112,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                 color: AppTheme.primaryColor,
                                 shadows: [
                                   Shadow(
-                                    color:
-                                        AppTheme.primaryColor.withOpacity(0.8),
+                                    color: AppTheme.primaryColor
+                                        .withValues(alpha: 0.8),
                                     blurRadius: 15,
                                   ),
                                 ],
@@ -127,7 +128,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   color: Colors.white,
                                   shadows: [
                                     Shadow(
-                                      color: Colors.black.withOpacity(0.8),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.8),
                                       blurRadius: 8,
                                     ),
                                   ],
@@ -145,7 +147,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
-                              color: AppTheme.iceBlue.withOpacity(0.8),
+                              color: AppTheme.iceBlue.withValues(alpha: 0.8),
                               height: 1.5,
                             ),
                           ),
@@ -171,7 +173,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
-                                    color: AppTheme.iceBlue.withOpacity(0.7),
+                                    color:
+                                        AppTheme.iceBlue.withValues(alpha: 0.7),
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -185,7 +188,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   height: 6,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(3),
-                                    color: AppTheme.iceBlue.withOpacity(0.1),
+                                    color:
+                                        AppTheme.iceBlue.withValues(alpha: 0.1),
                                   ),
                                   child: FractionallySizedBox(
                                     alignment: Alignment.centerLeft,
@@ -197,7 +201,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                         boxShadow: [
                                           BoxShadow(
                                             color: AppTheme.primaryColor
-                                                .withOpacity(0.8),
+                                                .withValues(alpha: 0.8),
                                             blurRadius: 12,
                                           ),
                                         ],
@@ -219,7 +223,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           borderRadius: BorderRadius.circular(28),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.primaryColor.withOpacity(0.25),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.25),
                               blurRadius: 20,
                             ),
                           ],
@@ -259,7 +264,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           Icon(
                             Icons.location_on,
                             size: 14,
-                            color: AppTheme.iceBlue.withOpacity(0.4),
+                            color: AppTheme.iceBlue.withValues(alpha: 0.4),
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -268,7 +273,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 3.2,
-                              color: AppTheme.iceBlue.withOpacity(0.4),
+                              color: AppTheme.iceBlue.withValues(alpha: 0.4),
                             ),
                           ),
                         ],

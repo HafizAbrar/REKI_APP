@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+import 'package:flutter/foundation.dart';
 
 final appLogger = Logger(
   printer: PrettyPrinter(
@@ -9,5 +10,5 @@ final appLogger = Logger(
     printEmojis: true,
     dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
   ),
-  level: Level.debug,
+  level: kDebugMode ? Level.debug : Level.warning,
 );

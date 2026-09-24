@@ -1,24 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/city_providers.dart';
 import '../../../core/models/offer.dart';
 import '../../../core/network/venue_api_service.dart';
 import '../../../core/services/offer_repository.dart';
 
 final offersProvider = FutureProvider<List<Offer>>((ref) async {
+  await ref.watch(selectedCityProvider.future);
   final result = await ref.read(offerRepositoryProvider).getAllOffers();
   return result.when(success: (o) => o, failure: (e) => throw Exception(e));
 });
 
 // GET /venues/{id}/offers
-final venueOffersProvider = FutureProvider.family<List<Offer>, String>((ref, venueId) async {
+final venueOffersProvider =
+    FutureProvider.family<List<Offer>, String>((ref, venueId) async {
+  await ref.watch(selectedCityProvider.future);
   final raw = await ref.read(venueApiServiceProvider).getVenueOffers(venueId);
   return raw.map((json) => Offer.fromJson(json)).toList();
 });
 
-final venueOffersFilterProvider = FutureProvider.family<List<Offer>, String?>((ref, venueId) async {
+final venueOffersFilterProvider =
+    FutureProvider.family<List<Offer>, String?>((ref, venueId) async {
+  await ref.watch(selectedCityProvider.future);
   if (venueId == null || venueId.isEmpty) {
     final result = await ref.read(offerRepositoryProvider).getAllOffers();
     return result.when(success: (o) => o, failure: (e) => throw Exception(e));
   }
-  final result = await ref.read(offerRepositoryProvider).getOffersByVenue(venueId);
+  final result =
+      await ref.read(offerRepositoryProvider).getOffersByVenue(venueId);
   return result.when(success: (o) => o, failure: (e) => throw Exception(e));
 });

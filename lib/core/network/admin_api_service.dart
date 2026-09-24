@@ -45,8 +45,8 @@ class AdminApiService {
 
   // GET /admin/users
   Future<AdminUsersPage> getUsers({int page = 1, int limit = 20}) async {
-    final res = await _dio.get('/admin/users',
-        queryParameters: {'page': page, 'limit': limit});
+    final res = await _dio
+        .get('/admin/users', queryParameters: {'page': page, 'limit': limit});
     final data = res.data;
     if (data is Map<String, dynamic>) return AdminUsersPage.fromJson(data);
     // fallback: bare list
@@ -54,8 +54,12 @@ class AdminApiService {
         .map((j) => AdminUser.fromJson(j as Map<String, dynamic>))
         .toList();
     return AdminUsersPage(
-        users: list, total: list.length, page: 1, pages: 1,
-        hasNext: false, hasPrev: false);
+        users: list,
+        total: list.length,
+        page: 1,
+        pages: 1,
+        hasNext: false,
+        hasPrev: false);
   }
 
   // GET /admin/users/{id}/activity
@@ -66,8 +70,8 @@ class AdminApiService {
 
   // GET /admin/venues
   Future<AdminVenuesPage> getVenues({int page = 1, int limit = 20}) async {
-    final res = await _dio.get('/admin/venues',
-        queryParameters: {'page': page, 'limit': limit});
+    final res = await _dio
+        .get('/admin/venues', queryParameters: {'page': page, 'limit': limit});
     final data = res.data;
     if (data is Map<String, dynamic> && data.containsKey('venues')) {
       return AdminVenuesPage.fromJson(data);
@@ -76,8 +80,12 @@ class AdminApiService {
         .map((j) => AdminVenue.fromJson(j as Map<String, dynamic>))
         .toList();
     return AdminVenuesPage(
-        venues: list, total: list.length, page: 1, pages: 1,
-        hasNext: false, hasPrev: false);
+        venues: list,
+        total: list.length,
+        page: 1,
+        pages: 1,
+        hasNext: false,
+        hasPrev: false);
   }
 
   // GET /admin/venues/{id}/logs
@@ -88,8 +96,8 @@ class AdminApiService {
 
   // GET /admin/offers
   Future<AdminOffersPage> getOffers({int page = 1, int limit = 20}) async {
-    final res = await _dio.get('/admin/offers',
-        queryParameters: {'page': page, 'limit': limit});
+    final res = await _dio
+        .get('/admin/offers', queryParameters: {'page': page, 'limit': limit});
     final data = res.data;
     if (data is Map<String, dynamic> && data.containsKey('offers')) {
       return AdminOffersPage.fromJson(data);
@@ -98,8 +106,12 @@ class AdminApiService {
         .map((j) => AdminOffer.fromJson(j as Map<String, dynamic>))
         .toList();
     return AdminOffersPage(
-        offers: list, total: list.length, page: 1, pages: 1,
-        hasNext: false, hasPrev: false);
+        offers: list,
+        total: list.length,
+        page: 1,
+        pages: 1,
+        hasNext: false,
+        hasPrev: false);
   }
 
   // GET /admin/offers/redemptions
@@ -115,8 +127,12 @@ class AdminApiService {
         .map((j) => AdminRedemption.fromJson(j as Map<String, dynamic>))
         .toList();
     return AdminRedemptionsPage(
-        redemptions: list, total: list.length, page: 1, pages: 1,
-        hasNext: false, hasPrev: false);
+        redemptions: list,
+        total: list.length,
+        page: 1,
+        pages: 1,
+        hasNext: false,
+        hasPrev: false);
   }
 
   // GET /admin/activity-logs
@@ -132,8 +148,12 @@ class AdminApiService {
         .map((j) => ActivityLog.fromJson(j as Map<String, dynamic>))
         .toList();
     return ActivityLogsPage(
-        logs: list, total: list.length, page: 1, pages: 1,
-        hasNext: false, hasPrev: false);
+        logs: list,
+        total: list.length,
+        page: 1,
+        pages: 1,
+        hasNext: false,
+        hasPrev: false);
   }
 
   // GET /admin/notifications
@@ -149,8 +169,12 @@ class AdminApiService {
         .map((j) => AdminNotification.fromJson(j as Map<String, dynamic>))
         .toList();
     return AdminNotificationsPage(
-        notifications: list, total: list.length, page: 1, pages: 1,
-        hasNext: false, hasPrev: false);
+        notifications: list,
+        total: list.length,
+        page: 1,
+        pages: 1,
+        hasNext: false,
+        hasPrev: false);
   }
 
   // POST /admin/venues - Create a new venue
@@ -187,10 +211,15 @@ class AdminApiService {
     final formData = FormData();
     if (name != null) formData.fields.add(MapEntry('name', name));
     if (phone != null) formData.fields.add(MapEntry('phone', phone));
-    if (currentLat != null) formData.fields.add(MapEntry('currentLat', currentLat.toString()));
-    if (currentLng != null) formData.fields.add(MapEntry('currentLng', currentLng.toString()));
+    if (currentLat != null) {
+      formData.fields.add(MapEntry('currentLat', currentLat.toString()));
+    }
+    if (currentLng != null) {
+      formData.fields.add(MapEntry('currentLng', currentLng.toString()));
+    }
     if (avatarPath != null) {
-      formData.files.add(MapEntry('avatar', await MultipartFile.fromFile(avatarPath)));
+      formData.files
+          .add(MapEntry('avatar', await MultipartFile.fromFile(avatarPath)));
     }
     final res = await _dio.put('/admin/profile', data: formData);
     return res.data as Map<String, dynamic>;
@@ -200,13 +229,13 @@ class AdminApiService {
     if (data is List) return data;
     if (data is Map) {
       return (data['data'] ??
-              data['users'] ??
-              data['venues'] ??
-              data['offers'] ??
-              data['logs'] ??
-              data['items'] ??
-              data['notifications'] ??
-              []) as List;
+          data['users'] ??
+          data['venues'] ??
+          data['offers'] ??
+          data['logs'] ??
+          data['items'] ??
+          data['notifications'] ??
+          []) as List;
     }
     return [];
   }

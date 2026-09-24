@@ -15,7 +15,8 @@ class MyVenuesScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E293B),
-        title: const Text('My Venues', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        title: const Text('My Venues',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         actions: [
@@ -29,11 +30,13 @@ class MyVenuesScreen extends ConsumerWidget {
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: AppTheme.darkBg,
         icon: const Icon(Icons.add),
-        label: const Text('Add Venue', style: TextStyle(fontWeight: FontWeight.w700)),
+        label: const Text('Add Venue',
+            style: TextStyle(fontWeight: FontWeight.w700)),
         onPressed: () => context.push('/admin/create-venue'),
       ),
       body: venuesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryColor)),
         error: (e, _) => _buildError(context, ref, e.toString()),
         data: (venues) => venues.isEmpty
             ? _buildEmpty(context)
@@ -60,41 +63,55 @@ class MyVenuesScreen extends ConsumerWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.store_outlined, color: AppTheme.primaryColor, size: 40),
+              child: const Icon(Icons.store_outlined,
+                  color: AppTheme.primaryColor, size: 40),
             ),
             const SizedBox(height: 20),
-            const Text('No venues yet', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+            const Text('No venues yet',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            const Text('Create your first venue to get started', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+            const Text('Create your first venue to get started',
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
             const SizedBox(height: 28),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: AppTheme.darkBg,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               icon: const Icon(Icons.add),
-              label: const Text('Create Venue', style: TextStyle(fontWeight: FontWeight.w700)),
+              label: const Text('Create Venue',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
               onPressed: () => context.push('/admin/create-venue'),
             ),
           ],
         ),
       );
 
-  Widget _buildError(BuildContext context, WidgetRef ref, String message) => Center(
+  Widget _buildError(BuildContext context, WidgetRef ref, String message) =>
+      Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
             const SizedBox(height: 16),
-            Text(message, style: const TextStyle(color: Color(0xFF94A3B8)), textAlign: TextAlign.center),
+            Text(message,
+                style: const TextStyle(color: Color(0xFF94A3B8)),
+                textAlign: TextAlign.center),
             const SizedBox(height: 16),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, foregroundColor: AppTheme.darkBg),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: AppTheme.darkBg),
               onPressed: () => ref.read(myVenuesProvider.notifier).load(),
               child: const Text('Retry'),
             ),
@@ -118,7 +135,9 @@ class _VenueCard extends ConsumerWidget {
         ? busynessRaw['level']?.toString() ?? ''
         : busynessRaw?.toString() ?? '';
     final vibeRaw = venue['vibe'];
-    final vibeTags = vibeRaw is Map ? (vibeRaw['tags'] as List?)?.join(', ') ?? '' : vibeRaw?.toString() ?? '';
+    final vibeTags = vibeRaw is Map
+        ? (vibeRaw['tags'] as List?)?.join(', ') ?? ''
+        : vibeRaw?.toString() ?? '';
     final activeOffers = venue['activeOffersCount'] ?? 0;
     final images = venue['images'] as List?;
     final coverImage = (images != null && images.isNotEmpty)
@@ -129,7 +148,8 @@ class _VenueCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+        border:
+            Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,12 +157,13 @@ class _VenueCard extends ConsumerWidget {
           // Cover image / header
           Container(
             height: 120,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              color: const Color(0xFF0F172A),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              color: Color(0xFF0F172A),
             ),
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               child: coverImage != null
                   ? Image.network(
                       coverImage,
@@ -155,20 +176,24 @@ class _VenueCard extends ConsumerWidget {
                               color: const Color(0xFF0F172A),
                               child: const Center(
                                 child: CircularProgressIndicator(
-                                    color: AppTheme.primaryColor, strokeWidth: 2),
+                                    color: AppTheme.primaryColor,
+                                    strokeWidth: 2),
                               ),
                             ),
                       errorBuilder: (_, __, ___) => Container(
                         color: const Color(0xFF0F172A),
                         child: Center(
                           child: Icon(Icons.broken_image,
-                              color: AppTheme.primaryColor.withOpacity(0.4), size: 40),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.4),
+                              size: 40),
                         ),
                       ),
                     )
                   : Center(
                       child: Icon(Icons.store,
-                          color: AppTheme.primaryColor.withOpacity(0.4), size: 48)),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                          size: 48)),
             ),
           ),
           Padding(
@@ -180,7 +205,10 @@ class _VenueCard extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(name,
-                          style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700)),
                     ),
                     _statusBadge(busyness),
                   ],
@@ -188,22 +216,27 @@ class _VenueCard extends ConsumerWidget {
                 const SizedBox(height: 6),
                 if (address.isNotEmpty)
                   Row(children: [
-                    const Icon(Icons.location_on, color: Color(0xFF64748B), size: 13),
+                    const Icon(Icons.location_on,
+                        color: Color(0xFF64748B), size: 13),
                     const SizedBox(width: 4),
-                    Expanded(child: Text(address,
-                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
-                        overflow: TextOverflow.ellipsis)),
+                    Expanded(
+                        child: Text(address,
+                            style: const TextStyle(
+                                color: Color(0xFF64748B), fontSize: 12),
+                            overflow: TextOverflow.ellipsis)),
                   ]),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     _chip(category.toUpperCase(), Icons.category),
                     const SizedBox(width: 8),
-                    if (vibeTags.isNotEmpty) Flexible(
-                      child: _chip(vibeTags, Icons.mood, maxLines: 1),
-                    ),
+                    if (vibeTags.isNotEmpty)
+                      Flexible(
+                        child: _chip(vibeTags, Icons.mood, maxLines: 1),
+                      ),
                     const SizedBox(width: 8),
-                    _chip('$activeOffers offers', Icons.local_offer, color: AppTheme.primaryColor),
+                    _chip('$activeOffers offers', Icons.local_offer,
+                        color: AppTheme.primaryColor),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -261,23 +294,31 @@ class _VenueCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 5),
         Text(busyness.toUpperCase(),
-            style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+            style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5)),
       ]),
     );
   }
 
-  Widget _chip(String label, IconData icon, {Color? color, int maxLines = 1}) => Container(
+  Widget _chip(String label, IconData icon, {Color? color, int maxLines = 1}) =>
+      Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: (color ?? const Color(0xFF64748B)).withOpacity(0.1),
+          color: (color ?? const Color(0xFF64748B)).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -285,68 +326,88 @@ class _VenueCard extends ConsumerWidget {
           const SizedBox(width: 4),
           Flexible(
             child: Text(label,
-                style: TextStyle(color: color ?? const Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: color ?? const Color(0xFF64748B),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600),
                 maxLines: maxLines,
                 overflow: TextOverflow.ellipsis),
           ),
         ]),
       );
 
-  Widget _actionButton({required IconData icon, required String label, required VoidCallback onTap, Color? color}) {
+  Widget _actionButton(
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap,
+      Color? color}) {
     final c = color ?? AppTheme.primaryColor;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: c.withOpacity(0.08),
+          color: c.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: c.withOpacity(0.2)),
+          border: Border.all(color: c.withValues(alpha: 0.2)),
         ),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(icon, color: c, size: 15),
           const SizedBox(width: 5),
-          Text(label, style: TextStyle(color: c, fontSize: 12, fontWeight: FontWeight.w700)),
+          Text(label,
+              style: TextStyle(
+                  color: c, fontSize: 12, fontWeight: FontWeight.w700)),
         ]),
       ),
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, String id, String name) {
+  void _confirmDelete(
+      BuildContext context, WidgetRef ref, String id, String name) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Venue', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-        content: Text('Are you sure you want to remove "$name"? This cannot be undone.',
+        title: const Text('Delete Venue',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        content: Text(
+            'Are you sure you want to remove "$name"? This cannot be undone.',
             style: const TextStyle(color: Color(0xFF94A3B8))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+            child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFF64748B))),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8))),
             onPressed: () async {
               Navigator.pop(context);
-              final ok = await ref.read(myVenuesProvider.notifier).deleteVenue(id);
+              final ok =
+                  await ref.read(myVenuesProvider.notifier).deleteVenue(id);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(ok ? 'Venue removed' : 'Failed to remove venue'),
+                  content:
+                      Text(ok ? 'Venue removed' : 'Failed to remove venue'),
                   backgroundColor: ok ? Colors.green[700] : Colors.red[700],
                 ));
               }
             },
-            child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.w700)),
+            child: const Text('Delete',
+                style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
     );
   }
 
-  void _showEditSheet(BuildContext context, WidgetRef ref, String id, Map<String, dynamic> venue) {
+  void _showEditSheet(BuildContext context, WidgetRef ref, String id,
+      Map<String, dynamic> venue) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -376,24 +437,40 @@ class _EditVenueSheetState extends ConsumerState<_EditVenueSheet> {
   bool _isLoading = false;
 
   static const _categories = [
-    'bar', 'club', 'restaurant', 'lounge',
-    'live_music_venue', 'pub', 'rooftop_bar', 'cocktail_bar'
+    'bar',
+    'club',
+    'restaurant',
+    'lounge',
+    'live_music_venue',
+    'pub',
+    'rooftop_bar',
+    'cocktail_bar'
   ];
 
   static const _categoryLabels = {
-    'bar': 'Bar', 'club': 'Club', 'restaurant': 'Restaurant',
-    'lounge': 'Lounge', 'live_music_venue': 'Live Music Venue',
-    'pub': 'Pub', 'rooftop_bar': 'Rooftop Bar', 'cocktail_bar': 'Cocktail Bar',
+    'bar': 'Bar',
+    'club': 'Club',
+    'restaurant': 'Restaurant',
+    'lounge': 'Lounge',
+    'live_music_venue': 'Live Music Venue',
+    'pub': 'Pub',
+    'rooftop_bar': 'Rooftop Bar',
+    'cocktail_bar': 'Cocktail Bar',
   };
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.venue['name']?.toString() ?? '');
-    _addressController = TextEditingController(text: widget.venue['address']?.toString() ?? '');
-    _areaController = TextEditingController(text: widget.venue['area']?.toString() ?? '');
-    _openingController = TextEditingController(text: widget.venue['openingHours']?.toString() ?? '');
-    _closingController = TextEditingController(text: widget.venue['closingTime']?.toString() ?? '');
+    _nameController =
+        TextEditingController(text: widget.venue['name']?.toString() ?? '');
+    _addressController =
+        TextEditingController(text: widget.venue['address']?.toString() ?? '');
+    _areaController =
+        TextEditingController(text: widget.venue['area']?.toString() ?? '');
+    _openingController = TextEditingController(
+        text: widget.venue['openingHours']?.toString() ?? '');
+    _closingController = TextEditingController(
+        text: widget.venue['closingTime']?.toString() ?? '');
     _category = widget.venue['category']?.toString().toLowerCase() ?? 'bar';
     if (!_categories.contains(_category)) _category = 'bar';
     _priceLevel = (widget.venue['priceLevel'] as num?)?.toInt() ?? 2;
@@ -411,7 +488,8 @@ class _EditVenueSheetState extends ConsumerState<_EditVenueSheet> {
 
   Future<void> _save() async {
     setState(() => _isLoading = true);
-    final ok = await ref.read(myVenuesProvider.notifier).updateVenue(widget.venueId, {
+    final ok =
+        await ref.read(myVenuesProvider.notifier).updateVenue(widget.venueId, {
       'name': _nameController.text.trim(),
       'address': _addressController.text.trim(),
       'area': _areaController.text.trim(),
@@ -444,16 +522,27 @@ class _EditVenueSheetState extends ConsumerState<_EditVenueSheet> {
         child: Column(
           children: [
             const SizedBox(height: 12),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: const Color(0xFF334155), borderRadius: BorderRadius.circular(2))),
+            Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: const Color(0xFF334155),
+                    borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  const Text('Edit Venue', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+                  const Text('Edit Venue',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800)),
                   const Spacer(),
-                  TextButton(onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B)))),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel',
+                          style: TextStyle(color: Color(0xFF64748B)))),
                 ],
               ),
             ),
@@ -470,9 +559,13 @@ class _EditVenueSheetState extends ConsumerState<_EditVenueSheet> {
                   _field(_areaController, 'Area', Icons.map_outlined),
                   const SizedBox(height: 14),
                   Row(children: [
-                    Expanded(child: _field(_openingController, 'Opening Time', Icons.access_time)),
+                    Expanded(
+                        child: _field(_openingController, 'Opening Time',
+                            Icons.access_time)),
                     const SizedBox(width: 12),
-                    Expanded(child: _field(_closingController, 'Closing Time', Icons.access_time_filled)),
+                    Expanded(
+                        child: _field(_closingController, 'Closing Time',
+                            Icons.access_time_filled)),
                   ]),
                   const SizedBox(height: 16),
                   _label('CATEGORY'),
@@ -490,10 +583,14 @@ class _EditVenueSheetState extends ConsumerState<_EditVenueSheet> {
                         dropdownColor: const Color(0xFF1E293B),
                         isExpanded: true,
                         style: const TextStyle(color: Colors.white),
-                        items: _categories.map((c) => DropdownMenuItem(
-                          value: c,
-                          child: Text(_categoryLabels[c] ?? c, style: const TextStyle(color: Colors.white)),
-                        )).toList(),
+                        items: _categories
+                            .map((c) => DropdownMenuItem(
+                                  value: c,
+                                  child: Text(_categoryLabels[c] ?? c,
+                                      style:
+                                          const TextStyle(color: Colors.white)),
+                                ))
+                            .toList(),
                         onChanged: (v) => setState(() => _category = v!),
                       ),
                     ),
@@ -512,14 +609,21 @@ class _EditVenueSheetState extends ConsumerState<_EditVenueSheet> {
                             margin: EdgeInsets.only(right: i < 3 ? 8 : 0),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
-                              color: selected ? AppTheme.primaryColor : const Color(0xFF0F172A),
+                              color: selected
+                                  ? AppTheme.primaryColor
+                                  : const Color(0xFF0F172A),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: selected ? AppTheme.primaryColor : const Color(0xFF334155)),
+                              border: Border.all(
+                                  color: selected
+                                      ? AppTheme.primaryColor
+                                      : const Color(0xFF334155)),
                             ),
                             child: Text('£' * level,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: selected ? AppTheme.darkBg : const Color(0xFF94A3B8),
+                                  color: selected
+                                      ? AppTheme.darkBg
+                                      : const Color(0xFF94A3B8),
                                   fontWeight: FontWeight.w800,
                                 )),
                           ),
@@ -535,13 +639,20 @@ class _EditVenueSheetState extends ConsumerState<_EditVenueSheet> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         foregroundColor: AppTheme.darkBg,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
                       onPressed: _isLoading ? null : _save,
                       child: _isLoading
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.darkBg))
-                          : const Text('Save Changes', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: AppTheme.darkBg))
+                          : const Text('Save Changes',
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w800)),
                     ),
                   ),
                 ],
@@ -554,9 +665,14 @@ class _EditVenueSheetState extends ConsumerState<_EditVenueSheet> {
   }
 
   Widget _label(String text) => Text(text,
-      style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5));
+      style: const TextStyle(
+          color: Color(0xFF64748B),
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.5));
 
-  Widget _field(TextEditingController controller, String hint, IconData icon) => TextFormField(
+  Widget _field(TextEditingController controller, String hint, IconData icon) =>
+      TextFormField(
         controller: controller,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
@@ -565,12 +681,16 @@ class _EditVenueSheetState extends ConsumerState<_EditVenueSheet> {
           prefixIcon: Icon(icon, color: const Color(0xFF64748B), size: 20),
           filled: true,
           fillColor: const Color(0xFF0F172A),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1),
+            borderSide:
+                const BorderSide(color: AppTheme.primaryColor, width: 1),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       );
 }

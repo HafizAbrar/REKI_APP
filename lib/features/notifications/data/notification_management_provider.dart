@@ -6,7 +6,8 @@ import '../../../core/services/notification_repository.dart';
 final notificationManagementProvider = StateNotifierProvider<
     NotificationManagementNotifier,
     AsyncValue<Map<String, List<AppNotification>>>>((ref) {
-  return NotificationManagementNotifier(ref.read(notificationRepositoryProvider));
+  return NotificationManagementNotifier(
+      ref.read(notificationRepositoryProvider));
 });
 
 class NotificationManagementNotifier
@@ -34,16 +35,19 @@ class NotificationManagementNotifier
     final current = state.valueOrNull;
     if (current != null) {
       final updated = current.map((key, list) => MapEntry(
-        key,
-        list.map((n) => n.id == id ? (n..isRead = true) : n).toList(),
-      ));
+            key,
+            list.map((n) => n.id == id ? (n..isRead = true) : n).toList(),
+          ));
       state = AsyncValue.data(updated);
     }
     // Fire API in background — reload on failure to restore correct state
     final result = await _repository.markAsRead(id);
     return result.when(
       success: (_) => true,
-      failure: (_) { loadNotifications(); return false; },
+      failure: (_) {
+        loadNotifications();
+        return false;
+      },
     );
   }
 
@@ -53,16 +57,19 @@ class NotificationManagementNotifier
     final current = state.valueOrNull;
     if (current != null) {
       final updated = current.map((key, list) => MapEntry(
-        key,
-        list.map((n) => n..isRead = true).toList(),
-      ));
+            key,
+            list.map((n) => n..isRead = true).toList(),
+          ));
       state = AsyncValue.data(updated);
     }
     // Fire API in background — reload on failure to restore correct state
     final result = await _repository.markAllAsRead();
     return result.when(
       success: (_) => true,
-      failure: (_) { loadNotifications(); return false; },
+      failure: (_) {
+        loadNotifications();
+        return false;
+      },
     );
   }
 
@@ -71,15 +78,18 @@ class NotificationManagementNotifier
     final current = state.valueOrNull;
     if (current != null) {
       final updated = current.map((key, list) => MapEntry(
-        key,
-        list.where((n) => n.id != id).toList(),
-      ));
+            key,
+            list.where((n) => n.id != id).toList(),
+          ));
       state = AsyncValue.data(updated);
     }
     final result = await _repository.deleteNotification(id);
     return result.when(
       success: (_) => true,
-      failure: (_) { loadNotifications(); return false; },
+      failure: (_) {
+        loadNotifications();
+        return false;
+      },
     );
   }
 

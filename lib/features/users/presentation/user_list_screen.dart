@@ -51,9 +51,12 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                     backgroundColor: user.role == UserRole.BUSINESS
                         ? const Color(0xFF3B82F6)
                         : user.role == UserRole.ADMIN
-                        ? const Color(0xFFEC4899)
-                        : const Color(0xFF10B981),
-                    labelStyle: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                            ? const Color(0xFFEC4899)
+                            : const Color(0xFF10B981),
+                    labelStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),

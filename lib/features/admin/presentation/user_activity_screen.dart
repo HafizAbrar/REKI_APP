@@ -121,7 +121,8 @@ class _UserActivityScreenState extends ConsumerState<UserActivityScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2DD4BF).withValues(alpha: 0.2)),
+        border:
+            Border.all(color: const Color(0xFF2DD4BF).withValues(alpha: 0.2)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -138,7 +139,8 @@ class _UserActivityScreenState extends ConsumerState<UserActivityScreen> {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(data.name,
                   style: const TextStyle(
                       color: Colors.white,
@@ -147,8 +149,7 @@ class _UserActivityScreenState extends ConsumerState<UserActivityScreen> {
               const SizedBox(height: 2),
               Text(
                 data.email?.isNotEmpty == true ? data.email! : 'No email',
-                style:
-                    const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
               ),
             ]),
           ),
@@ -162,15 +163,13 @@ class _UserActivityScreenState extends ConsumerState<UserActivityScreen> {
               color: Color(0xFF64748B), size: 13),
           const SizedBox(width: 6),
           Text('Joined ${_formatDate(data.createdAt)}',
-              style:
-                  const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
           const Spacer(),
           const Icon(Icons.confirmation_number_outlined,
               color: Color(0xFF64748B), size: 13),
           const SizedBox(width: 6),
           Text('${data.totalRedemptions} redemptions',
-              style:
-                  const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
         ]),
       ]),
     );
@@ -207,16 +206,14 @@ class _UserActivityScreenState extends ConsumerState<UserActivityScreen> {
           const Icon(Icons.store_outlined, color: Color(0xFF64748B), size: 13),
           const SizedBox(width: 5),
           Text(r.venueName,
-              style:
-                  const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
           const SizedBox(width: 8),
           const Icon(Icons.location_on_outlined,
               color: Color(0xFF64748B), size: 13),
           const SizedBox(width: 4),
           Expanded(
             child: Text(r.venueAddress,
-                style: const TextStyle(
-                    color: Color(0xFF64748B), fontSize: 11),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                 overflow: TextOverflow.ellipsis),
           ),
         ]),
@@ -239,16 +236,14 @@ class _UserActivityScreenState extends ConsumerState<UserActivityScreen> {
           const Icon(Icons.access_time, color: Color(0xFF64748B), size: 12),
           const SizedBox(width: 4),
           Text('Claimed ${_formatDate(r.createdAt)}',
-              style:
-                  const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
           if (r.redeemedAt != null) ...[
             const SizedBox(width: 12),
             const Icon(Icons.check_circle_outline,
                 color: Color(0xFF10B981), size: 12),
             const SizedBox(width: 4),
             Text('Used ${_formatDate(r.redeemedAt!)}',
-                style: const TextStyle(
-                    color: Color(0xFF10B981), fontSize: 11)),
+                style: const TextStyle(color: Color(0xFF10B981), fontSize: 11)),
           ],
         ]),
       ]),
@@ -291,8 +286,7 @@ class _UserActivityScreenState extends ConsumerState<UserActivityScreen> {
       Icon(icon, color: const Color(0xFF64748B), size: 12),
       const SizedBox(width: 4),
       Text(label,
-          style:
-              const TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
+          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
     ]);
   }
 

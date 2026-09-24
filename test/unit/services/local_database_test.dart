@@ -17,6 +17,37 @@ void main() {
   group('LocalDatabase', () {
     final db = LocalDatabase();
 
+    test('parallel initial reads share a single database open', () async {
+      final opens = List.generate(10, (_) => db.db);
+      expect(identical(opens[0], opens[1]), true);
+      final connections = await Future.wait(opens);
+      expect(connections.every((d) => identical(d, connections.first)), true);
+    });
+
+    test(
+        'version two migration creates indexes without losing stored preferences',
+        () async {
+      await db.setPref('migration_check', 'preserved');
+      final previous = await db.db;
+      final names = [
+        'idx_reviews_venue_created',
+        'idx_history_visited',
+        'idx_checkins_created',
+        'idx_sync_created',
+        'idx_saved_created'
+      ];
+      for (final name in names) {
+        await previous.execute('DROP INDEX $name');
+      }
+      await previous.setVersion(2);
+      await previous.close();
+      final upgraded = await db.db;
+      final indexes = await upgraded
+          .rawQuery("SELECT name FROM sqlite_master WHERE type = 'index'");
+      expect(indexes.map((row) => row['name']), containsAll(names));
+      expect(await db.getPref('migration_check'), 'preserved');
+    });
+
     test('caches and retrieves venue list within TTL', () async {
       const json = '[{"id":"v1"}]';
       await db.cacheVenueList(json);

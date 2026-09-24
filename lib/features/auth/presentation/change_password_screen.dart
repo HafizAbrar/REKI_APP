@@ -8,17 +8,20 @@ class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
 
   @override
-  ConsumerState<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+  ConsumerState<ChangePasswordScreen> createState() =>
+      _ChangePasswordScreenState();
 }
 
 class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
-  
+
   @override
   void dispose() {
     _currentPasswordController.dispose();
@@ -26,7 +29,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authStateProvider, (previous, next) {
@@ -60,7 +63,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuAbUJHdVYXEM5nb7gdCJuVW7JCDHX57JIbHlYa1QpCwLUn3IQ18tWdOP6jjy3OzZFeql3aQIRSc8wPeA8vaC6vRU3T_5DxF_C73GGcJIfrB1ITMzi9x8PXpXmxXCfSpxFffphHCdnz0ZqfuDGZKFvKzy6FldO8KPMejI_K6IPmQc2plM0xNFnJs5m-WKeFdub0DJzwa6N37lz-xVZjkCCXVWncXp2ZAd7Fua4l0bLXe22WfCLqtsp83Ep1GvowtKY7ZneCKhcWUxEBs'),
+                  image: NetworkImage(
+                      'https://lh3.googleusercontent.com/aida-public/AB6AXuAbUJHdVYXEM5nb7gdCJuVW7JCDHX57JIbHlYa1QpCwLUn3IQ18tWdOP6jjy3OzZFeql3aQIRSc8wPeA8vaC6vRU3T_5DxF_C73GGcJIfrB1ITMzi9x8PXpXmxXCfSpxFffphHCdnz0ZqfuDGZKFvKzy6FldO8KPMejI_K6IPmQc2plM0xNFnJs5m-WKeFdub0DJzwa6N37lz-xVZjkCCXVWncXp2ZAd7Fua4l0bLXe22WfCLqtsp83Ep1GvowtKY7ZneCKhcWUxEBs'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -74,8 +78,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF0F172A).withOpacity(0.7),
-                    const Color(0xFF0F172A).withOpacity(0.95),
+                    const Color(0xFF0F172A).withValues(alpha: 0.7),
+                    const Color(0xFF0F172A).withValues(alpha: 0.95),
                     const Color(0xFF0F172A),
                   ],
                 ),
@@ -105,28 +109,34 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   const SizedBox(height: 8),
                   const Text(
                     'Create a new password for your account',
-                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 16, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 40),
                   _buildInputField(
                     controller: _currentPasswordController,
                     hint: 'Current Password',
                     obscureText: _obscureCurrent,
-                    onToggleVisibility: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                    onToggleVisibility: () =>
+                        setState(() => _obscureCurrent = !_obscureCurrent),
                   ),
                   const SizedBox(height: 16),
                   _buildInputField(
                     controller: _newPasswordController,
                     hint: 'New Password',
                     obscureText: _obscureNew,
-                    onToggleVisibility: () => setState(() => _obscureNew = !_obscureNew),
+                    onToggleVisibility: () =>
+                        setState(() => _obscureNew = !_obscureNew),
                   ),
                   const SizedBox(height: 16),
                   _buildInputField(
                     controller: _confirmPasswordController,
                     hint: 'Confirm Password',
                     obscureText: _obscureConfirm,
-                    onToggleVisibility: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                    onToggleVisibility: () =>
+                        setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
                   const SizedBox(height: 32),
                   SizedBox(
@@ -137,7 +147,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                         borderRadius: BorderRadius.circular(9999),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withOpacity(0.39),
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.39),
                             blurRadius: 14,
                             spreadRadius: 0,
                             offset: const Offset(0, 4),
@@ -156,15 +167,19 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                         onPressed: isLoading
                             ? null
                             : () {
-                                if (_newPasswordController.text == _confirmPasswordController.text) {
-                                  ref.read(authStateProvider.notifier).changePassword(
-                                    _currentPasswordController.text,
-                                    _newPasswordController.text,
-                                  );
+                                if (_newPasswordController.text ==
+                                    _confirmPasswordController.text) {
+                                  ref
+                                      .read(authStateProvider.notifier)
+                                      .changePassword(
+                                        _currentPasswordController.text,
+                                        _newPasswordController.text,
+                                      );
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: const Text('Passwords do not match'),
+                                      content:
+                                          const Text('Passwords do not match'),
                                       backgroundColor: Colors.red[700],
                                     ),
                                   );
@@ -237,9 +252,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(9999),
-            borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1),
+            borderSide:
+                const BorderSide(color: AppTheme.primaryColor, width: 1),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
         ),
       ),
     );

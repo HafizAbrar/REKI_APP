@@ -1,0 +1,67 @@
+*** Begin Patch
+*** Update File: lib/core/models/user.dart
+@@
+-class User {
++import 'dart:convert';
++
++class User {
+@@
+-  factory User.fromJson(Map<String, dynamic> json) {
+-    final roleStr = json['role']?.toString().toUpperCase() ?? 'USER';
+-    // 'GUEST' role from API maps to UserRole.USER
+-    final normalizedRole = roleStr == 'GUEST' ? 'USER' : roleStr;
++  factory User.fromJson(Map<String, dynamic> json, {String? accessToken}) {
++    final normalizedRole = resolveRoleName(json, accessToken: accessToken);
+@@
+   }
++
++  static String resolveRoleName(Map<String, dynamic> json,
++      {String? accessToken}) {
++    final values = <String>[];
++    const roleKeys = {
++      'role', 'userrole', 'accountrole', 'businessrole', 'staffrole',
++      'usertype', 'accounttype', 'type',
++    };
++    void collect(dynamic value, [int depth = 0]) {
++      if (depth > 4 || value is! Map) return;
++      for (final entry in value.entries) {
++        final key = entry.key.toString().toLowerCase().replaceAll('_', '');
++        if (roleKeys.contains(key) && entry.value != null) {
++          final item = entry.value;
++          values.addAll(item is List
++              ? item.map((element) => element.toString())
++              : [item.toString()]);
++        }
++        if (entry.value is Map) collect(entry.value, depth + 1);
++      }
++    }
++    collect(json);
++    final claims = _jwtClaims(accessToken);
++    if (claims != null) collect(claims);
++    final roles = values
++        .map((value) => value.trim().toUpperCase().split('.').last)
++        .toSet();
++    if (roles.any(const {'WORKER', 'STAFF', 'VENUE_STAFF'}.contains)) {
++      return 'WORKER';
++    }
++    if (roles.contains('ADMIN')) return 'ADMIN';
++    if (roles.any(const {'BUSINESS', 'OWNER', 'MANAGER'}.contains)) {
++      return 'BUSINESS';
++    }
++    return 'USER';
++  }
++
++  static Map<String, dynamic>? _jwtClaims(String? token) {
++    if (token == null) return null;
++    final parts = token.split('.');
++    if (parts.length != 3) return null;
++    try {
++      final value = jsonDecode(
++          utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))));
++      return value is Map<String, dynamic> ? value : null;
++    } catch (_) {
++      return null;
++    }
++  }
+ }
+*** End Patch

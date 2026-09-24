@@ -29,21 +29,31 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         elevation: 0,
-        title: const Text('Users', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+        title: const Text('Users',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: adminState.users.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryColor)),
         error: (err, _) => Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             const Icon(Icons.error_outline, color: Colors.red, size: 48),
             const SizedBox(height: 12),
-            Text(err.toString(), style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
+            Text(err.toString(),
+                style: const TextStyle(color: Colors.white70),
+                textAlign: TextAlign.center),
             const SizedBox(height: 12),
-            TextButton(onPressed: () => ref.read(adminProvider.notifier).loadUsers(), child: const Text('Retry', style: TextStyle(color: AppTheme.primaryColor))),
+            TextButton(
+                onPressed: () => ref.read(adminProvider.notifier).loadUsers(),
+                child: const Text('Retry',
+                    style: TextStyle(color: AppTheme.primaryColor))),
           ]),
         ),
         data: (users) => RefreshIndicator(
@@ -97,17 +107,23 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(u.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+                          Text(u.name,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14)),
                           const SizedBox(height: 4),
                           Text(
                             u.email?.isNotEmpty == true ? u.email! : 'No email',
-                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                            style: const TextStyle(
+                                color: Color(0xFF64748B), fontSize: 13),
                           ),
                           const SizedBox(height: 6),
                           Row(children: [
                             _badge(u.authProvider, const Color(0xFF8B5CF6)),
                             const SizedBox(width: 8),
-                            if (u.isVerified) _badge('verified', const Color(0xFF10B981)),
+                            if (u.isVerified)
+                              _badge('verified', const Color(0xFF10B981)),
                           ]),
                         ],
                       ),
@@ -122,7 +138,9 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                           height: 10,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: u.isActive ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                            color: u.isActive
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFEF4444),
                           ),
                         ),
                       ],
@@ -144,7 +162,9 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+      child: Text(label,
+          style: TextStyle(
+              color: color, fontSize: 11, fontWeight: FontWeight.w700)),
     );
   }
 }

@@ -22,8 +22,28 @@ class VenueRepository {
     int limit = 20,
   }) async {
     try {
-      final venues = await _apiService.getAllVenuesList();
-      return Result.success(venues);
+      final response = await _apiService.getAllVenues(
+        category: category,
+        busyness: busyness,
+        vibe: vibe,
+        cityId: cityId,
+        page: page,
+        limit: limit,
+      );
+      dynamic raw = response['venues'] ?? response['data'] ?? response;
+      if (raw is Map) {
+        raw = raw['venues'] ?? raw['items'] ?? raw['data'] ?? [];
+      }
+      if (raw is! List) return Result.success([]);
+      final result = <Venue>[];
+      for (final json in raw) {
+        try {
+          result.add(Venue.fromJson(json as Map<String, dynamic>));
+        } catch (e) {
+          // ignore malformed venue
+        }
+      }
+      return Result.success(result);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));
     }
@@ -38,7 +58,8 @@ class VenueRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> getFilterOptions({String? cityId}) async {
+  Future<Result<Map<String, dynamic>>> getFilterOptions(
+      {String? cityId}) async {
     try {
       final options = await _apiService.getFilterOptions(cityId: cityId);
       return Result.success(options);
@@ -58,12 +79,18 @@ class VenueRepository {
 
   Future<Result<List<Map<String, dynamic>>>> getMapMarkers({
     String? cityId,
-    double? swLat, double? swLng,
-    double? neLat, double? neLng,
+    double? swLat,
+    double? swLng,
+    double? neLat,
+    double? neLng,
   }) async {
     try {
       final markers = await _apiService.getMapMarkers(
-        cityId: cityId, swLat: swLat, swLng: swLng, neLat: neLat, neLng: neLng,
+        cityId: cityId,
+        swLat: swLat,
+        swLng: swLng,
+        neLat: neLat,
+        neLng: neLng,
       );
       return Result.success(markers);
     } catch (e) {
@@ -98,9 +125,11 @@ class VenueRepository {
     }
   }
 
-  Future<Result<Venue>> updateLiveState(String id, {String? busyness, String? currentVibe}) async {
+  Future<Result<Venue>> updateLiveState(String id,
+      {String? busyness, String? currentVibe}) async {
     try {
-      final venue = await _apiService.updateLiveState(id, busyness: busyness, currentVibe: currentVibe);
+      final venue = await _apiService.updateLiveState(id,
+          busyness: busyness, currentVibe: currentVibe);
       return Result.success(venue);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));

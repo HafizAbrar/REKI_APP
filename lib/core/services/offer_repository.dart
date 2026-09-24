@@ -58,9 +58,11 @@ class OfferRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> redeemOffer(String id, {required String voucherCode}) async {
+  Future<Result<Map<String, dynamic>>> redeemOffer(String id,
+      {required String voucherCode}) async {
     try {
-      final result = await _apiService.redeemOffer(id, voucherCode: voucherCode);
+      final result =
+          await _apiService.redeemOffer(id, voucherCode: voucherCode);
       return Result.success(result);
     } catch (e) {
       return Result.failure(ErrorHandler.getErrorMessage(e));

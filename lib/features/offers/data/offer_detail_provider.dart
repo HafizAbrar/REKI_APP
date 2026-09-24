@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/offer.dart';
 import '../../../core/services/offer_repository.dart';
 
-final offerDetailProvider = FutureProvider.family<Offer, String>((ref, id) async {
+final offerDetailProvider =
+    FutureProvider.family<Offer, String>((ref, id) async {
   final repository = ref.read(offerRepositoryProvider);
   final result = await repository.getOfferById(id);
   return result.when(
@@ -14,14 +15,15 @@ final offerDetailProvider = FutureProvider.family<Offer, String>((ref, id) async
 // Notifier for claim / redeem / wallet-pass actions
 final offerActionProvider =
     StateNotifierProvider.family<OfferActionNotifier, OfferActionState, String>(
-  (ref, offerId) => OfferActionNotifier(ref.read(offerRepositoryProvider), offerId),
+  (ref, offerId) =>
+      OfferActionNotifier(ref.read(offerRepositoryProvider), offerId),
 );
 
 class OfferActionState {
   final bool isLoading;
-  final Map<String, dynamic>? claimData;   // voucher code + QR from /claim
-  final Map<String, dynamic>? redeemData;  // redemption result from /redeem
-  final Map<String, dynamic>? walletData;  // wallet pass URL from /wallet-pass
+  final Map<String, dynamic>? claimData; // voucher code + QR from /claim
+  final Map<String, dynamic>? redeemData; // redemption result from /redeem
+  final Map<String, dynamic>? walletData; // wallet pass URL from /wallet-pass
   final String? error;
 
   const OfferActionState({
@@ -79,7 +81,8 @@ class OfferActionNotifier extends StateNotifier<OfferActionState> {
       return false;
     }
     state = state.copyWith(isLoading: true);
-    final result = await _repository.redeemOffer(_offerId, voucherCode: voucherCode);
+    final result =
+        await _repository.redeemOffer(_offerId, voucherCode: voucherCode);
     return result.when(
       success: (data) {
         state = state.copyWith(isLoading: false, redeemData: data);

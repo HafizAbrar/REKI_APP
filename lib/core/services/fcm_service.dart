@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -5,7 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_logger.dart';
 
-final fcmServiceProvider = Provider<FcmService>((ref) => FcmService());
+final fcmServiceProvider = Provider<FcmService>((ref) {
+  final service = FcmService();
+  ref.onDispose(service.dispose);
+  return service;
+});
 
 // Background message handler — must be top-level
 @pragma('vm:entry-point')
@@ -21,6 +26,19 @@ const _androidChannel = AndroidNotificationChannel(
 );
 
 class FcmService {
+  final _subscriptions = <StreamSubscription<dynamic>>[];
+  Future<void>? _initializing;
+  bool _initialized = false;
+  bool _disposed = false;
+  void dispose() {
+    _disposed = true;
+    _onTokenRefresh = null;
+    for (final subscription in _subscriptions) {
+      unawaited(subscription.cancel());
+    }
+    _subscriptions.clear();
+  }
+
   // Lazy accessor — avoids crash when Firebase is not initialised (e.g. iOS
   // without GoogleService-Info.plist).
   FirebaseMessaging? _messaging;
@@ -44,7 +62,13 @@ class FcmService {
 
   static const _prefKeyOptIn = 'fcm_opt_in';
 
-  Future<void> initialize({Function(String route)? onDeepLink}) async {
+  Future<void> initialize({Function(String route)? onDeepLink}) {
+    if (_disposed || _initialized) return Future.value();
+    return _initializing ??= _initialize(onDeepLink: onDeepLink)
+        .whenComplete(() => _initializing = null);
+  }
+
+  Future<void> _initialize({Function(String route)? onDeepLink}) async {
     final messaging = _safeMessaging;
     if (messaging == null) {
       appLogger.w('FCM: Firebase not available — push notifications disabled');
@@ -62,8 +86,8 @@ class FcmService {
       provisional: false,
     );
 
-    final granted = settings.authorizationStatus ==
-        AuthorizationStatus.authorized;
+    final granted =
+        settings.authorizationStatus == AuthorizationStatus.authorized;
     appLogger.i('FCM permission: ${settings.authorizationStatus}');
 
     // Persist opt-in state for preference toggle UI
@@ -94,19 +118,23 @@ class FcmService {
       },
     );
 
+    if (_disposed) return;
+    _initialized = true;
+
     // Foreground messages → show local notification
-    FirebaseMessaging.onMessage.listen((message) {
-      _showLocal(message);
-    });
+    _subscriptions.add(FirebaseMessaging.onMessage.listen((message) {
+      if (!_disposed) _showLocal(message);
+    }));
 
     // Notification tap while app in background
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+    _subscriptions.add(FirebaseMessaging.onMessageOpenedApp.listen((message) {
       final route = message.data['route'];
-      if (route != null && onDeepLink != null) onDeepLink(route);
-    });
+      if (!_disposed && route != null && onDeepLink != null) onDeepLink(route);
+    }));
 
     // Check if app was launched from a notification
     final initial = await messaging.getInitialMessage();
+    if (_disposed) return;
     if (initial != null) {
       final route = initial.data['route'];
       if (route != null && onDeepLink != null) onDeepLink(route);
@@ -114,13 +142,14 @@ class FcmService {
 
     // Get & cache device token
     _token = await messaging.getToken();
-    appLogger.i('FCM token: $_token');
+    if (_disposed) return;
+    appLogger.d('FCM token ready');
 
-    messaging.onTokenRefresh.listen((t) {
+    _subscriptions.add(messaging.onTokenRefresh.listen((t) {
       _token = t;
       appLogger.i('FCM token refreshed');
       _onTokenRefresh?.call(t);
-    });
+    }));
   }
 
   Function(String)? _onTokenRefresh;

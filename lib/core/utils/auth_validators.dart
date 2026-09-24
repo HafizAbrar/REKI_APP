@@ -68,7 +68,7 @@ class AuthValidators {
 
   static PasswordStrength getPasswordStrength(String password) {
     if (password.isEmpty) return PasswordStrength.none;
-    
+
     int score = 0;
     if (password.length >= 8) score++;
     if (password.length >= 12) score++;

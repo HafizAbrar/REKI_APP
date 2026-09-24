@@ -17,7 +17,14 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
   String _selectedType = 'All';
   String _selectedStatus = 'All';
 
-  static const _types = ['All', '2-for-1', 'discount', 'freebie', 'guestlist', 'happy-hour'];
+  static const _types = [
+    'All',
+    '2-for-1',
+    'discount',
+    'freebie',
+    'guestlist',
+    'happy-hour'
+  ];
   static const _statuses = ['All', 'active', 'upcoming', 'inactive'];
 
   @override
@@ -40,7 +47,10 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(title,
-            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
@@ -57,8 +67,10 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
             child: offersAsync.when(
               data: (offers) {
                 final filtered = offers.where((o) {
-                  final typeMatch = _selectedType == 'All' || o.type == _selectedType;
-                  final statusMatch = _selectedStatus == 'All' || o.status == _selectedStatus;
+                  final typeMatch =
+                      _selectedType == 'All' || o.type == _selectedType;
+                  final statusMatch =
+                      _selectedStatus == 'All' || o.status == _selectedStatus;
                   return typeMatch && statusMatch;
                 }).toList();
 
@@ -76,7 +88,8 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, color: Color(0xFF94A3B8), size: 48),
+                    const Icon(Icons.error_outline,
+                        color: Color(0xFF94A3B8), size: 48),
                     const SizedBox(height: 16),
                     Text('$e',
                         style: const TextStyle(color: Color(0xFF94A3B8)),
@@ -84,7 +97,8 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () => ref.invalidate(offersProvider),
-                      child: const Text('Retry', style: TextStyle(color: Color(0xFF2DD4BF))),
+                      child: const Text('Retry',
+                          style: TextStyle(color: Color(0xFF2DD4BF))),
                     ),
                   ],
                 ),
@@ -103,28 +117,34 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Type', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+          const Text('Type',
+              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
           const SizedBox(height: 6),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _types.map((t) => _FilterChip(
-                label: t == 'All' ? 'All' : t.replaceAll('-', ' '),
-                selected: _selectedType == t,
-                onTap: () => setState(() => _selectedType = t),
-              )).toList(),
+              children: _types
+                  .map((t) => _FilterChip(
+                        label: t == 'All' ? 'All' : t.replaceAll('-', ' '),
+                        selected: _selectedType == t,
+                        onTap: () => setState(() => _selectedType = t),
+                      ))
+                  .toList(),
             ),
           ),
           const SizedBox(height: 10),
-          const Text('Status', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+          const Text('Status',
+              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
           const SizedBox(height: 6),
           Row(
-            children: _statuses.map((s) => _FilterChip(
-              label: s[0].toUpperCase() + s.substring(1),
-              selected: _selectedStatus == s,
-              color: _statusColor(s),
-              onTap: () => setState(() => _selectedStatus = s),
-            )).toList(),
+            children: _statuses
+                .map((s) => _FilterChip(
+                      label: s[0].toUpperCase() + s.substring(1),
+                      selected: _selectedStatus == s,
+                      color: _statusColor(s),
+                      onTap: () => setState(() => _selectedStatus = s),
+                    ))
+                .toList(),
           ),
         ],
       ),
@@ -136,10 +156,14 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.local_activity_outlined, color: Color(0xFF334155), size: 64),
+          const Icon(Icons.local_activity_outlined,
+              color: Color(0xFF334155), size: 64),
           const SizedBox(height: 16),
           const Text('No offers found',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           const Text('Try adjusting your filters',
               style: TextStyle(color: Color(0xFF94A3B8))),
@@ -149,7 +173,8 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
               _selectedType = 'All';
               _selectedStatus = 'All';
             }),
-            child: const Text('Clear filters', style: TextStyle(color: Color(0xFF2DD4BF))),
+            child: const Text('Clear filters',
+                style: TextStyle(color: Color(0xFF2DD4BF))),
           ),
         ],
       ),
@@ -158,10 +183,14 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
 
   Color _statusColor(String s) {
     switch (s) {
-      case 'active': return const Color(0xFF10B981);
-      case 'upcoming': return const Color(0xFFF59E0B);
-      case 'inactive': return const Color(0xFF64748B);
-      default: return const Color(0xFF2DD4BF);
+      case 'active':
+        return const Color(0xFF10B981);
+      case 'upcoming':
+        return const Color(0xFFF59E0B);
+      case 'inactive':
+        return const Color(0xFF64748B);
+      default:
+        return const Color(0xFF2DD4BF);
     }
   }
 }
@@ -187,7 +216,9 @@ class _FilterChip extends StatelessWidget {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(0.15) : const Color(0xFF0F172A),
+          color: selected
+              ? color.withValues(alpha: 0.15)
+              : const Color(0xFF0F172A),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: selected ? color : const Color(0xFF334155)),
         ),
@@ -228,8 +259,8 @@ class _OfferCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isAvailableNow
-                ? const Color(0xFF2DD4BF).withOpacity(0.4)
-                : Colors.white.withOpacity(0.06),
+                ? const Color(0xFF2DD4BF).withValues(alpha: 0.4)
+                : Colors.white.withValues(alpha: 0.06),
           ),
         ),
         child: Column(
@@ -240,16 +271,17 @@ class _OfferCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: isAvailableNow
-                    ? const Color(0xFF2DD4BF).withOpacity(0.08)
+                    ? const Color(0xFF2DD4BF).withValues(alpha: 0.08)
                     : Colors.transparent,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.15),
+                      color: statusColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(typeIcon, color: statusColor, size: 18),
@@ -259,7 +291,9 @@ class _OfferCard extends StatelessWidget {
                     child: Text(
                       offer.title,
                       style: const TextStyle(
-                          color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                   _StatusBadge(status: status, isAvailableNow: isAvailableNow),
@@ -273,7 +307,8 @@ class _OfferCard extends StatelessWidget {
                 children: [
                   Text(
                     offer.description,
-                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, height: 1.4),
+                    style: const TextStyle(
+                        color: Color(0xFF94A3B8), fontSize: 13, height: 1.4),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -281,12 +316,16 @@ class _OfferCard extends StatelessWidget {
                   Row(
                     children: [
                       // Venue
-                      const Icon(Icons.store_outlined, color: Color(0xFF64748B), size: 14),
+                      const Icon(Icons.store_outlined,
+                          color: Color(0xFF64748B), size: 14),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          venueName.isNotEmpty ? '$venueName · $venueAddress' : venueAddress,
-                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                          venueName.isNotEmpty
+                              ? '$venueName · $venueAddress'
+                              : venueAddress,
+                          style: const TextStyle(
+                              color: Color(0xFF64748B), fontSize: 12),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -296,19 +335,23 @@ class _OfferCard extends StatelessWidget {
                   Row(
                     children: [
                       // Time window
-                      const Icon(Icons.access_time, color: Color(0xFF64748B), size: 14),
+                      const Icon(Icons.access_time,
+                          color: Color(0xFF64748B), size: 14),
                       const SizedBox(width: 4),
                       Text(
                         '${offer.validTimeStart ?? ''} – ${offer.validTimeEnd ?? ''}  ·  ${_formatDays(offer.validDays)}',
-                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                        style: const TextStyle(
+                            color: Color(0xFF64748B), fontSize: 12),
                       ),
                       const Spacer(),
                       // Saving value
                       if (savingValue > 0)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.12),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -324,9 +367,10 @@ class _OfferCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   // Type tag
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -355,20 +399,29 @@ class _OfferCard extends StatelessWidget {
 
   Color _statusColor(String s) {
     switch (s) {
-      case 'active': return const Color(0xFF10B981);
-      case 'upcoming': return const Color(0xFFF59E0B);
-      default: return const Color(0xFF64748B);
+      case 'active':
+        return const Color(0xFF10B981);
+      case 'upcoming':
+        return const Color(0xFFF59E0B);
+      default:
+        return const Color(0xFF64748B);
     }
   }
 
   IconData _typeIcon(String type) {
     switch (type) {
-      case '2-for-1': return Icons.people_outline;
-      case 'discount': return Icons.percent;
-      case 'freebie': return Icons.card_giftcard;
-      case 'guestlist': return Icons.playlist_add_check;
-      case 'happy-hour': return Icons.local_bar_outlined;
-      default: return Icons.local_activity;
+      case '2-for-1':
+        return Icons.people_outline;
+      case 'discount':
+        return Icons.percent;
+      case 'freebie':
+        return Icons.card_giftcard;
+      case 'guestlist':
+        return Icons.playlist_add_check;
+      case 'happy-hour':
+        return Icons.local_bar_outlined;
+      default:
+        return Icons.local_activity;
     }
   }
 }
@@ -404,18 +457,20 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-              width: 6, height: 6,
+              width: 6,
+              height: 6,
               decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 5),
           Text(label,
-              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+              style: TextStyle(
+                  color: color, fontSize: 11, fontWeight: FontWeight.w600)),
         ],
       ),
     );

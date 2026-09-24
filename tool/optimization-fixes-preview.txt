@@ -1,0 +1,79 @@
+Computing fixes in reki (dry run)...
+
+60 proposed fixes in 22 files.
+
+lib\core\models\voucher_scan.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+lib\features\admin\presentation\admin_activity_logs_screen.dart
+  prefer_const_constructors - 6 fixes
+
+lib\features\admin\presentation\admin_notifications_screen.dart
+  prefer_const_constructors - 8 fixes
+
+lib\features\admin\presentation\admin_offers_screen.dart
+  prefer_const_constructors - 5 fixes
+
+lib\features\admin\presentation\admin_venues_screen.dart
+  prefer_const_constructors - 1 fix
+
+lib\features\admin\presentation\test_push_screen.dart
+  prefer_const_constructors - 1 fix
+
+lib\features\admin\presentation\venue_logs_screen.dart
+  prefer_const_constructors - 4 fixes
+  prefer_interpolation_to_compose_strings - 1 fix
+
+lib\features\business\presentation\create_venue_screen.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+lib\features\business\presentation\my_venues_screen.dart
+  prefer_const_constructors - 1 fix
+
+lib\features\business\presentation\qr_scanner_screen.dart
+  curly_braces_in_flow_control_structures - 2 fixes
+
+lib\features\city_selection\presentation\city_selection_screen.dart
+  curly_braces_in_flow_control_structures - 4 fixes
+
+lib\features\notifications\presentation\notifications_screen.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+lib\features\offers\presentation\offer_detail_screen.dart
+  prefer_const_constructors - 1 fix
+
+lib\features\social\presentation\venue_reviews_section.dart
+  prefer_const_constructors - 2 fixes
+
+lib\features\venues\data\venue_management_provider.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+lib\features\venues\presentation\home_screen.dart
+  curly_braces_in_flow_control_structures - 8 fixes
+
+lib\features\venues\presentation\venue_detail_screen.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+lib\features\venues\presentation\whats_on_banner.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+test\unit\repositories\repositories_test.dart
+  prefer_const_constructors - 1 fix
+
+test\unit\services\city_auto_select_service_test.dart
+  avoid_relative_lib_imports - 7 fixes
+
+test\unit\services\location_service_test.dart
+  avoid_relative_lib_imports - 1 fix
+
+test\unit\services\phase6_test.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+To fix an individual diagnostic, run one of:
+  dart fix --apply --code=avoid_relative_lib_imports 
+  dart fix --apply --code=curly_braces_in_flow_control_structures 
+  dart fix --apply --code=prefer_const_constructors 
+  dart fix --apply --code=prefer_interpolation_to_compose_strings 
+
+To fix all diagnostics, run:
+  dart fix --apply 

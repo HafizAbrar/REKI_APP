@@ -48,8 +48,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
                     fontSize: 17,
                     fontWeight: FontWeight.w700)),
             Text(widget.venueName,
-                style: const TextStyle(
-                    color: Color(0xFF64748B), fontSize: 12)),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
           ],
         ),
         actions: [
@@ -73,8 +72,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
                   child: GestureDetector(
                     onTap: () => setState(() => _period = p.$1),
                     child: Container(
-                      margin: EdgeInsets.only(
-                          right: p.$1 != 'month' ? 8 : 0),
+                      margin: EdgeInsets.only(right: p.$1 != 'month' ? 8 : 0),
                       padding: const EdgeInsets.symmetric(vertical: 9),
                       decoration: BoxDecoration(
                         color: selected
@@ -108,8 +106,8 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
           Expanded(
             child: state.when(
               loading: () => const Center(
-                  child: CircularProgressIndicator(
-                      color: AppTheme.primaryColor)),
+                  child:
+                      CircularProgressIndicator(color: AppTheme.primaryColor)),
               error: (e, _) => _buildError(e.toString(), args),
               data: (data) => _buildContent(data),
             ),
@@ -152,12 +150,10 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
     // Optional extended fields
     final conversionRate = _doubleVal(data, 'conversionRate');
     final avgSessionTime = data['avgSessionTime']?.toString();
-    final topOffers = (data['topOffers'] as List?)
-            ?.cast<Map<String, dynamic>>() ??
-        [];
-    final peakHours = (data['peakHours'] as List?)
-            ?.cast<Map<String, dynamic>>() ??
-        [];
+    final topOffers =
+        (data['topOffers'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final peakHours =
+        (data['peakHours'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     return RefreshIndicator(
       color: AppTheme.primaryColor,
@@ -226,8 +222,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
                       child: _statCard(
                         icon: Icons.trending_up,
                         label: 'Conversion Rate',
-                        value:
-                            '${(conversionRate * 100).toStringAsFixed(1)}%',
+                        value: '${(conversionRate * 100).toStringAsFixed(1)}%',
                         color: const Color(0xFF10B981),
                       ),
                     ),
@@ -272,8 +267,8 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
                 icon: Icons.local_offer_outlined,
                 label: 'Create Offer',
                 color: AppTheme.primaryColor,
-                onTap: () => context
-                    .push('/create-offer?venueId=${widget.venueId}'),
+                onTap: () =>
+                    context.push('/create-offer?venueId=${widget.venueId}'),
               ),
             ),
             const SizedBox(height: 24),
@@ -330,7 +325,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,7 +336,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(9),
                 ),
                 child: Icon(icon, color: color, size: 16),
@@ -352,7 +347,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: changeColor.withOpacity(0.12),
+                    color: changeColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(change,
@@ -367,9 +362,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
           Text(
             total.toString(),
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w900),
+                color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
           ),
           Text(label,
               style: const TextStyle(
@@ -392,7 +385,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -400,7 +393,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 18),
@@ -477,14 +470,14 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('$clicks clicks',
-                  style: const TextStyle(
-                      color: Color(0xFF64748B), fontSize: 11)),
+                  style:
+                      const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
               Text(
                   clicks > 0
                       ? '${((redemptions / clicks) * 100).toStringAsFixed(0)}% conversion'
                       : '—',
-                  style: const TextStyle(
-                      color: Color(0xFF64748B), fontSize: 11)),
+                  style:
+                      const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
             ],
           ),
         ],
@@ -493,8 +486,9 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
   }
 
   Widget _peakHoursChart(List<Map<String, dynamic>> hours) {
-    final maxCount =
-        hours.map((h) => (h['count'] as num?)?.toInt() ?? 0).fold(0, (a, b) => a > b ? a : b);
+    final maxCount = hours
+        .map((h) => (h['count'] as num?)?.toInt() ?? 0)
+        .fold(0, (a, b) => a > b ? a : b);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -526,7 +520,8 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
                               decoration: BoxDecoration(
                                 color: isPeak
                                     ? AppTheme.primaryColor
-                                    : AppTheme.primaryColor.withOpacity(0.3),
+                                    : AppTheme.primaryColor
+                                        .withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -569,9 +564,9 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -580,9 +575,7 @@ class _VenueAnalyticsScreenState extends ConsumerState<VenueAnalyticsScreen> {
             const SizedBox(width: 6),
             Text(label,
                 style: TextStyle(
-                    color: color,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700)),
+                    color: color, fontSize: 13, fontWeight: FontWeight.w700)),
           ],
         ),
       ),

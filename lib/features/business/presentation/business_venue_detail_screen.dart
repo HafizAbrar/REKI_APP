@@ -36,13 +36,24 @@ class _BusinessVenueDetailScreenState
   bool _saving = false;
 
   static const _categories = [
-    'bar', 'club', 'restaurant', 'lounge',
-    'live_music_venue', 'pub', 'rooftop_bar', 'cocktail_bar',
+    'bar',
+    'club',
+    'restaurant',
+    'lounge',
+    'live_music_venue',
+    'pub',
+    'rooftop_bar',
+    'cocktail_bar',
   ];
   static const _categoryLabels = {
-    'bar': 'Bar', 'club': 'Club', 'restaurant': 'Restaurant',
-    'lounge': 'Lounge', 'live_music_venue': 'Live Music Venue',
-    'pub': 'Pub', 'rooftop_bar': 'Rooftop Bar', 'cocktail_bar': 'Cocktail Bar',
+    'bar': 'Bar',
+    'club': 'Club',
+    'restaurant': 'Restaurant',
+    'lounge': 'Lounge',
+    'live_music_venue': 'Live Music Venue',
+    'pub': 'Pub',
+    'rooftop_bar': 'Rooftop Bar',
+    'cocktail_bar': 'Cocktail Bar',
   };
 
   @override
@@ -104,9 +115,13 @@ class _BusinessVenueDetailScreenState
       },
     );
     if (!mounted) return;
-    setState(() { _saving = false; if (ok) _editMode = false; });
+    setState(() {
+      _saving = false;
+      if (ok) _editMode = false;
+    });
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(ok ? 'Venue updated successfully' : 'Failed to update venue'),
+      content:
+          Text(ok ? 'Venue updated successfully' : 'Failed to update venue'),
       backgroundColor: ok ? const Color(0xFF10B981) : Colors.red,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -137,12 +152,14 @@ class _BusinessVenueDetailScreenState
         actions: [
           if (!_editMode) ...[
             IconButton(
-              icon: const Icon(Icons.edit_outlined, color: AppTheme.primaryColor),
+              icon:
+                  const Icon(Icons.edit_outlined, color: AppTheme.primaryColor),
               tooltip: 'Edit',
               onPressed: () => setState(() => _editMode = true),
             ),
             IconButton(
-              icon: const Icon(Icons.dashboard_outlined, color: AppTheme.primaryColor),
+              icon: const Icon(Icons.dashboard_outlined,
+                  color: AppTheme.primaryColor),
               tooltip: 'Dashboard',
               onPressed: () => context.push('/business-dashboard'),
             ),
@@ -156,7 +173,8 @@ class _BusinessVenueDetailScreenState
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(
-                      width: 16, height: 16,
+                      width: 16,
+                      height: 16,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: AppTheme.primaryColor))
                   : const Text('Save',
@@ -196,7 +214,7 @@ class _BusinessVenueDetailScreenState
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.12),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: const Icon(Icons.store_outlined,
@@ -249,8 +267,8 @@ class _BusinessVenueDetailScreenState
                 ],
                 if (_priceLevel > 0) ...[
                   const SizedBox(height: 10),
-                  _infoRow(Icons.attach_money, 'Price Level',
-                      '£' * _priceLevel),
+                  _infoRow(
+                      Icons.attach_money, 'Price Level', '£' * _priceLevel),
                 ],
               ],
             ),
@@ -303,8 +321,8 @@ class _BusinessVenueDetailScreenState
                   icon: Icons.add_circle_outline,
                   label: 'Create Offer',
                   color: AppTheme.primaryColor,
-                  onTap: () => context.push(
-                      '/create-offer?venueId=${widget.venueId}'),
+                  onTap: () =>
+                      context.push('/create-offer?venueId=${widget.venueId}'),
                 ),
               ),
             ],
@@ -319,16 +337,18 @@ class _BusinessVenueDetailScreenState
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.red.withOpacity(0.2)),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
             ),
             child: ListTile(
               leading: Container(
-                width: 36, height: 36,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
+                child: const Icon(Icons.delete_outline,
+                    color: Colors.red, size: 18),
               ),
               title: const Text('Remove Venue',
                   style: TextStyle(
@@ -337,7 +357,8 @@ class _BusinessVenueDetailScreenState
                       fontWeight: FontWeight.w600)),
               subtitle: const Text('Permanently remove this venue',
                   style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.red, size: 20),
+              trailing:
+                  const Icon(Icons.chevron_right, color: Colors.red, size: 20),
               onTap: () => _confirmDelete(context),
             ),
           ),
@@ -362,7 +383,6 @@ class _BusinessVenueDetailScreenState
           const SizedBox(height: 14),
           _field(_areaCtrl, 'Area / Neighbourhood', Icons.map_outlined),
           const SizedBox(height: 24),
-
           _sectionLabel('HOURS'),
           const SizedBox(height: 12),
           Row(children: [
@@ -374,7 +394,6 @@ class _BusinessVenueDetailScreenState
                     _closingCtrl, 'Closing Time', Icons.access_time_filled)),
           ]),
           const SizedBox(height: 24),
-
           _sectionLabel('CATEGORY'),
           const SizedBox(height: 12),
           Container(
@@ -402,7 +421,6 @@ class _BusinessVenueDetailScreenState
             ),
           ),
           const SizedBox(height: 24),
-
           _sectionLabel('PRICE LEVEL'),
           const SizedBox(height: 12),
           Row(
@@ -429,7 +447,9 @@ class _BusinessVenueDetailScreenState
                       '£' * level,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: selected ? AppTheme.darkBg : const Color(0xFF94A3B8),
+                        color: selected
+                            ? AppTheme.darkBg
+                            : const Color(0xFF94A3B8),
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
                       ),
@@ -440,7 +460,6 @@ class _BusinessVenueDetailScreenState
             }),
           ),
           const SizedBox(height: 36),
-
           SizedBox(
             width: double.infinity,
             height: 54,
@@ -455,12 +474,13 @@ class _BusinessVenueDetailScreenState
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(
-                      width: 22, height: 22,
+                      width: 22,
+                      height: 22,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: AppTheme.darkBg))
                   : const Text('Save Changes',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w800)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             ),
           ),
         ],
@@ -500,9 +520,8 @@ class _BusinessVenueDetailScreenState
                   .deleteVenue(widget.venueId);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(ok
-                      ? 'Venue removed'
-                      : 'Failed to remove venue'),
+                  content:
+                      Text(ok ? 'Venue removed' : 'Failed to remove venue'),
                   backgroundColor: ok ? Colors.green[700] : Colors.red[700],
                 ));
                 if (ok) context.pop();
@@ -555,14 +574,15 @@ class _BusinessVenueDetailScreenState
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
             Container(
-              width: 36, height: 36,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: color, size: 18),
@@ -582,8 +602,7 @@ class _BusinessVenueDetailScreenState
     );
   }
 
-  Widget _field(
-      TextEditingController controller, String hint, IconData icon) {
+  Widget _field(TextEditingController controller, String hint, IconData icon) {
     return TextFormField(
       controller: controller,
       style: const TextStyle(color: Colors.white, fontSize: 14),

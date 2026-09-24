@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: lib/features/auth/presentation/auth_provider.dart
+@@
+ import '../../../core/network/auth_api_service.dart';
++import '../../../core/models/user.dart';
+*** End Patch

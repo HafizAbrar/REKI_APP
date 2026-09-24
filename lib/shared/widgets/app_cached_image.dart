@@ -38,6 +38,20 @@ class AppCachedImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
+      // Decode thumbnails close to their display size instead of full resolution.
+      memCacheWidth: width != null && width!.isFinite && width! > 0
+          ? (width! * MediaQuery.devicePixelRatioOf(context))
+              .ceil()
+              .clamp(1, 4096)
+          : null,
+      memCacheHeight: (width == null || !width!.isFinite) &&
+              height != null &&
+              height!.isFinite &&
+              height! > 0
+          ? (height! * MediaQuery.devicePixelRatioOf(context))
+              .ceil()
+              .clamp(1, 4096)
+          : null,
       placeholder: (_, __) => Container(
         width: width,
         height: height,

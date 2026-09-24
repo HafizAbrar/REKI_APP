@@ -8,17 +8,21 @@ import '../../../core/models/user.dart';
 
 // Tab definitions: label → types it matches (empty = all)
 const _tabs = [
-  ('All',    <NotificationType>[]),
-  ('Vibes',  [NotificationType.vibe, NotificationType.venue]),
+  ('All', <NotificationType>[]),
+  ('Vibes', [NotificationType.vibe, NotificationType.venue]),
   ('Offers', [NotificationType.offer]),
-  ('Other',  [NotificationType.welcome, NotificationType.system, NotificationType.alert]),
+  (
+    'Other',
+    [NotificationType.welcome, NotificationType.system, NotificationType.alert]
+  ),
 ];
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
@@ -59,12 +63,20 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 if (filtered.isEmpty) return _buildEmpty();
 
                 // Re-bucket filtered list by time group
-                final todayIds = (grouped['today'] ?? []).map((n) => n.id).toSet();
-                final yesterdayIds = (grouped['yesterday'] ?? []).map((n) => n.id).toSet();
+                final todayIds =
+                    (grouped['today'] ?? []).map((n) => n.id).toSet();
+                final yesterdayIds =
+                    (grouped['yesterday'] ?? []).map((n) => n.id).toSet();
 
-                final today = filtered.where((n) => todayIds.contains(n.id)).toList();
-                final yesterday = filtered.where((n) => yesterdayIds.contains(n.id)).toList();
-                final earlier = filtered.where((n) => !todayIds.contains(n.id) && !yesterdayIds.contains(n.id)).toList();
+                final today =
+                    filtered.where((n) => todayIds.contains(n.id)).toList();
+                final yesterday =
+                    filtered.where((n) => yesterdayIds.contains(n.id)).toList();
+                final earlier = filtered
+                    .where((n) =>
+                        !todayIds.contains(n.id) &&
+                        !yesterdayIds.contains(n.id))
+                    .toList();
 
                 return ListView(
                   padding: const EdgeInsets.only(bottom: 100),
@@ -95,7 +107,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
-        border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.08))),
+        border: Border(
+            bottom: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
       ),
       child: SafeArea(
         bottom: false,
@@ -121,16 +134,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 ...?s.valueOrNull!['earlier'],
                               ].where((n) => !n.isRead).length
                             : 0));
-                    if (count > 0)
+                    if (count > 0) {
                       return Container(
                         margin: const EdgeInsets.only(right: 12),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2DD4BF).withOpacity(0.15),
+                          color:
+                              const Color(0xFF2DD4BF).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: const Color(0xFF2DD4BF).withOpacity(0.3)),
+                              color: const Color(0xFF2DD4BF)
+                                  .withValues(alpha: 0.3)),
                         ),
                         child: Text('$count unread',
                             style: const TextStyle(
@@ -138,6 +153,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600)),
                       );
+                    }
                     return const SizedBox.shrink();
                   }),
                   GestureDetector(
@@ -159,7 +175,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 children: List.generate(_tabs.length, (i) {
                   final isSelected = _selectedTab == i;
                   return Padding(
-                    padding: EdgeInsets.only(right: i < _tabs.length - 1 ? 10 : 0),
+                    padding:
+                        EdgeInsets.only(right: i < _tabs.length - 1 ? 10 : 0),
                     child: GestureDetector(
                       onTap: () => setState(() => _selectedTab = i),
                       child: AnimatedContainer(
@@ -174,12 +191,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           border: isSelected
                               ? null
                               : Border.all(
-                                  color: Colors.white.withOpacity(0.1)),
+                                  color: Colors.white.withValues(alpha: 0.1)),
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
                                     color: const Color(0xFF2DD4BF)
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 12,
                                   )
                                 ]
@@ -231,7 +248,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        color: Colors.red.withOpacity(0.8),
+        color: Colors.red.withValues(alpha: 0.8),
         child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
       child: GestureDetector(
@@ -243,9 +260,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           decoration: BoxDecoration(
             color: n.isRead
                 ? Colors.transparent
-                : const Color(0xFF1E293B).withOpacity(0.5),
+                : const Color(0xFF1E293B).withValues(alpha: 0.5),
             border: Border(
-                bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
+                bottom:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.05))),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,13 +272,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: n.icon != null && n.icon!.isNotEmpty
                     ? Center(
-                        child: Text(n.icon!,
-                            style: const TextStyle(fontSize: 20)))
+                        child:
+                            Text(n.icon!, style: const TextStyle(fontSize: 20)))
                     : Icon(icon, color: color, size: 20),
               ),
               const SizedBox(width: 14),
@@ -283,8 +301,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           width: 8,
                           height: 8,
                           decoration: const BoxDecoration(
-                              color: Color(0xFF2DD4BF),
-                              shape: BoxShape.circle),
+                              color: Color(0xFF2DD4BF), shape: BoxShape.circle),
                         ),
                     ]),
                     const SizedBox(height: 4),
@@ -312,7 +329,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.notifications_none,
-                color: Colors.white.withOpacity(0.15), size: 64),
+                color: Colors.white.withValues(alpha: 0.15), size: 64),
             const SizedBox(height: 16),
             Text(
               _selectedTab == 0
@@ -338,8 +355,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   color: Color(0xFF475569), size: 56),
               const SizedBox(height: 16),
               Text(msg,
-                  style: const TextStyle(
-                      color: Color(0xFF94A3B8), fontSize: 14),
+                  style:
+                      const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                   textAlign: TextAlign.center),
               const SizedBox(height: 20),
               ElevatedButton.icon(

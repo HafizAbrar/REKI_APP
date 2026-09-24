@@ -14,11 +14,11 @@ final userVenuesProvider = FutureProvider<List<dynamic>>((ref) async {
 const _allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const _offerTypes = [
-  ('2-for-1',     '2 for 1',    Icons.local_bar,       Color(0xFF8B5CF6)),
-  ('discount',    'Discount',   Icons.percent,          Color(0xFF3B82F6)),
-  ('freebie',     'Freebie',    Icons.card_giftcard,    Color(0xFF10B981)),
-  ('guestlist',   'Guestlist',  Icons.star,             Color(0xFFF59E0B)),
-  ('happy-hour',  'Happy Hour', Icons.access_time,      Color(0xFFEF4444)),
+  ('2-for-1', '2 for 1', Icons.local_bar, Color(0xFF8B5CF6)),
+  ('discount', 'Discount', Icons.percent, Color(0xFF3B82F6)),
+  ('freebie', 'Freebie', Icons.card_giftcard, Color(0xFF10B981)),
+  ('guestlist', 'Guestlist', Icons.star, Color(0xFFF59E0B)),
+  ('happy-hour', 'Happy Hour', Icons.access_time, Color(0xFFEF4444)),
 ];
 
 class CreateOfferScreen extends ConsumerStatefulWidget {
@@ -31,19 +31,19 @@ class CreateOfferScreen extends ConsumerStatefulWidget {
 
 class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _titleCtrl        = TextEditingController();
-  final _descCtrl         = TextEditingController();
-  final _maxRedCtrl       = TextEditingController(text: '100');
-  final _savingCtrl       = TextEditingController(text: '0');
+  final _titleCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _maxRedCtrl = TextEditingController(text: '100');
+  final _savingCtrl = TextEditingController(text: '0');
 
   String? _selectedVenueId;
-  String  _offerType        = '2-for-1';
+  String _offerType = '2-for-1';
   final Set<String> _validDays = {'Mon', 'Tue', 'Wed', 'Thu', 'Fri'};
-  TimeOfDay _timeStart      = const TimeOfDay(hour: 17, minute: 0);
-  TimeOfDay _timeEnd        = const TimeOfDay(hour: 19, minute: 0);
-  DateTime  _expiresAt      = DateTime.now().add(const Duration(days: 365));
-  bool      _isAvailableNow = true;
-  bool      _isLoading      = false;
+  TimeOfDay _timeStart = const TimeOfDay(hour: 17, minute: 0);
+  TimeOfDay _timeEnd = const TimeOfDay(hour: 19, minute: 0);
+  DateTime _expiresAt = DateTime.now().add(const Duration(days: 365));
+  bool _isAvailableNow = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -81,7 +81,9 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
         ),
       ),
     );
-    if (picked != null) setState(() => isStart ? _timeStart = picked : _timeEnd = picked);
+    if (picked != null) {
+      setState(() => isStart ? _timeStart = picked : _timeEnd = picked);
+    }
   }
 
   Future<void> _pickDate() async {
@@ -103,25 +105,27 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedVenueId == null) {
-      _snack('Please select a venue', isError: true); return;
+      _snack('Please select a venue', isError: true);
+      return;
     }
     if (_validDays.isEmpty) {
-      _snack('Select at least one valid day', isError: true); return;
+      _snack('Select at least one valid day', isError: true);
+      return;
     }
 
     setState(() => _isLoading = true);
     try {
       final result = await ref.read(businessRepositoryProvider).createOffer({
-        'venueId':        _selectedVenueId,
-        'title':          _titleCtrl.text.trim(),
-        'description':    _descCtrl.text.trim(),
-        'type':           _offerType,
-        'validDays':      _validDays.toList(),
+        'venueId': _selectedVenueId,
+        'title': _titleCtrl.text.trim(),
+        'description': _descCtrl.text.trim(),
+        'type': _offerType,
+        'validDays': _validDays.toList(),
         'validTimeStart': _fmt(_timeStart),
-        'validTimeEnd':   _fmt(_timeEnd),
+        'validTimeEnd': _fmt(_timeEnd),
         'maxRedemptions': int.tryParse(_maxRedCtrl.text) ?? 100,
-        'savingValue':    int.tryParse(_savingCtrl.text) ?? 0,
-        'expiresAt':      _expiresAt.toUtc().toIso8601String(),
+        'savingValue': int.tryParse(_savingCtrl.text) ?? 0,
+        'expiresAt': _expiresAt.toUtc().toIso8601String(),
         'isAvailableNow': _isAvailableNow,
       });
       if (!mounted) return;
@@ -152,8 +156,8 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
 
   // ── helpers ──────────────────────────────────────────────────────────────
 
-  (String, String, IconData, Color) get _currentType =>
-      _offerTypes.firstWhere((t) => t.$1 == _offerType, orElse: () => _offerTypes[0]);
+  (String, String, IconData, Color) get _currentType => _offerTypes
+      .firstWhere((t) => t.$1 == _offerType, orElse: () => _offerTypes[0]);
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +172,10 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
           onPressed: () => context.pop(),
         ),
         title: const Text('Create Offer',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -184,7 +191,8 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
         ],
       ),
       body: venuesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryColor)),
         error: (e, _) => Center(
             child: Text(ErrorHandler.getErrorMessage(e),
                 style: const TextStyle(color: Colors.white))),
@@ -210,7 +218,9 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
           children: [
             // ── Preview card ──────────────────────────────────────────────
             _PreviewCard(
-              title: _titleCtrl.text.trim().isEmpty ? 'Offer Title' : _titleCtrl.text.trim(),
+              title: _titleCtrl.text.trim().isEmpty
+                  ? 'Offer Title'
+                  : _titleCtrl.text.trim(),
               type: _currentType.$2,
               typeColor: _currentType.$4,
               typeIcon: _currentType.$3,
@@ -281,7 +291,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                           horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         color: selected
-                            ? t.$4.withOpacity(0.15)
+                            ? t.$4.withValues(alpha: 0.15)
                             : const Color(0xFF0F172A),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
@@ -327,7 +337,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
                           color: sel
-                              ? AppTheme.primaryColor.withOpacity(0.15)
+                              ? AppTheme.primaryColor.withValues(alpha: 0.15)
                               : const Color(0xFF0F172A),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
@@ -343,9 +353,8 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                                   ? AppTheme.primaryColor
                                   : const Color(0xFF64748B),
                               fontSize: 11,
-                              fontWeight: sel
-                                  ? FontWeight.w800
-                                  : FontWeight.normal,
+                              fontWeight:
+                                  sel ? FontWeight.w800 : FontWeight.normal,
                             )),
                       ),
                     ),
@@ -359,11 +368,16 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
             _card(children: [
               _label('VALID TIME WINDOW'),
               Row(children: [
-                Expanded(child: _timeTile('Start', _fmt(_timeStart), () => _pickTime(true))),
+                Expanded(
+                    child: _timeTile(
+                        'Start', _fmt(_timeStart), () => _pickTime(true))),
                 const SizedBox(width: 12),
-                const Icon(Icons.arrow_forward, color: Color(0xFF475569), size: 18),
+                const Icon(Icons.arrow_forward,
+                    color: Color(0xFF475569), size: 18),
                 const SizedBox(width: 12),
-                Expanded(child: _timeTile('End', _fmt(_timeEnd), () => _pickTime(false))),
+                Expanded(
+                    child: _timeTile(
+                        'End', _fmt(_timeEnd), () => _pickTime(false))),
               ]),
             ]),
             const SizedBox(height: 16),
@@ -377,7 +391,8 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                     controller: _maxRedCtrl,
                     style: const TextStyle(color: Colors.white),
                     keyboardType: TextInputType.number,
-                    decoration: _dec('Max Redemptions', Icons.confirmation_number_outlined),
+                    decoration: _dec(
+                        'Max Redemptions', Icons.confirmation_number_outlined),
                     onChanged: (_) => setState(() {}),
                     validator: (v) =>
                         int.tryParse(v ?? '') == null ? 'Enter a number' : null,
@@ -389,7 +404,8 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                     controller: _savingCtrl,
                     style: const TextStyle(color: Colors.white),
                     keyboardType: TextInputType.number,
-                    decoration: _dec('Saving Value (£)', Icons.savings_outlined),
+                    decoration:
+                        _dec('Saving Value (£)', Icons.savings_outlined),
                     onChanged: (_) => setState(() {}),
                     validator: (v) =>
                         int.tryParse(v ?? '') == null ? 'Enter a number' : null,
@@ -441,13 +457,14 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
               ),
               const SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                       color: _isAvailableNow
-                          ? AppTheme.primaryColor.withOpacity(0.4)
+                          ? AppTheme.primaryColor.withValues(alpha: 0.4)
                           : const Color(0xFF334155)),
                 ),
                 child: Row(children: [
@@ -455,7 +472,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: _isAvailableNow
-                          ? AppTheme.primaryColor.withOpacity(0.15)
+                          ? AppTheme.primaryColor.withValues(alpha: 0.15)
                           : const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -505,7 +522,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   disabledBackgroundColor:
-                      AppTheme.primaryColor.withOpacity(0.4),
+                      AppTheme.primaryColor.withValues(alpha: 0.4),
                   foregroundColor: AppTheme.backgroundDark,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
@@ -538,11 +555,11 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF334155).withOpacity(0.6)),
+          border:
+              Border.all(color: const Color(0xFF334155).withValues(alpha: 0.6)),
         ),
         child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: children),
+            crossAxisAlignment: CrossAxisAlignment.start, children: children),
       );
 
   Widget _label(String text) => Padding(
@@ -565,10 +582,10 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFF334155)),
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(label,
-                style: const TextStyle(
-                    color: Color(0xFF64748B), fontSize: 11)),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
             const SizedBox(height: 6),
             Row(children: [
               const Icon(Icons.access_time_outlined,
@@ -586,8 +603,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
 
   InputDecoration _dec(String label, IconData icon) => InputDecoration(
         labelText: label,
-        labelStyle:
-            const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+        labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
         prefixIcon: Icon(icon, color: AppTheme.primaryColor, size: 20),
         filled: true,
         fillColor: const Color(0xFF0F172A),
@@ -644,28 +660,29 @@ class _PreviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            typeColor.withOpacity(0.18),
-            typeColor.withOpacity(0.05),
+            typeColor.withValues(alpha: 0.18),
+            typeColor.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: typeColor.withOpacity(0.35)),
+        border: Border.all(color: typeColor.withValues(alpha: 0.35)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: typeColor.withOpacity(0.2),
+              color: typeColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(typeIcon, color: typeColor, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(title,
                   style: const TextStyle(
                       color: Colors.white,
@@ -675,10 +692,9 @@ class _PreviewCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis),
               const SizedBox(height: 2),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: typeColor.withOpacity(0.15),
+                  color: typeColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(type,
@@ -697,12 +713,11 @@ class _PreviewCard extends StatelessWidget {
                       fontSize: 22,
                       fontWeight: FontWeight.w900)),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: isAvailableNow
-                    ? const Color(0xFF10B981).withOpacity(0.15)
-                    : const Color(0xFF475569).withOpacity(0.15),
+                    ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                    : const Color(0xFF475569).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -739,8 +754,7 @@ class _PreviewCard extends StatelessWidget {
               color: Color(0xFF64748B), size: 14),
           const SizedBox(width: 6),
           Text('$timeStart – $timeEnd',
-              style: const TextStyle(
-                  color: Color(0xFF94A3B8), fontSize: 12)),
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
           const SizedBox(width: 16),
           const Icon(Icons.calendar_today_outlined,
               color: Color(0xFF64748B), size: 14),

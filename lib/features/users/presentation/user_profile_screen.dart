@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/city_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/auth_service.dart';
@@ -326,7 +327,7 @@ class UserProfileScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,9 +367,9 @@ class UserProfileScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -387,7 +388,7 @@ class UserProfileScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFF2DD4BF).withOpacity(0.15),
+        color: const Color(0xFF2DD4BF).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -439,7 +440,10 @@ class UserProfileScreen extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => Consumer(builder: (context, ref, _) {
-        final state = ref.watch(savedVenuesProvider);
+        final city = ref.watch(selectedCityProvider).valueOrNull;
+        final state = ref.watch(savedVenuesProvider).whenData((venues) => venues
+            .where((v) => v.city.toLowerCase() == (city?.slug ?? 'manchester'))
+            .toList());
         return DraggableScrollableSheet(
           initialChildSize: 0.6,
           minChildSize: 0.4,
@@ -452,7 +456,7 @@ class UserProfileScreen extends ConsumerWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2)),
               ),
               const Padding(
@@ -502,7 +506,8 @@ class UserProfileScreen extends ConsumerWidget {
                                 color: const Color(0xFF0F172A),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
-                                    color: Colors.white.withOpacity(0.06)),
+                                    color:
+                                        Colors.white.withValues(alpha: 0.06)),
                               ),
                               child: ListTile(
                                 contentPadding: const EdgeInsets.symmetric(
@@ -512,7 +517,7 @@ class UserProfileScreen extends ConsumerWidget {
                                   height: 44,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF2DD4BF)
-                                        .withOpacity(0.15),
+                                        .withValues(alpha: 0.15),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(Icons.store_outlined,
@@ -574,7 +579,7 @@ class UserProfileScreen extends ConsumerWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2)),
               ),
               const Padding(
@@ -658,7 +663,7 @@ class UserProfileScreen extends ConsumerWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -669,7 +674,7 @@ class UserProfileScreen extends ConsumerWidget {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.12),
+                    color: Colors.red.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.delete_forever,
@@ -697,9 +702,9 @@ class UserProfileScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.06),
+                  color: Colors.red.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red.withOpacity(0.2)),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
                 ),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -751,7 +756,8 @@ class UserProfileScreen extends ConsumerWidget {
                 Expanded(
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.white.withOpacity(0.15)),
+                      side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.15)),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -768,7 +774,8 @@ class UserProfileScreen extends ConsumerWidget {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
-                      disabledBackgroundColor: Colors.red.withOpacity(0.3),
+                      disabledBackgroundColor:
+                          Colors.red.withValues(alpha: 0.3),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -833,7 +840,7 @@ class UserProfileScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: ListTile(
         leading: Icon(icon,
@@ -906,7 +913,7 @@ class _RedemptionCard extends StatelessWidget {
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: statusColor.withOpacity(0.2),
+          color: statusColor.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -915,7 +922,7 @@ class _RedemptionCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.06),
+              color: statusColor.withValues(alpha: 0.06),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(16)),
             ),
@@ -924,7 +931,7 @@ class _RedemptionCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.15),
+                    color: statusColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -949,7 +956,7 @@ class _RedemptionCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.15),
+                    color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -1024,7 +1031,7 @@ class _RedemptionCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(

@@ -35,8 +35,7 @@ class _AdminRedemptionsScreenState
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E293B),
-        title:
-            const Text('Redemptions', style: TextStyle(color: Colors.white)),
+        title: const Text('Redemptions', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: redemptionsAsync.when(
@@ -60,8 +59,7 @@ class _AdminRedemptionsScreenState
         data: (page) => Column(
           children: [
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               color: const Color(0xFF1E293B),
               child: Row(children: [
                 Text('${page.total} redemption${page.total == 1 ? '' : 's'}',
@@ -135,24 +133,23 @@ class _AdminRedemptionsScreenState
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(r.offerTitle,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14)),
-                  const SizedBox(height: 2),
-                  Row(children: [
-                    const Icon(Icons.store_outlined,
-                        color: Color(0xFF64748B), size: 12),
-                    const SizedBox(width: 4),
-                    Text(r.venueName,
-                        style: const TextStyle(
-                            color: Color(0xFF94A3B8), fontSize: 12)),
-                  ]),
-                ]),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(r.offerTitle,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14)),
+              const SizedBox(height: 2),
+              Row(children: [
+                const Icon(Icons.store_outlined,
+                    color: Color(0xFF64748B), size: 12),
+                const SizedBox(width: 4),
+                Text(r.venueName,
+                    style: const TextStyle(
+                        color: Color(0xFF94A3B8), fontSize: 12)),
+              ]),
+            ]),
           ),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             _chip(r.status, statusColor),
@@ -173,17 +170,14 @@ class _AdminRedemptionsScreenState
 
         // User row
         Row(children: [
-          const Icon(Icons.person_outline,
-              color: Color(0xFF64748B), size: 13),
+          const Icon(Icons.person_outline, color: Color(0xFF64748B), size: 13),
           const SizedBox(width: 6),
           Text(r.userName,
-              style: const TextStyle(
-                  color: Color(0xFF94A3B8), fontSize: 12)),
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
           const Spacer(),
           // Voucher code
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: const Color(0xFF334155),
               borderRadius: BorderRadius.circular(6),
@@ -203,27 +197,23 @@ class _AdminRedemptionsScreenState
           const Icon(Icons.tag, color: Color(0xFF64748B), size: 13),
           const SizedBox(width: 6),
           Text(r.transactionId,
-              style: const TextStyle(
-                  color: Color(0xFF64748B), fontSize: 11)),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
         ]),
         const SizedBox(height: 8),
 
         // Timestamps
         Row(children: [
-          const Icon(Icons.access_time,
-              color: Color(0xFF64748B), size: 12),
+          const Icon(Icons.access_time, color: Color(0xFF64748B), size: 12),
           const SizedBox(width: 4),
           Text('Claimed ${_formatDateTime(r.createdAt)}',
-              style:
-                  const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
           if (r.redeemedAt != null) ...[
             const SizedBox(width: 12),
             const Icon(Icons.check_circle_outline,
                 color: Color(0xFF10B981), size: 12),
             const SizedBox(width: 4),
             Text('Used ${_formatDateTime(r.redeemedAt!)}',
-                style: const TextStyle(
-                    color: Color(0xFF10B981), fontSize: 11)),
+                style: const TextStyle(color: Color(0xFF10B981), fontSize: 11)),
           ],
         ]),
       ]),
@@ -311,9 +301,7 @@ class _AdminRedemptionsScreenState
                   : const Color(0xFF334155)),
         ),
         child: Icon(icon,
-            color: enabled
-                ? const Color(0xFF2DD4BF)
-                : const Color(0xFF475569),
+            color: enabled ? const Color(0xFF2DD4BF) : const Color(0xFF475569),
             size: 18),
       ),
     );

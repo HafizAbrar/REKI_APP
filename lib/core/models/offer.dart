@@ -34,42 +34,46 @@ class Offer {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'description': description,
-    'type': type,
-    'isActive': isActive,
-    'expiresAt': validUntil.toIso8601String(),
-    'validDays': validDays,
-    if (validTimeStart != null) 'validTimeStart': validTimeStart,
-    if (validTimeEnd != null) 'validTimeEnd': validTimeEnd,
-    if (maxRedemptions != null) 'maxRedemptions': maxRedemptions,
-    if (savingValue != null) 'savingValue': savingValue,
-    'status': status,
-    'isAvailableNow': isAvailableNow,
-  };
+        'id': id,
+        'title': title,
+        'description': description,
+        'type': type,
+        'isActive': isActive,
+        'expiresAt': validUntil.toIso8601String(),
+        'validDays': validDays,
+        if (validTimeStart != null) 'validTimeStart': validTimeStart,
+        if (validTimeEnd != null) 'validTimeEnd': validTimeEnd,
+        if (maxRedemptions != null) 'maxRedemptions': maxRedemptions,
+        if (savingValue != null) 'savingValue': savingValue,
+        'status': status,
+        'isAvailableNow': isAvailableNow,
+      };
 
   factory Offer.fromJson(Map<String, dynamic> json) => Offer(
-    id: json['id']?.toString() ?? '',
-    title: json['title']?.toString() ?? '',
-    description: json['description']?.toString() ?? '',
-    type: json['type']?.toString() ?? json['offerType']?.toString() ?? 'discount',
-    isActive: json['isActive'] ?? false,
-    validUntil: json['expiresAt'] != null
-        ? DateTime.parse(json['expiresAt'])
-        : json['endsAt'] != null
-            ? DateTime.parse(json['endsAt'])
-            : json['validUntil'] != null
-                ? DateTime.parse(json['validUntil'])
-                : DateTime.now(),
-    terms: json['terms']?.toString() ?? '',
-    venue: json['venue'] as Map<String, dynamic>?,
-    validDays: (json['validDays'] as List?)?.map((e) => e.toString()).toList() ?? [],
-    validTimeStart: json['validTimeStart']?.toString(),
-    validTimeEnd: json['validTimeEnd']?.toString(),
-    maxRedemptions: json['maxRedemptions'] as int?,
-    savingValue: json['savingValue'] as num?,
-    status: json['status']?.toString() ?? 'inactive',
-    isAvailableNow: json['isAvailableNow'] as bool? ?? false,
-  );
+        id: json['id']?.toString() ?? '',
+        title: json['title']?.toString() ?? '',
+        description: json['description']?.toString() ?? '',
+        type: json['type']?.toString() ??
+            json['offerType']?.toString() ??
+            'discount',
+        isActive: json['isActive'] ?? false,
+        validUntil: json['expiresAt'] != null
+            ? DateTime.parse(json['expiresAt'])
+            : json['endsAt'] != null
+                ? DateTime.parse(json['endsAt'])
+                : json['validUntil'] != null
+                    ? DateTime.parse(json['validUntil'])
+                    : DateTime.now(),
+        terms: json['terms']?.toString() ?? '',
+        venue: json['venue'] as Map<String, dynamic>?,
+        validDays:
+            (json['validDays'] as List?)?.map((e) => e.toString()).toList() ??
+                [],
+        validTimeStart: json['validTimeStart']?.toString(),
+        validTimeEnd: json['validTimeEnd']?.toString(),
+        maxRedemptions: json['maxRedemptions'] as int?,
+        savingValue: json['savingValue'] as num?,
+        status: json['status']?.toString() ?? 'inactive',
+        isAvailableNow: json['isAvailableNow'] as bool? ?? false,
+      );
 }

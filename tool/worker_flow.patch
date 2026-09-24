@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: lib/features/auth/presentation/auth_provider.dart
+@@
+-      _authService.clearSession();
++      await _authService.clearSession();
+@@
+-      // Register device for push notifications
++      // Reconcile the login payload, /auth/me response, and JWT claims before
++      // emitting success. Staff is represented as STAFF on some deployments.
++      final authenticatedUser = await _authService.fetchCurrentUser(
++        loginUser: user is Map ? Map<String, dynamic>.from(user) : null,
++      );
++      if (authenticatedUser == null) {
++        throw StateError('Authenticated account profile is unavailable.');
++      }
++      // Register device for push notifications
+@@
+-      state = const AuthStateLoginSuccess();
++      state = AuthStateLoginSuccess(authenticatedUser);
+@@
+ class AuthStateLoginSuccess extends AuthState {
+-  const AuthStateLoginSuccess();
++  final User? user;
++  const AuthStateLoginSuccess([this.user]);
+ }
+*** Update File: lib/features/business/presentation/business_login_screen.dart
+@@
+-        final user = ref.read(authNotifierProvider).currentUser;
++        final user = next.user ?? ref.read(authNotifierProvider).currentUser;
+*** Update File: lib/features/auth/presentation/login_screen.dart
+@@
+-        final user = ref.read(authNotifierProvider).currentUser;
++        final user = next.user ?? ref.read(authNotifierProvider).currentUser;
+*** Update File: lib/main.dart
+@@
+-        authService.clearSession();
++        await authService.clearSession();
+*** End Patch

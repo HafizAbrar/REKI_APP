@@ -57,8 +57,7 @@ class _AdminOffersScreenState extends ConsumerState<AdminOffersScreen> {
         data: (page) => Column(
           children: [
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               color: const Color(0xFF1E293B),
               child: Row(children: [
                 Text('${page.total} offers total',
@@ -119,33 +118,30 @@ class _AdminOffersScreenState extends ConsumerState<AdminOffersScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(o.title,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14)),
-                  const SizedBox(height: 2),
-                  Row(children: [
-                    const Icon(Icons.store_outlined,
-                        color: Color(0xFF64748B), size: 12),
-                    const SizedBox(width: 4),
-                    Text(o.venueName,
-                        style: const TextStyle(
-                            color: Color(0xFF94A3B8), fontSize: 12)),
-                  ]),
-                ]),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(o.title,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14)),
+              const SizedBox(height: 2),
+              Row(children: [
+                const Icon(Icons.store_outlined,
+                    color: Color(0xFF64748B), size: 12),
+                const SizedBox(width: 4),
+                Text(o.venueName,
+                    style: const TextStyle(
+                        color: Color(0xFF94A3B8), fontSize: 12)),
+              ]),
+            ]),
           ),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             _chip(o.type, typeMeta.color),
             const SizedBox(height: 4),
             _chip(
               o.isActive ? 'active' : 'inactive',
-              o.isActive
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFF64748B),
+              o.isActive ? const Color(0xFF10B981) : const Color(0xFF64748B),
             ),
           ]),
         ]),
@@ -160,8 +156,7 @@ class _AdminOffersScreenState extends ConsumerState<AdminOffersScreen> {
               color: Color(0xFF64748B), size: 13),
           const SizedBox(width: 6),
           Text('${o.redemptionCount} / ${o.maxRedemptions} redeemed',
-              style: const TextStyle(
-                  color: Color(0xFF94A3B8), fontSize: 12)),
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
           const Spacer(),
           Text('${(redemptionRatio * 100).toStringAsFixed(0)}%',
               style: TextStyle(
@@ -188,8 +183,7 @@ class _AdminOffersScreenState extends ConsumerState<AdminOffersScreen> {
               color: Color(0xFF64748B), size: 12),
           const SizedBox(width: 4),
           Text('Created ${_formatDate(o.createdAt)}',
-              style:
-                  const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
           const Spacer(),
           Icon(
             isExpired ? Icons.timer_off_outlined : Icons.timer_outlined,
@@ -225,21 +219,17 @@ class _AdminOffersScreenState extends ConsumerState<AdminOffersScreen> {
   _TypeMeta _typeMeta(String type) {
     switch (type) {
       case 'discount':
-        return _TypeMeta(
-            icon: Icons.percent, color: const Color(0xFF3B82F6));
+        return const _TypeMeta(icon: Icons.percent, color: Color(0xFF3B82F6));
       case '2-for-1':
-        return _TypeMeta(
-            icon: Icons.filter_2, color: const Color(0xFF8B5CF6));
+        return const _TypeMeta(icon: Icons.filter_2, color: Color(0xFF8B5CF6));
       case 'freebie':
-        return _TypeMeta(
-            icon: Icons.card_giftcard, color: const Color(0xFF10B981));
+        return const _TypeMeta(
+            icon: Icons.card_giftcard, color: Color(0xFF10B981));
       case 'guestlist':
-        return _TypeMeta(
-            icon: Icons.list_alt, color: const Color(0xFFF59E0B));
+        return const _TypeMeta(icon: Icons.list_alt, color: Color(0xFFF59E0B));
       default:
-        return _TypeMeta(
-            icon: Icons.local_offer_outlined,
-            color: const Color(0xFF2DD4BF));
+        return const _TypeMeta(
+            icon: Icons.local_offer_outlined, color: Color(0xFF2DD4BF));
     }
   }
 
@@ -312,16 +302,13 @@ class _AdminOffersScreenState extends ConsumerState<AdminOffersScreen> {
                   : const Color(0xFF334155)),
         ),
         child: Icon(icon,
-            color: enabled
-                ? const Color(0xFF2DD4BF)
-                : const Color(0xFF475569),
+            color: enabled ? const Color(0xFF2DD4BF) : const Color(0xFF475569),
             size: 18),
       ),
     );
   }
 
-  String _formatDate(DateTime dt) =>
-      '${dt.day}/${dt.month}/${dt.year}';
+  String _formatDate(DateTime dt) => '${dt.day}/${dt.month}/${dt.year}';
 }
 
 class _TypeMeta {

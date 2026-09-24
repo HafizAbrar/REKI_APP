@@ -35,8 +35,8 @@ class _AdminNotificationsScreenState
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Notifications',
-            style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Notifications', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: notifsAsync.when(
@@ -61,25 +61,23 @@ class _AdminNotificationsScreenState
           children: [
             // Summary bar
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               color: const Color(0xFF1E293B),
               child: Row(children: [
                 Text(
                   '${page.total} notification${page.total == 1 ? '' : 's'}',
-                  style: const TextStyle(
-                      color: Color(0xFF94A3B8), fontSize: 13),
+                  style:
+                      const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                 ),
                 const SizedBox(width: 12),
                 // unread count
                 Builder(builder: (_) {
-                  final unread = page.notifications
-                      .where((n) => !n.isRead)
-                      .length;
+                  final unread =
+                      page.notifications.where((n) => !n.isRead).length;
                   if (unread == 0) return const SizedBox.shrink();
                   return Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEF4444).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -153,21 +151,16 @@ class _AdminNotificationsScreenState
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(n.title,
-                      style: TextStyle(
-                          color: isUnread
-                              ? Colors.white
-                              : const Color(0xFF94A3B8),
-                          fontWeight: isUnread
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          fontSize: 13)),
-                  const SizedBox(height: 2),
-                  _chip(n.type.replaceAll('_', ' '), meta.color),
-                ]),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(n.title,
+                  style: TextStyle(
+                      color: isUnread ? Colors.white : const Color(0xFF94A3B8),
+                      fontWeight: isUnread ? FontWeight.w700 : FontWeight.w500,
+                      fontSize: 13)),
+              const SizedBox(height: 2),
+              _chip(n.type.replaceAll('_', ' '), meta.color),
+            ]),
           ),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             if (isUnread)
@@ -184,11 +177,9 @@ class _AdminNotificationsScreenState
                   color: Color(0xFF475569), size: 14),
             const SizedBox(height: 4),
             Text(_formatDateTime(n.createdAt),
-                style: const TextStyle(
-                    color: Color(0xFF64748B), fontSize: 10)),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 10)),
           ]),
         ]),
-
         const SizedBox(height: 8),
         Text(n.message,
             style: TextStyle(
@@ -197,7 +188,6 @@ class _AdminNotificationsScreenState
                     : const Color(0xFF64748B),
                 fontSize: 12,
                 height: 1.4)),
-
         if (n.venueId != null || n.offerId != null) ...[
           const SizedBox(height: 8),
           Row(children: [
@@ -207,15 +197,13 @@ class _AdminNotificationsScreenState
             if (n.venueId != null && n.offerId != null)
               const SizedBox(width: 6),
             if (n.offerId != null)
-              _contextBadge(Icons.local_offer_outlined, 'Offer',
-                  const Color(0xFF2DD4BF)),
+              _contextBadge(
+                  Icons.local_offer_outlined, 'Offer', const Color(0xFF2DD4BF)),
           ]),
         ],
-
         const SizedBox(height: 8),
         Row(children: [
-          const Icon(Icons.person_outline,
-              color: Color(0xFF64748B), size: 11),
+          const Icon(Icons.person_outline, color: Color(0xFF64748B), size: 11),
           const SizedBox(width: 4),
           Text(
             'User: ${n.userId.substring(0, 8)}…',
@@ -261,35 +249,29 @@ class _AdminNotificationsScreenState
   _NotifTypeMeta _typeMeta(String type) {
     switch (type) {
       case 'welcome':
-        return _NotifTypeMeta(
-            icon: Icons.waving_hand_outlined,
-            color: const Color(0xFF2DD4BF));
+        return const _NotifTypeMeta(
+            icon: Icons.waving_hand_outlined, color: Color(0xFF2DD4BF));
       case 'vibe_alert':
-        return _NotifTypeMeta(
-            icon: Icons.bolt_outlined, color: const Color(0xFFF59E0B));
+        return const _NotifTypeMeta(
+            icon: Icons.bolt_outlined, color: Color(0xFFF59E0B));
       case 'offer_confirmation':
-        return _NotifTypeMeta(
-            icon: Icons.local_offer_outlined,
-            color: const Color(0xFF10B981));
+        return const _NotifTypeMeta(
+            icon: Icons.local_offer_outlined, color: Color(0xFF10B981));
       case 'live_performance':
-        return _NotifTypeMeta(
-            icon: Icons.music_note_outlined,
-            color: const Color(0xFF8B5CF6));
+        return const _NotifTypeMeta(
+            icon: Icons.music_note_outlined, color: Color(0xFF8B5CF6));
       case 'social_checkin':
-        return _NotifTypeMeta(
-            icon: Icons.people_outline, color: const Color(0xFF3B82F6));
+        return const _NotifTypeMeta(
+            icon: Icons.people_outline, color: Color(0xFF3B82F6));
       case 'weekly_recap':
-        return _NotifTypeMeta(
-            icon: Icons.bar_chart_outlined,
-            color: const Color(0xFF6366F1));
+        return const _NotifTypeMeta(
+            icon: Icons.bar_chart_outlined, color: Color(0xFF6366F1));
       case 'ticket_secured':
-        return _NotifTypeMeta(
-            icon: Icons.confirmation_number_outlined,
-            color: const Color(0xFFEC4899));
+        return const _NotifTypeMeta(
+            icon: Icons.confirmation_number_outlined, color: Color(0xFFEC4899));
       default:
-        return _NotifTypeMeta(
-            icon: Icons.notifications_outlined,
-            color: const Color(0xFF64748B));
+        return const _NotifTypeMeta(
+            icon: Icons.notifications_outlined, color: Color(0xFF64748B));
     }
   }
 
@@ -360,9 +342,7 @@ class _AdminNotificationsScreenState
                   : const Color(0xFF334155)),
         ),
         child: Icon(icon,
-            color: enabled
-                ? const Color(0xFF2DD4BF)
-                : const Color(0xFF475569),
+            color: enabled ? const Color(0xFF2DD4BF) : const Color(0xFF475569),
             size: 18),
       ),
     );

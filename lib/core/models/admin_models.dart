@@ -52,15 +52,27 @@ class OfflineStats {
 
   factory OfflineStats.fromJson(Map<String, dynamic> json) {
     // Handle: { data: {...} }, { offlineStats: {...} }, or flat
-    final d = (json['data'] ?? json['offlineStats'] ?? json) as Map<String, dynamic>;
+    final d =
+        (json['data'] ?? json['offlineStats'] ?? json) as Map<String, dynamic>;
     return OfflineStats(
-      totalSyncActions: d['totalSyncActions'] as int? ?? json['totalSyncActions'] as int? ?? 0,
-      pendingSyncActions: d['pendingSyncActions'] as int? ?? json['pendingSyncActions'] as int? ?? 0,
-      successfulSyncs: d['successfulSyncs'] as int? ?? json['successfulSyncs'] as int? ?? 0,
-      conflictsToday: d['conflictsToday'] as int? ?? json['conflictsToday'] as int? ?? 0,
-      rejectedToday: d['rejectedToday'] as int? ?? json['rejectedToday'] as int? ?? 0,
-      syncSuccessRate: d['syncSuccessRate']?.toString() ?? json['syncSuccessRate']?.toString() ?? '0.0%',
-      avgSyncDelay: d['avgSyncDelay']?.toString() ?? json['avgSyncDelay']?.toString() ?? '0 minutes',
+      totalSyncActions: d['totalSyncActions'] as int? ??
+          json['totalSyncActions'] as int? ??
+          0,
+      pendingSyncActions: d['pendingSyncActions'] as int? ??
+          json['pendingSyncActions'] as int? ??
+          0,
+      successfulSyncs:
+          d['successfulSyncs'] as int? ?? json['successfulSyncs'] as int? ?? 0,
+      conflictsToday:
+          d['conflictsToday'] as int? ?? json['conflictsToday'] as int? ?? 0,
+      rejectedToday:
+          d['rejectedToday'] as int? ?? json['rejectedToday'] as int? ?? 0,
+      syncSuccessRate: d['syncSuccessRate']?.toString() ??
+          json['syncSuccessRate']?.toString() ??
+          '0.0%',
+      avgSyncDelay: d['avgSyncDelay']?.toString() ??
+          json['avgSyncDelay']?.toString() ??
+          '0 minutes',
     );
   }
 }
@@ -88,16 +100,32 @@ class RealtimeStats {
 
   factory RealtimeStats.fromJson(Map<String, dynamic> json) {
     // Handle: { realTimeStats: {...} }, { data: {...} }, or flat
-    final d = (json['realTimeStats'] ?? json['realtimeStats'] ?? json['data'] ?? json) as Map<String, dynamic>;
+    final d = (json['realTimeStats'] ??
+        json['realtimeStats'] ??
+        json['data'] ??
+        json) as Map<String, dynamic>;
     return RealtimeStats(
-      activeWebSocketConnections: d['activeWebSocketConnections'] as int? ?? json['activeWebSocketConnections'] as int? ?? 0,
-      uniqueConnectedUsers: d['uniqueConnectedUsers'] as int? ?? json['uniqueConnectedUsers'] as int? ?? 0,
-      pushNotificationsSentToday: d['pushNotificationsSentToday'] as int? ?? json['pushNotificationsSentToday'] as int? ?? 0,
-      pushDelivered: d['pushDelivered'] as int? ?? json['pushDelivered'] as int? ?? 0,
+      activeWebSocketConnections: d['activeWebSocketConnections'] as int? ??
+          json['activeWebSocketConnections'] as int? ??
+          0,
+      uniqueConnectedUsers: d['uniqueConnectedUsers'] as int? ??
+          json['uniqueConnectedUsers'] as int? ??
+          0,
+      pushNotificationsSentToday: d['pushNotificationsSentToday'] as int? ??
+          json['pushNotificationsSentToday'] as int? ??
+          0,
+      pushDelivered:
+          d['pushDelivered'] as int? ?? json['pushDelivered'] as int? ?? 0,
       pushFailed: d['pushFailed'] as int? ?? json['pushFailed'] as int? ?? 0,
-      pushOpenRate: d['pushOpenRate']?.toString() ?? json['pushOpenRate']?.toString() ?? '0%',
-      registeredDevices: d['registeredDevices'] as int? ?? json['registeredDevices'] as int? ?? 0,
-      fcmConfigured: d['fcmConfigured'] as bool? ?? json['fcmConfigured'] as bool? ?? false,
+      pushOpenRate: d['pushOpenRate']?.toString() ??
+          json['pushOpenRate']?.toString() ??
+          '0%',
+      registeredDevices: d['registeredDevices'] as int? ??
+          json['registeredDevices'] as int? ??
+          0,
+      fcmConfigured: d['fcmConfigured'] as bool? ??
+          json['fcmConfigured'] as bool? ??
+          false,
     );
   }
 }
@@ -125,10 +153,15 @@ class AdminStats {
     return AdminStats(
       totalUsers: d['totalUsers'] as int? ?? json['totalUsers'] as int? ?? 0,
       totalVenues: d['totalVenues'] as int? ?? json['totalVenues'] as int? ?? 0,
-      activeOffers: d['activeOffers'] as int? ?? json['activeOffers'] as int? ?? 0,
-      redemptionsToday: d['redemptionsToday'] as int? ?? json['redemptionsToday'] as int? ?? 0,
-      newSignupsToday: d['newSignupsToday'] as int? ?? json['newSignupsToday'] as int? ?? 0,
-      liveVenuesNow: d['liveVenuesNow'] as int? ?? json['liveVenuesNow'] as int? ?? 0,
+      activeOffers:
+          d['activeOffers'] as int? ?? json['activeOffers'] as int? ?? 0,
+      redemptionsToday: d['redemptionsToday'] as int? ??
+          json['redemptionsToday'] as int? ??
+          0,
+      newSignupsToday:
+          d['newSignupsToday'] as int? ?? json['newSignupsToday'] as int? ?? 0,
+      liveVenuesNow:
+          d['liveVenuesNow'] as int? ?? json['liveVenuesNow'] as int? ?? 0,
     );
   }
 }
@@ -164,10 +197,15 @@ class LocationStats {
 
   factory LocationStats.fromJson(Map<String, dynamic> json) {
     // Handle: { data: {...} }, { locationStats: {...} }, or flat
-    final d = (json['data'] ?? json['locationStats'] ?? json) as Map<String, dynamic>;
+    final d =
+        (json['data'] ?? json['locationStats'] ?? json) as Map<String, dynamic>;
     return LocationStats(
-      usersWithLocation: d['usersWithLocation'] as int? ?? json['usersWithLocation'] as int? ?? 0,
-      geofenceNotificationsSent: d['geofenceNotificationsSent'] as int? ?? json['geofenceNotificationsSent'] as int? ?? 0,
+      usersWithLocation: d['usersWithLocation'] as int? ??
+          json['usersWithLocation'] as int? ??
+          0,
+      geofenceNotificationsSent: d['geofenceNotificationsSent'] as int? ??
+          json['geofenceNotificationsSent'] as int? ??
+          0,
       topAreas: (d['topAreas'] as List? ?? json['topAreas'] as List? ?? [])
           .map((e) => TopArea.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -199,7 +237,9 @@ class AdminUser {
   factory AdminUser.fromJson(Map<String, dynamic> json) => AdminUser(
         id: json['id']?.toString() ?? '',
         email: json['email']?.toString(),
-        name: json['fullName']?.toString() ?? json['name']?.toString() ?? 'Unknown',
+        name: json['fullName']?.toString() ??
+            json['name']?.toString() ??
+            'Unknown',
         role: json['role']?.toString() ?? 'user',
         authProvider: json['authProvider']?.toString() ?? 'email',
         isVerified: json['isVerified'] as bool? ?? false,
@@ -270,13 +310,13 @@ class AdminVenue {
         name: json['name']?.toString() ?? '',
         address: json['address']?.toString() ?? '',
         city: json['city']?.toString() ?? '',
-        category: json['category']?.toString() ?? json['type']?.toString() ?? '',
+        category:
+            json['category']?.toString() ?? json['type']?.toString() ?? '',
         busynessLevel: json['busynessLevel']?.toString() ??
-            json['busyness']?.toString() ?? 'quiet',
+            json['busyness']?.toString() ??
+            'quiet',
         busynessPercent: json['busynessPercent'] as int? ?? 0,
-        vibes: (json['vibes'] as List? ?? [])
-            .map((e) => e.toString())
-            .toList(),
+        vibes: (json['vibes'] as List? ?? []).map((e) => e.toString()).toList(),
         isLive: json['isLive'] as bool? ?? json['isActive'] as bool? ?? false,
       );
 }
@@ -343,9 +383,11 @@ class AdminOffer {
         title: json['title']?.toString() ?? '',
         type: json['type']?.toString() ?? json['offerType']?.toString() ?? '',
         venueName: json['venueName']?.toString() ??
-            json['venue']?['name']?.toString() ?? '',
+            json['venue']?['name']?.toString() ??
+            '',
         venueId: json['venueId']?.toString() ??
-            json['venue']?['id']?.toString() ?? '',
+            json['venue']?['id']?.toString() ??
+            '',
         isActive: json['isActive'] as bool? ?? false,
         redemptionCount: json['redemptionCount'] as int? ?? 0,
         maxRedemptions: json['maxRedemptions'] as int? ?? 0,
@@ -428,17 +470,22 @@ class AdminRedemption {
         id: json['id']?.toString() ?? '',
         userName: json['userName']?.toString() ??
             json['user']?['fullName']?.toString() ??
-            json['user']?['name']?.toString() ?? '',
-        userId: json['userId']?.toString() ??
-            json['user']?['id']?.toString() ?? '',
+            json['user']?['name']?.toString() ??
+            '',
+        userId:
+            json['userId']?.toString() ?? json['user']?['id']?.toString() ?? '',
         venueName: json['venueName']?.toString() ??
-            json['venue']?['name']?.toString() ?? '',
+            json['venue']?['name']?.toString() ??
+            '',
         venueId: json['venueId']?.toString() ??
-            json['venue']?['id']?.toString() ?? '',
+            json['venue']?['id']?.toString() ??
+            '',
         offerTitle: json['offerTitle']?.toString() ??
-            json['offer']?['title']?.toString() ?? '',
+            json['offer']?['title']?.toString() ??
+            '',
         offerId: json['offerId']?.toString() ??
-            json['offer']?['id']?.toString() ?? '',
+            json['offer']?['id']?.toString() ??
+            '',
         voucherCode: json['voucherCode']?.toString() ?? '',
         transactionId: json['transactionId']?.toString() ?? '',
         status: json['status']?.toString() ?? '',
@@ -565,8 +612,8 @@ class UserActivityData {
           ? DateTime.parse(u['createdAt'].toString())
           : DateTime.now(),
       redemptions: (json['redemptions'] as List? ?? [])
-          .map((e) =>
-              UserActivityRedemption.fromJson(e as Map<String, dynamic>))
+          .map(
+              (e) => UserActivityRedemption.fromJson(e as Map<String, dynamic>))
           .toList(),
       totalRedemptions: json['totalRedemptions'] as int? ?? 0,
     );
@@ -586,7 +633,8 @@ class VenueLogDetails {
     this.name,
   });
 
-  factory VenueLogDetails.fromJson(Map<String, dynamic> json) => VenueLogDetails(
+  factory VenueLogDetails.fromJson(Map<String, dynamic> json) =>
+      VenueLogDetails(
         busyness: json['busyness']?.toString(),
         percentage: json['percentage'] as int?,
         vibes: (json['vibes'] as List? ?? []).map((e) => e.toString()).toList(),

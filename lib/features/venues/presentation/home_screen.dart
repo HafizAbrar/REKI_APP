@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import '../../../core/config/env.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/models/venue.dart';
 import '../../../features/users/data/user_preferences_provider.dart';
+import '../../../features/city_selection/presentation/city_selection_screen.dart';
 import '../../../shared/widgets/app_cached_image.dart';
 import '../../../shared/widgets/guest_guard.dart';
 import '../../../shared/widgets/venue_budget_tag.dart';
@@ -22,12 +24,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedNavIndex = 0;
   String _searchQuery = '';
   bool _isSearching = false;
+  Timer? _liveRefresh;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-        () => ref.read(venueManagementProvider.notifier).loadVenues());
+    _liveRefresh = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted &&
+          ModalRoute.of(context)?.isCurrent == true &&
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        ref.read(venueManagementProvider.notifier).loadVenues(silent: true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _liveRefresh?.cancel();
+    super.dispose();
   }
 
   @override
@@ -57,10 +71,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     right: 16,
                     bottom: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B).withOpacity(0.75),
+                  color: const Color(0xFF1E293B).withValues(alpha: 0.75),
                   border: Border(
                       bottom: BorderSide(
-                          color: Colors.white.withOpacity(0.08), width: 1)),
+                          color: Colors.white.withValues(alpha: 0.08),
+                          width: 1)),
                 ),
                 child: Column(
                   children: [
@@ -72,7 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               onTap: () async {
                                 if (!mounted) return;
                                 if (await guardGuestAction(context) &&
-                                    mounted) {
+                                    context.mounted) {
                                   context.push('/profile');
                                 }
                               },
@@ -83,7 +98,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                       color: const Color(0xFF2DD4BF)
-                                          .withOpacity(0.5),
+                                          .withValues(alpha: 0.5),
                                       width: 2),
                                 ),
                                 child: ClipOval(
@@ -140,6 +155,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ],
                           ),
                         ),
+                        const SizedBox(width: 12),
+                        const CompactCitySelector(),
+                        const SizedBox(width: 8),
                         _buildHeaderButton(Icons.search,
                             onTap: _showSearchDialog),
                         const SizedBox(width: 8),
@@ -193,23 +211,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               : venues.where((v) {
                                   final cat =
                                       v.type.toLowerCase().replaceAll(' ', '_');
-                                  if (_selectedTab == 1)
+                                  if (_selectedTab == 1) {
                                     return cat == 'bar' || cat.contains('bar');
-                                  if (_selectedTab == 2)
+                                  }
+                                  if (_selectedTab == 2) {
                                     return cat == 'club' || cat == 'nightclub';
-                                  if (_selectedTab == 3)
+                                  }
+                                  if (_selectedTab == 3) {
                                     return cat == 'restaurant';
+                                  }
                                   if (_selectedTab == 4) return cat == 'lounge';
-                                  if (_selectedTab == 5)
+                                  if (_selectedTab == 5) {
                                     return cat == 'live_music_venue' ||
                                         cat == 'live_music';
+                                  }
                                   if (_selectedTab == 6) return cat == 'pub';
-                                  if (_selectedTab == 7)
+                                  if (_selectedTab == 7) {
                                     return cat == 'rooftop_bar' ||
                                         cat == 'rooftop';
-                                  if (_selectedTab == 8)
+                                  }
+                                  if (_selectedTab == 8) {
                                     return cat == 'cocktail_bar' ||
                                         cat == 'cocktail';
+                                  }
                                   return true;
                                 }).toList();
 
@@ -255,26 +279,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             return _buildNoResults(filters.isActive);
                           }
 
-                          return SingleChildScrollView(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              children: [
-                                ...filteredVenues.map((venue) => Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 24),
-                                      child: _buildVenueCard(venue: venue),
-                                    )),
-                                const SizedBox(height: 32),
-                                Container(
-                                  height: 4,
-                                  width: 48,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                                const SizedBox(height: 100),
-                              ],
+                          return ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 132),
+                            itemCount: filteredVenues.length,
+                            itemBuilder: (context, index) => Padding(
+                              key: ValueKey(filteredVenues[index].id),
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child:
+                                  _buildVenueCard(venue: filteredVenues[index]),
                             ),
                           );
                         },
@@ -300,13 +312,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B).withOpacity(0.75),
+                  color: const Color(0xFF1E293B).withValues(alpha: 0.75),
                   borderRadius: BorderRadius.circular(32),
                   border: Border.all(
-                      color: Colors.white.withOpacity(0.08), width: 1),
+                      color: Colors.white.withValues(alpha: 0.08), width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -359,7 +371,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         shape: BoxShape.circle,
       ),
       child: Material(
@@ -548,12 +560,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFF2DD4BF)
-              : Colors.white.withOpacity(0.05),
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(24),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF2DD4BF).withOpacity(0.25),
+                    color: const Color(0xFF2DD4BF).withValues(alpha: 0.25),
                     blurRadius: 16,
                   ),
                 ]
@@ -598,12 +610,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (statusLabel == 'Busy') statusColor = Colors.orange;
     if (statusLabel == 'Packed') statusColor = Colors.red;
 
-    IconData? statusIcon;
-    IconData? vibeIcon;
-    String? waitTime;
-    String? vibeScore;
-    String? noiseLevel;
-    List<String>? vibeTags;
+    final List<String> vibeTags = venue.availableVibes;
     Color? offerColor;
     IconData? offerIcon;
     String? offerTitle;
@@ -616,7 +623,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -674,7 +681,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        const Color(0xFF0F172A).withOpacity(0.9),
+                        const Color(0xFF0F172A).withValues(alpha: 0.9),
                       ],
                       stops: const [0.0, 1.0],
                     ),
@@ -695,12 +702,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: (statusColor ?? Colors.red)
-                                      .withOpacity(0.9),
+                                  color: statusColor.withValues(alpha: 0.9),
                                   borderRadius: BorderRadius.circular(24),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.3),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.3),
                                       blurRadius: 8,
                                     ),
                                   ],
@@ -722,8 +729,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           width: 8,
                                           height: 8,
                                           decoration: BoxDecoration(
-                                            color:
-                                                Colors.white.withOpacity(0.75),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.75),
                                             shape: BoxShape.circle,
                                           ),
                                         ),
@@ -748,10 +755,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.4),
+                                  color: Colors.black.withValues(alpha: 0.4),
                                   borderRadius: BorderRadius.circular(24),
                                   border: Border.all(
-                                      color: Colors.white.withOpacity(0.1),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.1),
                                       width: 1),
                                 ),
                                 child: Row(
@@ -784,10 +792,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B).withOpacity(0.75),
+                  color: const Color(0xFF1E293B).withValues(alpha: 0.75),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                      color: Colors.white.withOpacity(0.08), width: 1),
+                      color: Colors.white.withValues(alpha: 0.08), width: 1),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -821,7 +829,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ],
                     ),
-                    if (vibeTags != null && vibeTags.isNotEmpty) ...[
+                    if (vibeTags.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
@@ -831,7 +839,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.05),
+                                    color: Colors.white.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -853,7 +861,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         decoration: BoxDecoration(
                           border: Border(
                             top: BorderSide(
-                                color: Colors.white.withOpacity(0.1), width: 1),
+                                color: Colors.white.withValues(alpha: 0.1),
+                                width: 1),
                           ),
                         ),
                         child: Row(
@@ -862,7 +871,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
                                 color: (offerColor ?? const Color(0xFF2DD4BF))
-                                    .withOpacity(0.2),
+                                    .withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -926,7 +935,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: const Color(0xFF1E293B),
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                    color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
                     width: 1.5),
               ),
               child: const Icon(Icons.search_off_rounded,
@@ -961,7 +970,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
                       BoxShadow(
-                          color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                          color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
                           blurRadius: 16),
                     ],
                   ),
@@ -992,17 +1001,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               .then((_) => setState(() => _selectedNavIndex = 0));
         } else if (index == 2) {
           guardGuestAction(context).then((allowed) {
-            if (allowed && mounted)
+            if (allowed && mounted) {
               context
                   .push('/offers')
                   .then((_) => setState(() => _selectedNavIndex = 0));
+            }
           });
         } else if (index == 3) {
           guardGuestAction(context).then((allowed) {
-            if (allowed && mounted)
+            if (allowed && mounted) {
               context
                   .push('/profile')
                   .then((_) => setState(() => _selectedNavIndex = 0));
+            }
           });
         } else {
           setState(() => _selectedNavIndex = index);

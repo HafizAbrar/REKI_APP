@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/city_providers.dart';
 import '../../../core/services/venue_service.dart';
 import '../../../core/services/venue_repository.dart';
 import '../../../core/models/venue.dart';
@@ -34,12 +35,13 @@ class VenueState {
 class VenueNotifier extends StateNotifier<VenueState> {
   final VenueService _venueService;
 
-  VenueNotifier(this._venueService) : super(VenueState(
-    venues: [],
-    filteredVenues: [],
-    selectedFilter: 'All',
-    isLoading: false,
-  ));
+  VenueNotifier(this._venueService)
+      : super(VenueState(
+          venues: [],
+          filteredVenues: [],
+          selectedFilter: 'All',
+          isLoading: false,
+        ));
 
   void initialize() {
     state = state.copyWith(isLoading: true);
@@ -125,7 +127,9 @@ final venuesWithOffersProvider = Provider<List<Venue>>((ref) {
 });
 
 // GET /venues with filters + pagination
-final venueListProvider = StateNotifierProvider<VenueListNotifier, AsyncValue<List<Venue>>>((ref) {
+final venueListProvider =
+    StateNotifierProvider<VenueListNotifier, AsyncValue<List<Venue>>>((ref) {
+  ref.watch(selectedCityProvider);
   return VenueListNotifier(ref.read(venueRepositoryProvider));
 });
 
@@ -136,11 +140,19 @@ class VenueListNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
     load();
   }
 
-  Future<void> load({String? category, String? busyness, String? vibe, String? cityId}) async {
+  Future<void> load(
+      {String? category,
+      String? busyness,
+      String? vibe,
+      String? cityId}) async {
     state = const AsyncValue.loading();
     final result = await _repository.getAllVenues(
-      category: category, busyness: busyness, vibe: vibe, cityId: cityId,
+      category: category,
+      busyness: busyness,
+      vibe: vibe,
+      cityId: cityId,
     );
+    if (!mounted) return;
     state = result.when(
       success: (data) => AsyncValue.data(data),
       failure: (e) => AsyncValue.error(e, StackTrace.current),
@@ -149,7 +161,9 @@ class VenueListNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
 }
 
 // GET /venues/search
-final venueSearchProvider = StateNotifierProvider<VenueSearchNotifier, AsyncValue<List<Venue>>>((ref) {
+final venueSearchProvider =
+    StateNotifierProvider<VenueSearchNotifier, AsyncValue<List<Venue>>>((ref) {
+  ref.watch(selectedCityProvider);
   return VenueSearchNotifier(ref.read(venueRepositoryProvider));
 });
 
@@ -159,9 +173,13 @@ class VenueSearchNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   VenueSearchNotifier(this._repository) : super(const AsyncValue.data([]));
 
   Future<void> search(String query, {String? city}) async {
-    if (query.isEmpty) { state = const AsyncValue.data([]); return; }
+    if (query.isEmpty) {
+      state = const AsyncValue.data([]);
+      return;
+    }
     state = const AsyncValue.loading();
     final result = await _repository.searchVenues(query, city: city);
+    if (!mounted) return;
     state = result.when(
       success: (data) => AsyncValue.data(data),
       failure: (e) => AsyncValue.error(e, StackTrace.current),
@@ -170,19 +188,29 @@ class VenueSearchNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
 }
 
 // GET /venues/filter-options
-final venueFilterOptionsProvider = FutureProvider.family<Map<String, dynamic>, String?>((ref, cityId) async {
-  final result = await ref.read(venueRepositoryProvider).getFilterOptions(cityId: cityId);
+final venueFilterOptionsProvider =
+    FutureProvider.family<Map<String, dynamic>, String?>((ref, cityId) async {
+  await ref.watch(selectedCityProvider.future);
+  final result =
+      await ref.read(venueRepositoryProvider).getFilterOptions(cityId: cityId);
   return result.when(success: (data) => data, failure: (_) => {});
 });
 
 // GET /venues/trending
-final trendingVenuesProvider = FutureProvider.family<List<Venue>, String?>((ref, cityId) async {
-  final result = await ref.read(venueRepositoryProvider).getTrendingVenues(cityId: cityId);
+final trendingVenuesProvider =
+    FutureProvider.family<List<Venue>, String?>((ref, cityId) async {
+  await ref.watch(selectedCityProvider.future);
+  final result =
+      await ref.read(venueRepositoryProvider).getTrendingVenues(cityId: cityId);
   return result.when(success: (data) => data, failure: (_) => []);
 });
 
 // GET /venues/map-markers
-final mapMarkersProvider = FutureProvider.family<List<Map<String, dynamic>>, String?>((ref, cityId) async {
-  final result = await ref.read(venueRepositoryProvider).getMapMarkers(cityId: cityId);
+final mapMarkersProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String?>(
+        (ref, cityId) async {
+  await ref.watch(selectedCityProvider.future);
+  final result =
+      await ref.read(venueRepositoryProvider).getMapMarkers(cityId: cityId);
   return result.when(success: (data) => data, failure: (_) => []);
 });

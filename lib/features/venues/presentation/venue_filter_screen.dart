@@ -229,7 +229,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF0F172A).withOpacity(0),
+              const Color(0xFF0F172A).withValues(alpha: 0),
               const Color(0xFF0F172A),
               const Color(0xFF0F172A)
             ],
@@ -245,7 +245,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF14B8A6).withOpacity(0.3),
+                      color: const Color(0xFF14B8A6).withValues(alpha: 0.3),
                       blurRadius: 16)
                 ],
               ),
@@ -275,7 +275,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
+                            color: Colors.white.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(12)),
                         child: Text(
                           '${selectedVibes.length + selectedPriceLevels.length + (selectedBusyness.isNotEmpty ? 1 : 0) + (offersOnly ? 1 : 0)}',
@@ -339,7 +339,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                      color: const Color(0xFF14B8A6).withOpacity(0.2),
+                      color: const Color(0xFF14B8A6).withValues(alpha: 0.2),
                       blurRadius: 8)
                 ]
               : [],
@@ -389,7 +389,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E293B).withOpacity(0.5),
+          color: const Color(0xFF1E293B).withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
               color: isSelected ? const Color(0xFF14B8A6) : Colors.transparent),

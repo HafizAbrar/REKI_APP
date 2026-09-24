@@ -17,7 +17,8 @@ class _AdminVenuesScreenState extends ConsumerState<AdminVenuesScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(adminProvider.notifier).loadVenues(page: _page));
+    Future.microtask(
+        () => ref.read(adminProvider.notifier).loadVenues(page: _page));
   }
 
   void _goToPage(int page) {
@@ -110,128 +111,127 @@ class _AdminVenuesScreenState extends ConsumerState<AdminVenuesScreen> {
         ),
       ),
       child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: busynessColor.withValues(alpha: 0.2)),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Header row
-        Row(children: [
-          Expanded(
-            child: Text(v.name,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15)),
-          ),
-          if (v.isLive)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-              ),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFF10B981),
-                  ),
-                ),
-                const SizedBox(width: 5),
-                const Text('LIVE',
-                    style: TextStyle(
-                        color: Color(0xFF10B981),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5)),
-              ]),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF334155),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text('OFFLINE',
-                  style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700)),
-            ),
-        ]),
-        const SizedBox(height: 6),
-
-        // Address + city
-        Row(children: [
-          const Icon(Icons.location_on_outlined,
-              color: Color(0xFF64748B), size: 13),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Text('${v.address}, ${v.city}',
-                style: const TextStyle(
-                    color: Color(0xFF94A3B8), fontSize: 12),
-                overflow: TextOverflow.ellipsis),
-          ),
-        ]),
-        const SizedBox(height: 10),
-
-        // Category + busyness level
-        Row(children: [
-          _chip(categoryLabel, const Color(0xFF8B5CF6)),
-          const SizedBox(width: 8),
-          _chip(v.busynessLevel, busynessColor),
-          const Spacer(),
-          Text('${v.busynessPercent}%',
-              style: TextStyle(
-                  color: busynessColor,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14)),
-        ]),
-        const SizedBox(height: 8),
-
-        // Busyness bar
-        ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: LinearProgressIndicator(
-            value: v.busynessPercent / 100,
-            minHeight: 5,
-            backgroundColor: const Color(0xFF0F172A),
-            valueColor: AlwaysStoppedAnimation(busynessColor),
-          ),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: busynessColor.withValues(alpha: 0.2)),
         ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Header row
+          Row(children: [
+            Expanded(
+              child: Text(v.name,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15)),
+            ),
+            if (v.isLive)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  const Text('LIVE',
+                      style: TextStyle(
+                          color: Color(0xFF10B981),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5)),
+                ]),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF334155),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text('OFFLINE',
+                    style: TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700)),
+              ),
+          ]),
+          const SizedBox(height: 6),
 
-        // Vibes
-        if (v.vibes.isNotEmpty) ...[
+          // Address + city
+          Row(children: [
+            const Icon(Icons.location_on_outlined,
+                color: Color(0xFF64748B), size: 13),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text('${v.address}, ${v.city}',
+                  style:
+                      const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                  overflow: TextOverflow.ellipsis),
+            ),
+          ]),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: v.vibes
-                .map((vibe) => _chip(vibe, const Color(0xFF3B82F6)))
-                .toList(),
+
+          // Category + busyness level
+          Row(children: [
+            _chip(categoryLabel, const Color(0xFF8B5CF6)),
+            const SizedBox(width: 8),
+            _chip(v.busynessLevel, busynessColor),
+            const Spacer(),
+            Text('${v.busynessPercent}%',
+                style: TextStyle(
+                    color: busynessColor,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14)),
+          ]),
+          const SizedBox(height: 8),
+
+          // Busyness bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: v.busynessPercent / 100,
+              minHeight: 5,
+              backgroundColor: const Color(0xFF0F172A),
+              valueColor: AlwaysStoppedAnimation(busynessColor),
+            ),
           ),
-        ],
-        const SizedBox(height: 10),
-        Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          const Icon(Icons.history, color: Color(0xFF64748B), size: 12),
-          const SizedBox(width: 4),
-          const Text('View Logs',
-              style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
-          const SizedBox(width: 2),
-          const Icon(Icons.chevron_right,
-              color: Color(0xFF64748B), size: 14),
+
+          // Vibes
+          if (v.vibes.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: v.vibes
+                  .map((vibe) => _chip(vibe, const Color(0xFF3B82F6)))
+                  .toList(),
+            ),
+          ],
+          const SizedBox(height: 10),
+          const Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            Icon(Icons.history, color: Color(0xFF64748B), size: 12),
+            SizedBox(width: 4),
+            Text('View Logs',
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+            SizedBox(width: 2),
+            Icon(Icons.chevron_right, color: Color(0xFF64748B), size: 14),
+          ]),
         ]),
-      ]),
-    ),
+      ),
     );
   }
 
@@ -318,9 +318,7 @@ class _AdminVenuesScreenState extends ConsumerState<AdminVenuesScreen> {
                   : const Color(0xFF334155)),
         ),
         child: Icon(icon,
-            color: enabled
-                ? const Color(0xFF2DD4BF)
-                : const Color(0xFF475569),
+            color: enabled ? const Color(0xFF2DD4BF) : const Color(0xFF475569),
             size: 18),
       ),
     );

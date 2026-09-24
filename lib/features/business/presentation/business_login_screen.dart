@@ -1,15 +1,18 @@
+import '../../../core/router/role_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/presentation/auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user.dart';
+import 'business_provider.dart';
 
 class BusinessLoginScreen extends ConsumerStatefulWidget {
   const BusinessLoginScreen({super.key});
 
   @override
-  ConsumerState<BusinessLoginScreen> createState() => _BusinessLoginScreenState();
+  ConsumerState<BusinessLoginScreen> createState() =>
+      _BusinessLoginScreenState();
 }
 
 class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
@@ -39,19 +42,21 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
 
     if (_emailError != null || _passwordError != null) return;
 
-    await ref.read(authStateProvider.notifier).businessLogin(email: email, password: password);
+    await ref
+        .read(authStateProvider.notifier)
+        .businessLogin(email: email, password: password);
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authStateProvider, (_, next) {
       if (next is AuthStateLoginSuccess) {
-        final user = ref.read(authNotifierProvider).currentUser;
-        if (user?.role == UserRole.BUSINESS) {
-          context.go('/business-dashboard');
-        } else {
-          context.go('/home');
-        }
+        ref.invalidate(myVenuesProvider);
+        ref.invalidate(selectedVenueIdProvider);
+        ref.invalidate(businessDashboardProvider);
+        ref.invalidate(businessProfileProvider);
+        final user = next.user ?? ref.read(authNotifierProvider).currentUser;
+        context.go(roleHome(user?.role ?? UserRole.USER));
       } else if (next is AuthStateError) {
         setState(() => _generalError = next.message);
       }
@@ -98,8 +103,8 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppTheme.darkBg.withOpacity(0.7),
-                    AppTheme.darkBg.withOpacity(0.95),
+                    AppTheme.darkBg.withValues(alpha: 0.7),
+                    AppTheme.darkBg.withValues(alpha: 0.95),
                     AppTheme.darkBg,
                   ],
                 ),
@@ -131,14 +136,15 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.39),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.39),
                           blurRadius: 14,
                           spreadRadius: 0,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.business_center, size: 32, color: Colors.white),
+                    child: const Icon(Icons.business_center,
+                        size: 32, color: Colors.white),
                   ),
                   const SizedBox(height: 24),
                   const Text(
@@ -165,7 +171,10 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                     hint: 'Business Email',
                     icon: Icons.mail,
                     errorText: _emailError,
-                    onChanged: (_) => setState(() { _emailError = null; _generalError = null; }),
+                    onChanged: (_) => setState(() {
+                      _emailError = null;
+                      _generalError = null;
+                    }),
                   ),
                   const SizedBox(height: 20),
                   _buildInputField(
@@ -174,18 +183,26 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                     icon: Icons.lock,
                     isPassword: true,
                     obscureText: _obscurePassword,
-                    onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
+                    onToggleVisibility: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                     errorText: _passwordError,
-                    onChanged: (_) => setState(() { _passwordError = null; _generalError = null; }),
+                    onChanged: (_) => setState(() {
+                      _passwordError = null;
+                      _generalError = null;
+                    }),
                   ),
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () => context.push('/business-forgot-password'),
+                      onPressed: () =>
+                          context.push('/business-forgot-password'),
                       child: const Text(
                         'Forgot Password?',
-                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
@@ -194,20 +211,25 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                   if (_generalError != null) ...[
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444).withOpacity(0.12),
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.4)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFEF4444).withValues(alpha: 0.4)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 18),
+                          const Icon(Icons.error_outline,
+                              color: Color(0xFFEF4444), size: 18),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               _generalError!,
-                              style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                              style: const TextStyle(
+                                  color: Color(0xFFEF4444), fontSize: 13),
                             ),
                           ),
                         ],
@@ -224,7 +246,8 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                         borderRadius: BorderRadius.circular(9999),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withOpacity(0.39),
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.39),
                             blurRadius: 14,
                             spreadRadius: 0,
                             offset: const Offset(0, 4),
@@ -235,16 +258,21 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primaryColor,
                           foregroundColor: AppTheme.darkBg,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(9999)),
                           elevation: 0,
                         ),
                         onPressed: isLoading || !canSubmit ? null : _login,
                         child: isLoading
                             ? const SizedBox(
-                                height: 20, width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.darkBg),
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: AppTheme.darkBg),
                               )
-                            : const Text('Log In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                            : const Text('Log In',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w700)),
                       ),
                     ),
                   ),
@@ -252,12 +280,17 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('New business? ', style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                      const Text('New business? ',
+                          style: TextStyle(
+                              color: Color(0xFF64748B), fontSize: 13)),
                       GestureDetector(
                         onTap: () => context.push('/business-signup'),
                         child: const Text(
                           'Register here',
-                          style: TextStyle(color: AppTheme.primaryColor, fontSize: 13, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -266,12 +299,17 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Not a business? ', style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                      const Text('Not a business? ',
+                          style: TextStyle(
+                              color: Color(0xFF64748B), fontSize: 13)),
                       GestureDetector(
                         onTap: () => context.go('/login'),
                         child: const Text(
                           'Customer Login',
-                          style: TextStyle(color: AppTheme.primaryColor, fontSize: 13, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -304,7 +342,8 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(9999),
             border: Border.all(
-              color: hasError ? const Color(0xFFEF4444) : const Color(0xFF334155),
+              color:
+                  hasError ? const Color(0xFFEF4444) : const Color(0xFF334155),
               width: 1,
             ),
           ),
@@ -329,15 +368,20 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
                   : null,
               filled: true,
               fillColor: AppTheme.surface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(9999), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(9999),
+                  borderSide: BorderSide.none),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(9999),
                 borderSide: BorderSide(
-                  color: hasError ? const Color(0xFFEF4444) : AppTheme.primaryColor,
+                  color: hasError
+                      ? const Color(0xFFEF4444)
+                      : AppTheme.primaryColor,
                   width: 1,
                 ),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
             ),
           ),
         ),
@@ -346,9 +390,12 @@ class _BusinessLoginScreenState extends ConsumerState<BusinessLoginScreen> {
             padding: const EdgeInsets.only(left: 16, top: 6),
             child: Row(
               children: [
-                const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 13),
+                const Icon(Icons.error_outline,
+                    color: Color(0xFFEF4444), size: 13),
                 const SizedBox(width: 4),
-                Text(errorText, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+                Text(errorText,
+                    style: const TextStyle(
+                        color: Color(0xFFEF4444), fontSize: 12)),
               ],
             ),
           ),

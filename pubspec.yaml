@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.2
 
   # State management
@@ -68,8 +70,11 @@ dependencies:
   json_annotation: ^4.9.0
 
   # Date formatting
-  intl: ^0.19.0
+  intl: ^0.20.2
+  timezone: ^0.9.4
   firebase_analytics: ^11.6.0
+  mobile_scanner: ^7.4.2
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

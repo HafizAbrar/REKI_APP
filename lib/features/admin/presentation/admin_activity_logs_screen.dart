@@ -35,8 +35,8 @@ class _AdminActivityLogsScreenState
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Activity Logs',
-            style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Activity Logs', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: logsAsync.when(
@@ -60,8 +60,7 @@ class _AdminActivityLogsScreenState
         data: (page) => Column(
           children: [
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               color: const Color(0xFF1E293B),
               child: Row(children: [
                 Text('${page.total} log${page.total == 1 ? '' : 's'} total',
@@ -122,31 +121,28 @@ class _AdminActivityLogsScreenState
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(meta.label,
-                      style: TextStyle(
-                          color: meta.color,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12)),
-                  const SizedBox(height: 2),
-                  Row(children: [
-                    _roleBadge(log.actorRole),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${log.target.replaceAll('_', ' ')} · ${log.targetId.substring(0, 8)}…',
-                      style: const TextStyle(
-                          color: Color(0xFF64748B), fontSize: 10),
-                    ),
-                  ]),
-                ]),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(meta.label,
+                  style: TextStyle(
+                      color: meta.color,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12)),
+              const SizedBox(height: 2),
+              Row(children: [
+                _roleBadge(log.actorRole),
+                const SizedBox(width: 6),
+                Text(
+                  '${log.target.replaceAll('_', ' ')} · ${log.targetId.substring(0, 8)}…',
+                  style:
+                      const TextStyle(color: Color(0xFF64748B), fontSize: 10),
+                ),
+              ]),
+            ]),
           ),
           Text(_formatDateTime(log.createdAt),
-              style: const TextStyle(
-                  color: Color(0xFF64748B), fontSize: 10)),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 10)),
         ]),
-
         if (hasDetails) ...[
           const SizedBox(height: 10),
           const Divider(color: Color(0xFF334155), height: 1),
@@ -162,11 +158,11 @@ class _AdminActivityLogsScreenState
     final title = details['title']?.toString();
     final busyness = details['busyness']?.toString();
     final percentage = details['percentage'];
-    final vibes = (details['vibes'] as List?)?.map((e) => e.toString()).toList();
+    final vibes =
+        (details['vibes'] as List?)?.map((e) => e.toString()).toList();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      if (name != null)
-        _detailRow(Icons.store_outlined, 'Venue', name, accent),
+      if (name != null) _detailRow(Icons.store_outlined, 'Venue', name, accent),
       if (title != null)
         _detailRow(Icons.local_offer_outlined, 'Offer', title, accent),
       if (busyness != null || percentage != null) ...[
@@ -190,8 +186,8 @@ class _AdminActivityLogsScreenState
                   value: ((percentage as num) / 100).clamp(0.0, 1.0),
                   minHeight: 4,
                   backgroundColor: const Color(0xFF0F172A),
-                  valueColor: AlwaysStoppedAnimation(
-                      _busynessColor(busyness ?? '')),
+                  valueColor:
+                      AlwaysStoppedAnimation(_busynessColor(busyness ?? '')),
                 ),
               ),
             ),
@@ -203,9 +199,8 @@ class _AdminActivityLogsScreenState
         Wrap(
           spacing: 5,
           runSpacing: 5,
-          children: vibes
-              .map((v) => _chip(v, const Color(0xFF3B82F6)))
-              .toList(),
+          children:
+              vibes.map((v) => _chip(v, const Color(0xFF3B82F6))).toList(),
         ),
       ],
     ]);
@@ -218,14 +213,11 @@ class _AdminActivityLogsScreenState
         Icon(icon, color: const Color(0xFF64748B), size: 12),
         const SizedBox(width: 5),
         Text('$label: ',
-            style:
-                const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
         Expanded(
           child: Text(value,
               style: TextStyle(
-                  color: color,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600),
+                  color: color, fontSize: 11, fontWeight: FontWeight.w600),
               overflow: TextOverflow.ellipsis),
         ),
       ]),
@@ -273,35 +265,35 @@ class _AdminActivityLogsScreenState
   _ActionMeta _actionMeta(String action) {
     switch (action) {
       case 'BUSINESS_LOGIN':
-        return _ActionMeta(
+        return const _ActionMeta(
             icon: Icons.login,
             label: 'Business Login',
-            color: const Color(0xFF64748B));
+            color: Color(0xFF64748B));
       case 'STATUS_UPDATE':
-        return _ActionMeta(
+        return const _ActionMeta(
             icon: Icons.update,
             label: 'Status Update',
-            color: const Color(0xFF3B82F6));
+            color: Color(0xFF3B82F6));
       case 'OFFER_CREATED':
-        return _ActionMeta(
+        return const _ActionMeta(
             icon: Icons.local_offer_outlined,
             label: 'Offer Created',
-            color: const Color(0xFF2DD4BF));
+            color: Color(0xFF2DD4BF));
       case 'VENUE_CREATED':
-        return _ActionMeta(
+        return const _ActionMeta(
             icon: Icons.add_business,
             label: 'Venue Created',
-            color: const Color(0xFF10B981));
+            color: Color(0xFF10B981));
       case 'VENUE_DELETED':
-        return _ActionMeta(
+        return const _ActionMeta(
             icon: Icons.delete_outline,
             label: 'Venue Deleted',
-            color: const Color(0xFFEF4444));
+            color: Color(0xFFEF4444));
       case 'USER_LOGIN':
-        return _ActionMeta(
+        return const _ActionMeta(
             icon: Icons.person_outline,
             label: 'User Login',
-            color: const Color(0xFF8B5CF6));
+            color: Color(0xFF8B5CF6));
       default:
         return _ActionMeta(
             icon: Icons.info_outline,
@@ -377,9 +369,7 @@ class _AdminActivityLogsScreenState
                   : const Color(0xFF334155)),
         ),
         child: Icon(icon,
-            color: enabled
-                ? const Color(0xFF2DD4BF)
-                : const Color(0xFF475569),
+            color: enabled ? const Color(0xFF2DD4BF) : const Color(0xFF475569),
             size: 18),
       ),
     );

@@ -1,0 +1,52 @@
+00:00 +0: loading D:/REKI/test/unit/services/optimization_test.dart
+00:00 +0: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:00 +1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:00 +2: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +3: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +3 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +3 -1: D:/REKI/test/unit/services/local_database_test.dart: LocalDatabase returns null for expired venue list cache [E]
+  Expected: null
+    Actual: '[{"id":"v2"}]'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 474:18  expect
+  test\unit\services\local_database_test.dart 51:7    main.<fn>.<fn>
+  
+00:01 +4 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +5 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +6 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +7 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +8 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +9 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +10 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +11 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +12 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +13 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +14 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +15 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +16 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +17 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +18 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +19 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:01 +20 -1: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL
+00:30 +20 -2: D:/REKI/test/unit/services/optimization_test.dart: cache coalesces simultaneous loads and expires at TTL [E]
+  TimeoutException after 0:00:30.000000: Test timed out after 30 seconds. See https://pub.dev/packages/test#timeouts
+  dart:isolate  _RawReceivePort._handleMessage
+  
+00:30 +20 -2: D:/REKI/test/unit/services/optimization_test.dart: cache evicts least recently used metadata and retries failed loads
+01:00 +20 -3: D:/REKI/test/unit/services/optimization_test.dart: cache evicts least recently used metadata and retries failed loads [E]
+  TimeoutException after 0:00:30.000000: Test timed out after 30 seconds. See https://pub.dev/packages/test#timeouts
+  dart:isolate  _RawReceivePort._handleMessage
+  
+01:00 +20 -3: D:/REKI/test/unit/services/optimization_test.dart: repeat offers refresh uses metadata cache and at most four detail requests concurrently
+01:30 +20 -4: D:/REKI/test/unit/services/optimization_test.dart: repeat offers refresh uses metadata cache and at most four detail requests concurrently [E]
+  TimeoutException after 0:00:30.000000: Test timed out after 30 seconds. See https://pub.dev/packages/test#timeouts
+  dart:isolate  _RawReceivePort._handleMessage
+  
+01:30 +20 -4: D:/REKI/test/unit/services/optimization_test.dart: all concurrent 401 requests settle when refresh is missing
+01:30 +21 -4: D:/REKI/test/unit/services/optimization_test.dart: all concurrent 401 requests settle when refresh is malformed
+01:30 +22 -4: D:/REKI/test/unit/services/optimization_test.dart: all concurrent 401 requests settle when refresh is unauthorized
+01:30 +23 -4: D:/REKI/test/unit/services/optimization_test.dart: concurrent 401s refresh once and replay all requests
+01:30 +24 -4: D:/REKI/test/unit/services/optimization_test.dart: server outage during refresh preserves stored credentials
+01:30 +25 -4: D:/REKI/test/unit/services/optimization_test.dart: failed replay does not invalidate a successfully refreshed session
+01:30 +26 -4: Some tests failed.

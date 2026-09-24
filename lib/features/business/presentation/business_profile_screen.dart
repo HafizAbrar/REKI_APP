@@ -34,8 +34,7 @@ class BusinessProfileScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.refresh, color: Color(0xFF14B8A6)),
-            onPressed: () =>
-                ref.read(businessProfileProvider.notifier).load(),
+            onPressed: () => ref.read(businessProfileProvider.notifier).load(),
           ),
         ],
       ),
@@ -57,8 +56,8 @@ class BusinessProfileScreen extends ConsumerWidget {
                     backgroundColor: const Color(0xFF14B8A6)),
                 onPressed: () =>
                     ref.read(businessProfileProvider.notifier).load(),
-                child: const Text('Retry',
-                    style: TextStyle(color: Colors.white)),
+                child:
+                    const Text('Retry', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -96,7 +95,7 @@ class BusinessProfileScreen extends ConsumerWidget {
               border: Border.all(color: const Color(0xFFE2E8F0)),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withOpacity(0.04), blurRadius: 12)
+                    color: Colors.black.withValues(alpha: 0.04), blurRadius: 12)
               ],
             ),
             child: Column(
@@ -107,8 +106,8 @@ class BusinessProfileScreen extends ConsumerWidget {
                   height: 88,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                        color: const Color(0xFF14B8A6), width: 3),
+                    border:
+                        Border.all(color: const Color(0xFF14B8A6), width: 3),
                   ),
                   child: ClipOval(
                     child: avatarUrl != null && avatarUrl.isNotEmpty
@@ -171,8 +170,8 @@ class BusinessProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Text(
                     'Member since ${_formatDate(createdAt)}',
-                    style: const TextStyle(
-                        color: Color(0xFF94A3B8), fontSize: 12),
+                    style:
+                        const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                   ),
                 ],
               ],
@@ -262,23 +261,19 @@ class BusinessProfileScreen extends ConsumerWidget {
           child: Text(
             name.isNotEmpty ? name[0].toUpperCase() : 'B',
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.w800),
+                color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800),
           ),
         ),
       );
 
   Widget _badge(
-      {required String label,
-      required IconData icon,
-      required Color color}) {
+      {required String label, required IconData icon, required Color color}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -308,7 +303,7 @@ class BusinessProfileScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8)
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8)
         ],
       ),
       child: Row(
@@ -317,7 +312,7 @@ class BusinessProfileScreen extends ConsumerWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -369,7 +364,7 @@ class BusinessProfileScreen extends ConsumerWidget {
           border: Border.all(color: const Color(0xFFE2E8F0)),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.03), blurRadius: 8)
+                color: Colors.black.withValues(alpha: 0.03), blurRadius: 8)
           ],
         ),
         child: Row(
@@ -378,7 +373,7 @@ class BusinessProfileScreen extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFF14B8A6).withOpacity(0.1),
+                color: const Color(0xFF14B8A6).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.store_outlined,
@@ -403,8 +398,7 @@ class BusinessProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
-                color: Color(0xFF94A3B8), size: 20),
+            const Icon(Icons.chevron_right, color: Color(0xFF94A3B8), size: 20),
           ],
         ),
       ),
@@ -459,7 +453,7 @@ class BusinessProfileScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
             color: isDestructive
-                ? Colors.red.withOpacity(0.2)
+                ? Colors.red.withValues(alpha: 0.2)
                 : const Color(0xFFE2E8F0)),
       ),
       child: ListTile(
@@ -467,7 +461,7 @@ class BusinessProfileScreen extends ConsumerWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: color, size: 18),
@@ -487,8 +481,18 @@ class BusinessProfileScreen extends ConsumerWidget {
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return '${months[dt.month - 1]} ${dt.year}';
   }

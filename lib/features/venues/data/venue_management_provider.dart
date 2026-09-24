@@ -1,25 +1,80 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/venue.dart';
+import '../../../core/network/venue_api_service.dart';
 import '../../../core/services/venue_repository.dart';
+import '../../../features/city_selection/presentation/city_selection_screen.dart';
 
 final venueManagementProvider =
     StateNotifierProvider<VenueManagementNotifier, AsyncValue<List<Venue>>>(
         (ref) {
-  return VenueManagementNotifier(ref.read(venueRepositoryProvider));
+  ref.watch(selectedCityProvider);
+  final notifier =
+      VenueManagementNotifier(ref.read(venueRepositoryProvider), ref);
+  Future.microtask(notifier.loadVenues);
+  return notifier;
 });
 
 class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   final VenueRepository _repository;
+  final Ref _ref;
 
-  VenueManagementNotifier(this._repository) : super(const AsyncValue.loading());
+  VenueManagementNotifier(this._repository, this._ref)
+      : super(const AsyncValue.loading());
 
-  Future<void> loadVenues() async {
-    state = const AsyncValue.loading();
-    final result = await _repository.getAllVenues();
-    state = result.when(
-      success: (venues) => AsyncValue.data(venues),
-      failure: (error) => AsyncValue.error(error, StackTrace.current),
-    );
+  int _loadVersion = 0;
+  bool _loading = false;
+  Future<void> loadVenues({bool silent = false}) async {
+    if (!mounted || (silent && _loading)) return;
+    _loading = true;
+    final version = ++_loadVersion;
+    if (!silent) state = const AsyncValue.loading();
+    try {
+      final selectedCity = await _ref.read(selectedCityProvider.future);
+      if (!mounted || version != _loadVersion) return;
+      // Use live snapshot for initial load — cheaper than full venue list
+      if (!silent) {
+        try {
+          final venueApi = _ref.read(venueApiServiceProvider);
+          final snapshot =
+              await venueApi.getLiveSnapshot(city: selectedCity?.slug);
+          if (!mounted || version != _loadVersion) return;
+          final raw = snapshot['venues'] ?? snapshot['data'] ?? snapshot['items'];
+          if (raw is List && raw.isNotEmpty) {
+            final venues = raw
+                .map((j) {
+                  try {
+                    return Venue.fromJson(j as Map<String, dynamic>);
+                  } catch (_) {
+                    return null;
+                  }
+                })
+                .whereType<Venue>()
+                .toList();
+            if (venues.isNotEmpty && mounted && version == _loadVersion) {
+              state = AsyncValue.data(venues);
+              _loading = false;
+              return;
+            }
+          }
+        } catch (_) {
+          // Snapshot unavailable — fall through to full venue list
+        }
+      }
+      final result = await _repository.getAllVenues(cityId: selectedCity?.slug);
+      if (!mounted || version != _loadVersion) return;
+      state = result.when(
+        success: (venues) => AsyncValue.data(venues),
+        failure: (error) => silent && state.hasValue
+            ? state
+            : AsyncValue.error(error, StackTrace.current),
+      );
+    } catch (e, stack) {
+      if (mounted && version == _loadVersion) {
+        state = AsyncValue.error(e, stack);
+      }
+    } finally {
+      if (version == _loadVersion) _loading = false;
+    }
   }
 
   Future<bool> createVenue(Map<String, dynamic> venueData) async {
@@ -105,27 +160,39 @@ final filterProvider = StateNotifierProvider<FilterNotifier, FilterState>(
 // Search provider — calls GET /venues/search?q=&city=
 final venueSearchProvider =
     StateNotifierProvider<VenueSearchNotifier, AsyncValue<List<Venue>>>((ref) {
-  return VenueSearchNotifier(ref.read(venueRepositoryProvider));
+  ref.watch(selectedCityProvider);
+  return VenueSearchNotifier(ref.read(venueRepositoryProvider), ref);
 });
 
 class VenueSearchNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
   final VenueRepository _repository;
-  VenueSearchNotifier(this._repository) : super(const AsyncValue.data([]));
+  final Ref _ref;
+  int _request = 0;
+  VenueSearchNotifier(this._repository, this._ref)
+      : super(const AsyncValue.data([]));
 
-  Future<void> search(String query, {String city = 'Manchester'}) async {
+  Future<void> search(String query, {String? city}) async {
+    final request = ++_request;
     if (query.trim().isEmpty) {
       state = const AsyncValue.data([]);
       return;
     }
     state = const AsyncValue.loading();
-    final result = await _repository.searchVenues(query.trim(), city: city);
+    final selectedCity = await _ref.read(selectedCityProvider.future);
+    final cityId = city ?? selectedCity?.slug ?? 'Manchester';
+    final result = await _repository.searchVenues(query.trim(), city: cityId);
+    if (request != _request) return;
+    if (!mounted) return;
     state = result.when(
       success: (venues) => AsyncValue.data(venues),
       failure: (e) => AsyncValue.error(e, StackTrace.current),
     );
   }
 
-  void clear() => state = const AsyncValue.data([]);
+  void clear() {
+    _request++;
+    state = const AsyncValue.data([]);
+  }
 }
 
 final venueDetailProvider =

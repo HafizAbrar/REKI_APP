@@ -13,10 +13,9 @@ class TestPushScreen extends ConsumerStatefulWidget {
 class _TestPushScreenState extends ConsumerState<TestPushScreen> {
   final _formKey = GlobalKey<FormState>();
   final _userIdCtrl = TextEditingController();
-  final _titleCtrl =
-      TextEditingController(text: '🔔 REKI Test Notification');
-  final _bodyCtrl = TextEditingController(
-      text: 'This is a test push from REKI admin panel');
+  final _titleCtrl = TextEditingController(text: '🔔 REKI Test Notification');
+  final _bodyCtrl =
+      TextEditingController(text: 'This is a test push from REKI admin panel');
 
   bool _loading = false;
   TestPushResult? _result;
@@ -80,15 +79,13 @@ class _TestPushScreenState extends ConsumerState<TestPushScreen> {
                   border: Border.all(
                       color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
                 ),
-                child: Row(children: [
-                  const Icon(Icons.info_outline,
-                      color: Color(0xFF3B82F6), size: 16),
-                  const SizedBox(width: 10),
-                  const Expanded(
+                child: const Row(children: [
+                  Icon(Icons.info_outline, color: Color(0xFF3B82F6), size: 16),
+                  SizedBox(width: 10),
+                  Expanded(
                     child: Text(
                       'Send a test push notification to any registered user via FCM.',
-                      style: TextStyle(
-                          color: Color(0xFF93C5FD), fontSize: 12),
+                      style: TextStyle(color: Color(0xFF93C5FD), fontSize: 12),
                     ),
                   ),
                 ]),
@@ -108,59 +105,60 @@ class _TestPushScreenState extends ConsumerState<TestPushScreen> {
 
               // Quick-pick from loaded users
               usersAsync.whenOrNull(
-                data: (users) {
-                  final nonGuests =
-                      users.where((u) => u.role != 'guest').toList();
-                  if (nonGuests.isEmpty) return const SizedBox.shrink();
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 8),
-                      const Text('Quick pick:',
-                          style: TextStyle(
-                              color: Color(0xFF64748B), fontSize: 11)),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: nonGuests.take(6).map((u) {
-                          final isSelected =
-                              _userIdCtrl.text.trim() == u.id;
-                          return GestureDetector(
-                            onTap: () =>
-                                setState(() => _userIdCtrl.text = u.id),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFF2DD4BF)
-                                        .withValues(alpha: 0.2)
-                                    : const Color(0xFF334155),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? const Color(0xFF2DD4BF)
-                                      : Colors.transparent,
-                                ),
-                              ),
-                              child: Text(
-                                u.name,
-                                style: TextStyle(
+                    data: (users) {
+                      final nonGuests =
+                          users.where((u) => u.role != 'guest').toList();
+                      if (nonGuests.isEmpty) return const SizedBox.shrink();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          const Text('Quick pick:',
+                              style: TextStyle(
+                                  color: Color(0xFF64748B), fontSize: 11)),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: nonGuests.take(6).map((u) {
+                              final isSelected =
+                                  _userIdCtrl.text.trim() == u.id;
+                              return GestureDetector(
+                                onTap: () =>
+                                    setState(() => _userIdCtrl.text = u.id),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
                                     color: isSelected
                                         ? const Color(0xFF2DD4BF)
-                                        : const Color(0xFF94A3B8),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  );
-                },
-              ) ?? const SizedBox.shrink(),
+                                            .withValues(alpha: 0.2)
+                                        : const Color(0xFF334155),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? const Color(0xFF2DD4BF)
+                                          : Colors.transparent,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    u.name,
+                                    style: TextStyle(
+                                        color: isSelected
+                                            ? const Color(0xFF2DD4BF)
+                                            : const Color(0xFF94A3B8),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      );
+                    },
+                  ) ??
+                  const SizedBox.shrink(),
 
               const SizedBox(height: 16),
               _label('Title'),
@@ -226,8 +224,7 @@ class _TestPushScreenState extends ConsumerState<TestPushScreen> {
                     color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color:
-                            const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
                   ),
                   child: Row(children: [
                     const Icon(Icons.error_outline,
@@ -282,41 +279,40 @@ class _TestPushScreenState extends ConsumerState<TestPushScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    r.sent ? 'Push Sent Successfully' : 'Push Failed',
-                    style: TextStyle(
-                        color: sentColor,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(
+                r.sent ? 'Push Sent Successfully' : 'Push Failed',
+                style: TextStyle(
+                    color: sentColor,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14),
+              ),
+              const SizedBox(height: 2),
+              Row(children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: r.firebaseConfigured
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEF4444),
                   ),
-                  const SizedBox(height: 2),
-                  Row(children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: r.firebaseConfigured
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFEF4444),
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      r.firebaseConfigured
-                          ? 'Firebase configured'
-                          : 'Firebase not configured',
-                      style: TextStyle(
-                          color: r.firebaseConfigured
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFFEF4444),
-                          fontSize: 11),
-                    ),
-                  ]),
-                ]),
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  r.firebaseConfigured
+                      ? 'Firebase configured'
+                      : 'Firebase not configured',
+                  style: TextStyle(
+                      color: r.firebaseConfigured
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
+                      fontSize: 11),
+                ),
+              ]),
+            ]),
           ),
         ]),
 
@@ -352,8 +348,8 @@ class _TestPushScreenState extends ConsumerState<TestPushScreen> {
                   'Opened', r.opened.toString(), const Color(0xFF8B5CF6))),
           _divider(),
           Expanded(
-              child: _statItem(
-                  'Open Rate', r.openRate, const Color(0xFFF59E0B))),
+              child:
+                  _statItem('Open Rate', r.openRate, const Color(0xFFF59E0B))),
           _divider(),
           const Expanded(child: SizedBox()),
         ]),
@@ -375,14 +371,12 @@ class _TestPushScreenState extends ConsumerState<TestPushScreen> {
     ]);
   }
 
-  Widget _divider() => Container(
-      width: 1, height: 40, color: const Color(0xFF334155));
+  Widget _divider() =>
+      Container(width: 1, height: 40, color: const Color(0xFF334155));
 
   Widget _label(String text) => Text(text,
       style: const TextStyle(
-          color: Color(0xFF94A3B8),
-          fontSize: 12,
-          fontWeight: FontWeight.w600));
+          color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w600));
 
   InputDecoration _inputDecoration(String hint) => InputDecoration(
         hintText: hint,

@@ -1,0 +1,28 @@
+Computing fixes in reki...
+Applying fixes...
+
+lib\core\models\notification.dart
+  curly_braces_in_flow_control_structures - 3 fixes
+
+lib\core\network\admin_api_service.dart
+  curly_braces_in_flow_control_structures - 2 fixes
+
+lib\core\network\user_api_service.dart
+  curly_braces_in_flow_control_structures - 3 fixes
+
+lib\core\services\auth_service.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+lib\core\utils\error_handler.dart
+  curly_braces_in_flow_control_structures - 4 fixes
+
+lib\features\business\presentation\business_forgot_password_screen.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+lib\features\business\presentation\business_signup_screen.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+lib\features\business\presentation\create_offer_screen.dart
+  curly_braces_in_flow_control_structures - 1 fix
+
+16 fixes made in 8 files.

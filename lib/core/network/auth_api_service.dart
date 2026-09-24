@@ -11,6 +11,17 @@ class AuthApiService {
 
   AuthApiService(this._dio);
 
+  /// Some deployments wrap responses in a `{ "data": { ... } }` envelope —
+  /// unwrap it so callers always see the payload itself.
+  static Map<String, dynamic> _unwrap(dynamic body) {
+    if (body is Map<String, dynamic>) {
+      final inner = body['data'];
+      if (inner is Map<String, dynamic>) return inner;
+      return body;
+    }
+    return <String, dynamic>{};
+  }
+
   // POST /auth/register - Register new user
   Future<Map<String, dynamic>> register({
     required String email,
@@ -52,7 +63,7 @@ class AuthApiService {
       'email': email,
       'password': password,
     });
-    return response.data;
+    return _unwrap(response.data);
   }
 
   // POST /auth/login - User login
@@ -69,7 +80,8 @@ class AuthApiService {
 
   // POST /auth/google - Login/Register with Google OAuth
   Future<Map<String, dynamic>> loginWithGoogle(String idToken) async {
-    final response = await _dio.post('/auth/google', data: {'idToken': idToken});
+    final response =
+        await _dio.post('/auth/google', data: {'idToken': idToken});
     return response.data;
   }
 
@@ -140,6 +152,6 @@ class AuthApiService {
   // GET /auth/me - Get current user info
   Future<Map<String, dynamic>> getCurrentUser() async {
     final response = await _dio.get('/auth/me');
-    return response.data;
+    return _unwrap(response.data);
   }
 }

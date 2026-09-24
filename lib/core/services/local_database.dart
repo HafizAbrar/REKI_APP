@@ -10,13 +10,20 @@ class LocalDatabase {
 
   Database? _db;
 
-  Future<Database> get db async => _db ??= await _open();
+  Future<Database>? _opening;
+  Future<Database> get db {
+    if (_db != null && _db!.isOpen) return Future.value(_db!);
+    return _opening ??= _open().then((database) {
+      _db = database;
+      return database;
+    }).whenComplete(() => _opening = null);
+  }
 
   Future<Database> _open() async {
     final path = join(await getDatabasesPath(), 'reki.db');
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, _) async {
         // Venue cache with TTL
         await db.execute('''
@@ -59,11 +66,28 @@ class LocalDatabase {
           )
         ''');
         await _createSocialTables(db);
+        await _createIndexes(db);
       },
       onUpgrade: (db, oldVersion, _) async {
         if (oldVersion < 2) await _createSocialTables(db);
+        if (oldVersion < 3) await _createIndexes(db);
       },
     );
+  }
+
+  static Future<void> _createIndexes(Database db) async {
+    final batch = db.batch();
+    batch.execute(
+        'CREATE INDEX IF NOT EXISTS idx_reviews_venue_created ON venue_reviews(venue_id, created_at DESC)');
+    batch.execute(
+        'CREATE INDEX IF NOT EXISTS idx_history_visited ON venue_history(visited_at DESC)');
+    batch.execute(
+        'CREATE INDEX IF NOT EXISTS idx_checkins_created ON venue_checkins(checked_in_at DESC)');
+    batch.execute(
+        'CREATE INDEX IF NOT EXISTS idx_sync_created ON sync_queue(created_at ASC)');
+    batch.execute(
+        'CREATE INDEX IF NOT EXISTS idx_saved_created ON saved_venues(saved_at DESC)');
+    await batch.commit(noResult: true);
   }
 
   static Future<void> _createSocialTables(Database db) async {
@@ -120,7 +144,7 @@ class LocalDatabase {
     if (rows.isEmpty) return null;
     final age = DateTime.now().millisecondsSinceEpoch -
         (rows.first['cached_at'] as int);
-    if (age > ttlMinutes * 60 * 1000) return null;
+    if (age >= ttlMinutes * 60 * 1000) return null;
     return rows.first['data'] as String;
   }
 
@@ -143,7 +167,7 @@ class LocalDatabase {
     if (rows.isEmpty) return null;
     final age = DateTime.now().millisecondsSinceEpoch -
         (rows.first['cached_at'] as int);
-    if (age > ttlMinutes * 60 * 1000) return null;
+    if (age >= ttlMinutes * 60 * 1000) return null;
     return rows.first['data'] as String;
   }
 

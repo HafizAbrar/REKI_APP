@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
-import '../../core/models/user.dart';
+import '../../core/router/role_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -47,14 +47,7 @@ class _SplashScreenState extends State<SplashScreen>
         if (user != null && mounted && !_navigated) {
           _navigated = true;
           // Route based on role
-          switch (user.role) {
-            case UserRole.ADMIN:
-              context.go('/admin-dashboard');
-            case UserRole.BUSINESS:
-              context.go('/business-dashboard');
-            case UserRole.USER:
-              context.go('/home');
-          }
+          context.go(roleHome(user.role));
           return;
         }
       }
@@ -101,8 +94,8 @@ class _SplashScreenState extends State<SplashScreen>
                   center: const Alignment(0, -0.2),
                   radius: 1.2,
                   colors: [
-                    AppTheme.primaryColor.withOpacity(0.25),
-                    AppTheme.backgroundDark.withOpacity(0.8),
+                    AppTheme.primaryColor.withValues(alpha: 0.25),
+                    AppTheme.backgroundDark.withValues(alpha: 0.8),
                     AppTheme.backgroundDark,
                   ],
                   stops: const [0, 0.6, 1],
@@ -118,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppTheme.backgroundDark.withOpacity(0.3),
+                    AppTheme.backgroundDark.withValues(alpha: 0.3),
                     Colors.transparent,
                     AppTheme.backgroundDark,
                   ],
@@ -145,7 +138,8 @@ class _SplashScreenState extends State<SplashScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryColor.withOpacity(0.6),
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.6),
                                 blurRadius: 80,
                                 spreadRadius: 40,
                               ),
@@ -169,7 +163,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     shadows: [
                                       Shadow(
                                         color: AppTheme.primaryColor
-                                            .withOpacity(0.8),
+                                            .withValues(alpha: 0.8),
                                         blurRadius: 15,
                                       ),
                                     ],
@@ -186,7 +180,7 @@ class _SplashScreenState extends State<SplashScreen>
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: AppTheme.iceBlue.withOpacity(0.8),
+                            color: AppTheme.iceBlue.withValues(alpha: 0.8),
                             height: 1.5,
                           ),
                         ),
@@ -211,7 +205,8 @@ class _SplashScreenState extends State<SplashScreen>
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
-                                  color: AppTheme.iceBlue.withOpacity(0.7),
+                                  color:
+                                      AppTheme.iceBlue.withValues(alpha: 0.7),
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -223,7 +218,8 @@ class _SplashScreenState extends State<SplashScreen>
                                   height: 5,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(3),
-                                    color: AppTheme.iceBlue.withOpacity(0.1),
+                                    color:
+                                        AppTheme.iceBlue.withValues(alpha: 0.1),
                                   ),
                                   child: FractionallySizedBox(
                                     alignment: Alignment.centerLeft,
@@ -235,7 +231,7 @@ class _SplashScreenState extends State<SplashScreen>
                                         boxShadow: [
                                           BoxShadow(
                                             color: AppTheme.primaryColor
-                                                .withOpacity(0.8),
+                                                .withValues(alpha: 0.8),
                                             blurRadius: 12,
                                           ),
                                         ],
@@ -257,7 +253,8 @@ class _SplashScreenState extends State<SplashScreen>
                           borderRadius: BorderRadius.circular(26),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.primaryColor.withOpacity(0.25),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.25),
                               blurRadius: 20,
                             ),
                           ],
@@ -297,7 +294,7 @@ class _SplashScreenState extends State<SplashScreen>
                           Icon(
                             Icons.location_on,
                             size: 13,
-                            color: AppTheme.iceBlue.withOpacity(0.4),
+                            color: AppTheme.iceBlue.withValues(alpha: 0.4),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -306,7 +303,7 @@ class _SplashScreenState extends State<SplashScreen>
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 2.5,
-                              color: AppTheme.iceBlue.withOpacity(0.4),
+                              color: AppTheme.iceBlue.withValues(alpha: 0.4),
                             ),
                           ),
                         ],

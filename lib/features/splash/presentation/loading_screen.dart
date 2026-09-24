@@ -4,7 +4,7 @@ import 'dart:math' as math;
 
 class LoadingScreen extends StatefulWidget {
   final VoidCallback? onLoadingComplete;
-  
+
   const LoadingScreen({super.key, this.onLoadingComplete});
 
   @override
@@ -17,7 +17,7 @@ class _LoadingScreenState extends State<LoadingScreen>
   late AnimationController _progressController;
   late AnimationController _shimmerController;
   late AnimationController _spinController;
-  
+
   late Animation<double> _pulseAnimation;
   late Animation<double> _progressAnimation;
   late Animation<double> _shimmerAnimation;
@@ -26,22 +26,22 @@ class _LoadingScreenState extends State<LoadingScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _pulseController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
     )..repeat();
-    
+
     _progressController = AnimationController(
       duration: const Duration(seconds: 4),
       vsync: this,
     );
-    
+
     _shimmerController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat();
-    
+
     _spinController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
@@ -50,15 +50,15 @@ class _LoadingScreenState extends State<LoadingScreen>
     _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     _progressAnimation = Tween<double>(begin: 0.0, end: 0.72).animate(
       CurvedAnimation(parent: _progressController, curve: Curves.easeOut),
     );
-    
+
     _shimmerAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
       CurvedAnimation(parent: _shimmerController, curve: Curves.linear),
     );
-    
+
     _spinAnimation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
       CurvedAnimation(parent: _spinController, curve: Curves.linear),
     );
@@ -68,7 +68,7 @@ class _LoadingScreenState extends State<LoadingScreen>
 
   void _startLoading() {
     _progressController.forward();
-    
+
     Timer(const Duration(seconds: 4), () {
       if (widget.onLoadingComplete != null) {
         widget.onLoadingComplete!();
@@ -101,7 +101,7 @@ class _LoadingScreenState extends State<LoadingScreen>
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF2DD4BF).withOpacity(0.2),
+                    const Color(0xFF2DD4BF).withValues(alpha: 0.2),
                     Colors.transparent,
                   ],
                 ),
@@ -112,14 +112,15 @@ class _LoadingScreenState extends State<LoadingScreen>
             top: MediaQuery.of(context).size.height * 0.5,
             left: MediaQuery.of(context).size.width * 0.5,
             child: Transform.translate(
-              offset: Offset(-MediaQuery.of(context).size.width * 0.4, -MediaQuery.of(context).size.height * 0.2),
+              offset: Offset(-MediaQuery.of(context).size.width * 0.4,
+                  -MediaQuery.of(context).size.height * 0.2),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.8,
                 height: MediaQuery.of(context).size.height * 0.4,
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFBAE6FD).withOpacity(0.1),
+                      const Color(0xFFBAE6FD).withValues(alpha: 0.1),
                       Colors.transparent,
                     ],
                   ),
@@ -132,11 +133,12 @@ class _LoadingScreenState extends State<LoadingScreen>
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: const NetworkImage('https://grainy-gradients.vercel.app/noise.svg'),
+                  image: const NetworkImage(
+                      'https://grainy-gradients.vercel.app/noise.svg'),
                   fit: BoxFit.cover,
                   opacity: 0.15,
                   colorFilter: ColorFilter.mode(
-                    Colors.white.withOpacity(0.25),
+                    Colors.white.withValues(alpha: 0.25),
                     BlendMode.multiply,
                   ),
                 ),
@@ -169,7 +171,8 @@ class _LoadingScreenState extends State<LoadingScreen>
                                 decoration: BoxDecoration(
                                   gradient: RadialGradient(
                                     colors: [
-                                      const Color(0xFF2DD4BF).withOpacity(0.15),
+                                      const Color(0xFF2DD4BF)
+                                          .withValues(alpha: 0.15),
                                       Colors.transparent,
                                     ],
                                   ),
@@ -186,7 +189,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withValues(alpha: 0.05),
                               width: 1,
                             ),
                           ),
@@ -197,7 +200,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),
@@ -208,14 +211,16 @@ class _LoadingScreenState extends State<LoadingScreen>
                           height: 112,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFF0F172A).withOpacity(0.8),
+                            color:
+                                const Color(0xFF0F172A).withValues(alpha: 0.8),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               width: 1,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                                color: const Color(0xFF2DD4BF)
+                                    .withValues(alpha: 0.3),
                                 blurRadius: 50,
                                 spreadRadius: -10,
                               ),
@@ -231,8 +236,10 @@ class _LoadingScreenState extends State<LoadingScreen>
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      const Color(0xFF2DD4BF).withOpacity(0.2),
-                                      const Color(0xFFBAE6FD).withOpacity(0.1),
+                                      const Color(0xFF2DD4BF)
+                                          .withValues(alpha: 0.2),
+                                      const Color(0xFFBAE6FD)
+                                          .withValues(alpha: 0.1),
                                     ],
                                   ),
                                 ),
@@ -248,10 +255,26 @@ class _LoadingScreenState extends State<LoadingScreen>
                                     fit: BoxFit.cover,
                                     opacity: 0.3,
                                     colorFilter: ColorFilter.matrix([
-                                      0.2126, 0.7152, 0.0722, 0, 0,
-                                      0.2126, 0.7152, 0.0722, 0, 0,
-                                      0.2126, 0.7152, 0.0722, 0, 0,
-                                      0, 0, 0, 1, 0,
+                                      0.2126,
+                                      0.7152,
+                                      0.0722,
+                                      0,
+                                      0,
+                                      0.2126,
+                                      0.7152,
+                                      0.0722,
+                                      0,
+                                      0,
+                                      0.2126,
+                                      0.7152,
+                                      0.0722,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      1,
+                                      0,
                                     ]),
                                   ),
                                 ),
@@ -264,7 +287,8 @@ class _LoadingScreenState extends State<LoadingScreen>
                                   color: Colors.white,
                                   shadows: [
                                     Shadow(
-                                      color: const Color(0xFF2DD4BF).withOpacity(0.6),
+                                      color: const Color(0xFF2DD4BF)
+                                          .withValues(alpha: 0.6),
                                       blurRadius: 15,
                                     ),
                                   ],
@@ -320,7 +344,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                           child: Container(
                             height: 4,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(2),
                             ),
                             child: AnimatedBuilder(
@@ -332,7 +356,8 @@ class _LoadingScreenState extends State<LoadingScreen>
                                       width: double.infinity,
                                       height: 4,
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.1),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(2),
                                       ),
                                     ),
@@ -348,10 +373,12 @@ class _LoadingScreenState extends State<LoadingScreen>
                                               Color(0xFF2DD4BF),
                                             ],
                                           ),
-                                          borderRadius: BorderRadius.circular(2),
+                                          borderRadius:
+                                              BorderRadius.circular(2),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: const Color(0xFF2DD4BF).withOpacity(0.4),
+                                              color: const Color(0xFF2DD4BF)
+                                                  .withValues(alpha: 0.4),
                                               blurRadius: 10,
                                             ),
                                           ],
@@ -363,7 +390,8 @@ class _LoadingScreenState extends State<LoadingScreen>
                                               builder: (context, child) {
                                                 return Transform.translate(
                                                   offset: Offset(
-                                                    _shimmerAnimation.value * 260,
+                                                    _shimmerAnimation.value *
+                                                        260,
                                                     0,
                                                   ),
                                                   child: Container(
@@ -373,11 +401,15 @@ class _LoadingScreenState extends State<LoadingScreen>
                                                       gradient: LinearGradient(
                                                         colors: [
                                                           Colors.transparent,
-                                                          Colors.white.withOpacity(0.4),
+                                                          Colors.white
+                                                              .withValues(
+                                                                  alpha: 0.4),
                                                           Colors.transparent,
                                                         ],
                                                       ),
-                                                      borderRadius: BorderRadius.circular(2),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              2),
                                                     ),
                                                   ),
                                                 );
@@ -426,11 +458,12 @@ class _LoadingScreenState extends State<LoadingScreen>
                             ),
                             const SizedBox(height: 12),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.05),
+                                color: Colors.white.withValues(alpha: 0.05),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.05),
+                                  color: Colors.white.withValues(alpha: 0.05),
                                   width: 1,
                                 ),
                                 borderRadius: BorderRadius.circular(20),
@@ -474,7 +507,7 @@ class _LoadingScreenState extends State<LoadingScreen>
               child: Text(
                 'INVESTOR PREVIEW BUILD V1.2',
                 style: TextStyle(
-                  color: const Color(0xFF64748B).withOpacity(0.7),
+                  color: const Color(0xFF64748B).withValues(alpha: 0.7),
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.5,

@@ -7,7 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/models/user.dart';
+import '../../../core/router/role_navigation.dart';
 import '../../../core/config/env.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -123,16 +123,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (next is AuthStateGuestSuccess) {
         context.go('/home');
       } else if (next is AuthStateLoginSuccess) {
-        final user = ref.read(authNotifierProvider).currentUser;
+        final user = next.user ?? ref.read(authNotifierProvider).currentUser;
         if (user != null) {
-          switch (user.role) {
-            case UserRole.ADMIN:
-              context.go('/admin-dashboard');
-            case UserRole.BUSINESS:
-              context.go('/business-dashboard');
-            case UserRole.USER:
-              context.go('/home');
-          }
+          context.go(roleHome(user.role));
         } else {
           context.go('/home');
         }

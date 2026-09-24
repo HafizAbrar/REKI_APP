@@ -15,7 +15,9 @@ class AuthService {
     _instance.useMockData = useMockData;
     return _instance;
   }
-  AuthService._internal() : useMockData = false, _apiService = null;
+  AuthService._internal()
+      : useMockData = false,
+        _apiService = null;
 
   User? _currentUser;
   String? _accessToken;
@@ -31,8 +33,10 @@ class AuthService {
     await _storage.write(key: 'access_token', value: token);
   }
 
-  void setCurrentUserFromJson(Map<String, dynamic> json) {
-    _currentUser = User.fromJson(json);
+  void setCurrentUserFromJson(Map<String, dynamic> json,
+      {String? accessToken}) {
+    _currentUser =
+        User.fromJson(json, accessToken: accessToken ?? _accessToken);
   }
 
   void setProfilePicture(String url) {
@@ -52,7 +56,8 @@ class AuthService {
   }
 
   Future<bool> login(String email, String password) async {
-    appLogger.d('AuthService.login called, useMockData: $useMockData, apiService: $_apiService');
+    appLogger.d(
+        'AuthService.login called, useMockData: $useMockData, apiService: $_apiService');
     if (useMockData || _apiService == null) {
       await Future.delayed(const Duration(seconds: 1));
       if (email.contains('business')) {
@@ -64,7 +69,8 @@ class AuthService {
     }
 
     try {
-      final response = await _apiService!.login(email: email, password: password);
+      final response =
+          await _apiService!.login(email: email, password: password);
       final tokens = response['tokens'] as Map<String, dynamic>;
       _accessToken = tokens['accessToken'];
       _refreshToken = tokens['refreshToken'];
@@ -82,7 +88,7 @@ class AuthService {
     }
   }
 
-  Future<User?> fetchCurrentUser() async {
+  Future<User?> fetchCurrentUser({Map<String, dynamic>? loginUser}) async {
     if (useMockData || _apiService == null) {
       return _currentUser;
     }
@@ -90,32 +96,47 @@ class AuthService {
     try {
       _accessToken ??= await _storage.read(key: 'access_token');
       if (_accessToken == null) return null;
-      
+
       appLogger.d('Fetching current user from API');
       final response = await _apiService!.getCurrentUser();
-      appLogger.d('API response: $response');
-      _currentUser = User.fromJson(response);
-      appLogger.d('User set: ${_currentUser?.email}, Role: ${_currentUser?.role}');
+      appLogger.d('User profile loaded');
+      // /auth/me may return the user directly or wrapped in { user: {...} }
+      final profile = response['user'] is Map<String, dynamic>
+          ? response['user'] as Map<String, dynamic>
+          : response;
+      final identity = <String, dynamic>{
+        if (loginUser != null) ...loginUser,
+        ...profile,
+        if (loginUser != null) '_loginIdentity': loginUser,
+      };
+      _currentUser = User.fromJson(identity, accessToken: _accessToken);
+      appLogger
+          .d('User set: ${_currentUser?.email}, Role: ${_currentUser?.role}');
       return _currentUser;
     } catch (e) {
       appLogger.e('Error fetching user', error: e);
-      return null;
+      if (loginUser != null) {
+        _currentUser = User.fromJson(loginUser, accessToken: _accessToken);
+      }
+      return _currentUser;
     }
   }
 
-  void clearSession() {
+  Future<void> clearSession() async {
     _currentUser = null;
     _accessToken = null;
     _refreshToken = null;
-    _storage.delete(key: 'access_token');
-    _storage.delete(key: 'refresh_token');
+    await _storage.delete(key: 'access_token');
+    await _storage.delete(key: 'refresh_token');
   }
 
   Future<void> logout() async {
     if (!useMockData && _apiService != null) {
       try {
         await _apiService!.logout();
-      } catch (e) {}
+      } catch (e) {
+        // Local logout must complete even when the server cannot be reached.
+      }
     }
     _currentUser = null;
     _accessToken = null;
@@ -124,7 +145,8 @@ class AuthService {
     await _storage.delete(key: 'refresh_token');
   }
 
-  Future<bool> register(String email, String password, String name, UserType type) async {
+  Future<bool> register(
+      String email, String password, String name, UserType type) async {
     if (useMockData || _apiService == null) {
       await Future.delayed(const Duration(seconds: 1));
       _currentUser = User(
@@ -186,7 +208,8 @@ class AuthService {
     }
   }
 
-  Future<bool> changePassword(String currentPassword, String newPassword) async {
+  Future<bool> changePassword(
+      String currentPassword, String newPassword) async {
     if (useMockData || _apiService == null) {
       await Future.delayed(const Duration(seconds: 1));
       return true;
@@ -231,7 +254,8 @@ class AuthService {
     }
   }
 
-  Future<bool> loginWithApple({required String identityToken, String? fullName}) async {
+  Future<bool> loginWithApple(
+      {required String identityToken, String? fullName}) async {
     if (useMockData || _apiService == null) {
       await Future.delayed(const Duration(seconds: 1));
       _currentUser = MockDataService.getDemoUser();
@@ -297,7 +321,9 @@ class AuthService {
 
   Future<bool> refreshAccessToken() async {
     _refreshToken ??= await _storage.read(key: 'refresh_token');
-    if (useMockData || _apiService == null || _refreshToken == null) return false;
+    if (useMockData || _apiService == null || _refreshToken == null) {
+      return false;
+    }
 
     try {
       final response = await _apiService!.refreshToken(_refreshToken!);

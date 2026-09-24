@@ -1,21 +1,35 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:async';
 import '../../config/env.dart';
 
-/// Fires when a 401 cannot be recovered via refresh — app should redirect to login.
 final sessionExpiredStream = StreamController<void>.broadcast();
-
-/// Fires after a silent token refresh succeeds — listeners should re-register the device.
 final tokenRefreshedStream = StreamController<void>.broadcast();
 
+/// All simultaneous 401s await one bounded refresh. Every request settles even
+/// when refresh credentials are missing or the refresh response is malformed.
 class AuthInterceptor extends Interceptor {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  bool _isRefreshing = false;
-  final List<_PendingRequest> _pendingRequests = [];
+  final FlutterSecureStorage _storage;
+  final Dio _refreshClient;
+  final Dio _retryClient;
+  Future<String?>? _refreshing;
 
-  static const _publicPaths = [
+  AuthInterceptor(
+      {FlutterSecureStorage? storage, Dio? refreshClient, Dio? retryClient})
+      : _storage = storage ?? const FlutterSecureStorage(),
+        _refreshClient = refreshClient ??
+            Dio(BaseOptions(
+                baseUrl: Env.apiBaseUrl,
+                connectTimeout: const Duration(seconds: 15),
+                receiveTimeout: const Duration(seconds: 15))),
+        _retryClient = retryClient ?? Dio(BaseOptions(baseUrl: Env.apiBaseUrl));
+
+  static const _publicPaths = {
     '/auth/login',
+    '/auth/business/login',
+    '/auth/business/register',
+    '/auth/business/forgot-password',
+    '/auth/business/reset-password',
     '/auth/register',
     '/auth/refresh-token',
     '/auth/forgot-password',
@@ -24,124 +38,103 @@ class AuthInterceptor extends Interceptor {
     '/auth/apple',
     '/auth/guest',
     '/auth/logout',
-  ];
-
+  };
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    final isPublic = _publicPaths.any((p) => options.path.contains(p));
-    if (!isPublic) {
-      final token = await _storage.read(key: 'access_token');
-      if (token != null) {
-        options.headers['Authorization'] = 'Bearer $token';
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
+    try {
+      if (!_publicPaths.contains(options.path)) {
+        final token = await _storage.read(key: 'access_token');
+        if (token != null) options.headers['Authorization'] = 'Bearer $token';
       }
+      handler.next(options);
+    } catch (e) {
+      handler.reject(DioException(requestOptions: options, error: e));
     }
-    handler.next(options);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode != 401) {
+    final options = err.requestOptions;
+    if (err.response?.statusCode != 401 ||
+        _publicPaths.contains(options.path) ||
+        options.extra['_authRetried'] == true ||
+        options.data is FormData) {
       handler.next(err);
       return;
     }
-
-    // Don't retry refresh calls themselves
-    if (err.requestOptions.path.contains('/auth/refresh-token')) {
-      await _clearTokens();
-      sessionExpiredStream.add(null);
-      handler.next(err);
-      return;
-    }
-
-    if (_isRefreshing) {
-      // Queue this request until refresh completes
-      _pendingRequests.add(_PendingRequest(err.requestOptions, handler));
-      return;
-    }
-
-    _isRefreshing = true;
-
     try {
-      final refreshToken = await _storage.read(key: 'refresh_token');
-      if (refreshToken == null) {
-        await _clearTokens();
-        sessionExpiredStream.add(null);
+      final current = await _storage.read(key: 'access_token');
+      // A late 401 may have used the token which another request just refreshed.
+      final token = current != null &&
+              options.headers['Authorization'] != 'Bearer $current'
+          ? current
+          : await (_refreshing ??=
+              _refreshTokens().whenComplete(() => _refreshing = null));
+      if (token == null) {
         handler.next(err);
         return;
       }
-
-      final refreshDio = Dio(BaseOptions(
-        baseUrl: Env.apiBaseUrl,
-        headers: {'Content-Type': 'application/json'},
-      ));
-
-      final refreshResponse = await refreshDio.post(
-        '/auth/refresh-token',
-        data: {'refreshToken': refreshToken},
-      );
-
-      // Handle both snake_case and camelCase response keys
-      final newAccessToken =
-          refreshResponse.data['access_token'] ?? refreshResponse.data['accessToken'];
-      final newRefreshToken =
-          refreshResponse.data['refresh_token'] ?? refreshResponse.data['refreshToken'];
-
-      if (newAccessToken == null) {
-        await _clearTokens();
-        sessionExpiredStream.add(null);
-        handler.next(err);
-        return;
-      }
-
-      await _storage.write(key: 'access_token', value: newAccessToken);
-      if (newRefreshToken != null) {
-        await _storage.write(key: 'refresh_token', value: newRefreshToken);
-      }
-
-      // Notify listeners (e.g. device registration) that a new token is available
-      tokenRefreshedStream.add(null);
-
-      // Retry original request
-      final retryResponse = await _retry(err.requestOptions, newAccessToken);
-      handler.resolve(retryResponse);
-
-      // Retry all queued requests
-      for (final pending in _pendingRequests) {
-        try {
-          final response = await _retry(pending.options, newAccessToken);
-          pending.handler.resolve(response);
-        } catch (e) {
-          pending.handler.next(err);
-        }
-      }
+      options.extra['_authRetried'] = true;
+      options.headers['Authorization'] = 'Bearer $token';
+      final response = await _retryClient.fetch<dynamic>(options);
+      handler.resolve(response);
+    } on DioException catch (e) {
+      // A failed replay/temporary outage must not discard a valid refreshed session.
+      handler.next(e.copyWith(requestOptions: options));
     } catch (_) {
-      await _clearTokens();
-      sessionExpiredStream.add(null);
-      // Reject all pending requests
-      for (final pending in _pendingRequests) {
-        pending.handler.next(err);
-      }
       handler.next(err);
-    } finally {
-      _pendingRequests.clear();
-      _isRefreshing = false;
     }
   }
 
-  Future<Response> _retry(RequestOptions options, String token) {
-    final retryDio = Dio(BaseOptions(baseUrl: Env.apiBaseUrl));
-    options.headers['Authorization'] = 'Bearer $token';
-    return retryDio.fetch(options);
+  Future<String?> _refreshTokens() async {
+    final refreshToken = await _storage.read(key: 'refresh_token');
+    if (refreshToken == null) {
+      await _expire();
+      return null;
+    }
+    Response<dynamic> response;
+    try {
+      response = await _refreshClient.post<dynamic>('/auth/refresh-token',
+          data: {'refreshToken': refreshToken});
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 401 ||
+          e.response?.statusCode == 403) {
+        await _expire(expectedRefresh: refreshToken);
+        return null;
+      }
+      rethrow;
+    }
+    final body = response.data;
+    final token =
+        body is Map ? body['access_token'] ?? body['accessToken'] : null;
+    if (token is! String || token.isEmpty) {
+      await _expire(expectedRefresh: refreshToken);
+      return null;
+    }
+    if (await _storage.read(key: 'refresh_token') != refreshToken) return null;
+    await _storage.write(key: 'access_token', value: token);
+    final nextRefresh = body['refresh_token'] ?? body['refreshToken'];
+    if (nextRefresh is String && nextRefresh.isNotEmpty) {
+      await _storage.write(key: 'refresh_token', value: nextRefresh);
+    }
+    tokenRefreshedStream.add(null);
+    return token;
   }
 
-  Future<void> _clearTokens() async {
+  Future<void> _expire({String? expectedRefresh}) async {
+    if (expectedRefresh != null &&
+        await _storage.read(key: 'refresh_token') != expectedRefresh) {
+      return;
+    }
     await _storage.delete(key: 'access_token');
     await _storage.delete(key: 'refresh_token');
+    sessionExpiredStream.add(null);
   }
-}
 
-class _PendingRequest {
-  final RequestOptions options;
-  final ErrorInterceptorHandler handler;
-  _PendingRequest(this.options, this.handler);
+  void dispose() {
+    _refreshClient.close(force: true);
+    _retryClient.close(force: true);
+  }
 }

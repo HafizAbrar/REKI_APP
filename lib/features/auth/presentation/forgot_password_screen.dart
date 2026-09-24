@@ -8,7 +8,8 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
@@ -42,7 +43,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (token.isEmpty || newPass.isEmpty) return;
     if (newPass != confirm) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Passwords do not match'), backgroundColor: Colors.red[700]),
+        SnackBar(
+            content: const Text('Passwords do not match'),
+            backgroundColor: Colors.red[700]),
       );
       return;
     }
@@ -59,12 +62,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         setState(() => _step = 2);
       } else if (next is AuthStateResetPasswordSuccess) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Password reset successfully!'), backgroundColor: Colors.green[700]),
+          SnackBar(
+              content: const Text('Password reset successfully!'),
+              backgroundColor: Colors.green[700]),
         );
         context.go('/login');
       } else if (next is AuthStateError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message), backgroundColor: Colors.red[700]),
+          SnackBar(
+              content: Text(next.message), backgroundColor: Colors.red[700]),
         );
       }
     });
@@ -79,7 +85,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuAbUJHdVYXEM5nb7gdCJuVW7JCDHX57JIbHlYa1QpCwLUn3IQ18tWdOP6jjy3OzZFeql3aQIRSc8wPeA8vaC6vRU3T_5DxF_C73GGcJIfrB1ITMzi9x8PXpXmxXCfSpxFffphHCdnz0ZqfuDGZKFvKzy6FldO8KPMejI_K6IPmQc2plM0xNFnJs5m-WKeFdub0DJzwa6N37lz-xVZjkCCXVWncXp2ZAd7Fua4l0bLXe22WfCLqtsp83Ep1GvowtKY7ZneCKhcWUxEBs'),
+                  image: NetworkImage(
+                      'https://lh3.googleusercontent.com/aida-public/AB6AXuAbUJHdVYXEM5nb7gdCJuVW7JCDHX57JIbHlYa1QpCwLUn3IQ18tWdOP6jjy3OzZFeql3aQIRSc8wPeA8vaC6vRU3T_5DxF_C73GGcJIfrB1ITMzi9x8PXpXmxXCfSpxFffphHCdnz0ZqfuDGZKFvKzy6FldO8KPMejI_K6IPmQc2plM0xNFnJs5m-WKeFdub0DJzwa6N37lz-xVZjkCCXVWncXp2ZAd7Fua4l0bLXe22WfCLqtsp83Ep1GvowtKY7ZneCKhcWUxEBs'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -92,8 +99,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF0F172A).withOpacity(0.7),
-                    const Color(0xFF0F172A).withOpacity(0.95),
+                    const Color(0xFF0F172A).withValues(alpha: 0.7),
+                    const Color(0xFF0F172A).withValues(alpha: 0.95),
                     const Color(0xFF0F172A),
                   ],
                 ),
@@ -109,7 +116,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   const SizedBox(height: 20),
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => _step == 2 ? setState(() => _step = 1) : context.pop(),
+                    onPressed: () =>
+                        _step == 2 ? setState(() => _step = 1) : context.pop(),
                   ),
                   const SizedBox(height: 32),
                   Row(
@@ -123,7 +131,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   if (_step == 1) ...[
                     const Text(
                       'Forgot Password?',
-                      style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -138,11 +149,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 28),
-                    _primaryButton(label: 'Send Reset Code', isLoading: isLoading, onPressed: _requestReset),
+                    _primaryButton(
+                        label: 'Send Reset Code',
+                        isLoading: isLoading,
+                        onPressed: _requestReset),
                   ] else ...[
                     const Text(
                       'Reset Password',
-                      style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -151,33 +168,44 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+                        border: Border.all(
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.mail_outline, color: AppTheme.primaryColor, size: 14),
+                          const Icon(Icons.mail_outline,
+                              color: AppTheme.primaryColor, size: 14),
                           const SizedBox(width: 6),
                           Text(
                             _emailController.text.trim(),
-                            style: const TextStyle(color: AppTheme.primaryColor, fontSize: 13, fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 28),
-                    _inputField(controller: _tokenController, hint: 'Reset Code', icon: Icons.pin_outlined),
+                    _inputField(
+                        controller: _tokenController,
+                        hint: 'Reset Code',
+                        icon: Icons.pin_outlined),
                     const SizedBox(height: 16),
                     _inputField(
                       controller: _newPasswordController,
                       hint: 'New Password',
                       icon: Icons.lock_outline,
                       obscureText: _obscureNew,
-                      onToggle: () => setState(() => _obscureNew = !_obscureNew),
+                      onToggle: () =>
+                          setState(() => _obscureNew = !_obscureNew),
                     ),
                     const SizedBox(height: 16),
                     _inputField(
@@ -185,17 +213,28 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       hint: 'Confirm New Password',
                       icon: Icons.lock_outline,
                       obscureText: _obscureConfirm,
-                      onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                      onToggle: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
                     ),
                     const SizedBox(height: 28),
-                    _primaryButton(label: 'Reset Password', isLoading: isLoading, onPressed: _resetPassword),
+                    _primaryButton(
+                        label: 'Reset Password',
+                        isLoading: isLoading,
+                        onPressed: _resetPassword),
                     const SizedBox(height: 16),
                     Center(
                       child: GestureDetector(
-                        onTap: isLoading ? null : () => ref.read(authStateProvider.notifier).forgotPassword(_emailController.text.trim()),
+                        onTap: isLoading
+                            ? null
+                            : () => ref
+                                .read(authStateProvider.notifier)
+                                .forgotPassword(_emailController.text.trim()),
                         child: const Text(
                           'Resend Code',
-                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500),
                         ),
                       ),
                     ),
@@ -206,7 +245,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       onTap: () => context.go('/login'),
                       child: const Text(
                         'Back to Login',
-                        style: TextStyle(color: AppTheme.primaryColor, fontSize: 14, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            color: AppTheme.primaryColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -284,18 +326,25 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               : null,
           filled: true,
           fillColor: const Color(0xFF1E293B),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(9999), borderSide: BorderSide.none),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(9999),
+              borderSide: BorderSide.none),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(9999),
-            borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1),
+            borderSide:
+                const BorderSide(color: AppTheme.primaryColor, width: 1),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
         ),
       ),
     );
   }
 
-  Widget _primaryButton({required String label, required bool isLoading, required VoidCallback onPressed}) {
+  Widget _primaryButton(
+      {required String label,
+      required bool isLoading,
+      required VoidCallback onPressed}) {
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -303,20 +352,30 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(9999),
           boxShadow: [
-            BoxShadow(color: AppTheme.primaryColor.withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 4)),
+            BoxShadow(
+                color: AppTheme.primaryColor.withValues(alpha: 0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 4)),
           ],
         ),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primaryColor,
             foregroundColor: AppTheme.darkBg,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(9999)),
             elevation: 0,
           ),
           onPressed: isLoading ? null : onPressed,
           child: isLoading
-              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.darkBg))
-              : Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppTheme.darkBg))
+              : Text(label,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700)),
         ),
       ),
     );

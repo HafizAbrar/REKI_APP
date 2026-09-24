@@ -8,6 +8,6 @@ abstract class AuthRepository {
     required String lastName,
     required String phone,
   });
-  
+
   Future<Result<Map<String, dynamic>>> login(String email, String password);
 }

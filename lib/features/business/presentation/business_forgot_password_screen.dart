@@ -35,7 +35,8 @@ class _BusinessForgotPasswordScreenState
   Future<void> _requestReset() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) return;
-    final token = await ref.read(businessAuthProvider.notifier).forgotPassword(email);
+    final token =
+        await ref.read(businessAuthProvider.notifier).forgotPassword(email);
     if (token != null && mounted) {
       _tokenController.text = token;
       setState(() => _step = 2);
@@ -54,7 +55,9 @@ class _BusinessForgotPasswordScreenState
     if (token.isEmpty || newPass.isEmpty) return;
     if (newPass != confirm) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Passwords do not match'), backgroundColor: Colors.red[700]),
+        SnackBar(
+            content: const Text('Passwords do not match'),
+            backgroundColor: Colors.red[700]),
       );
       return;
     }
@@ -64,7 +67,9 @@ class _BusinessForgotPasswordScreenState
         .resetPassword(token: token, newPassword: newPass);
     if (ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Password reset successfully!'), backgroundColor: Colors.green[700]),
+        SnackBar(
+            content: const Text('Password reset successfully!'),
+            backgroundColor: Colors.green[700]),
       );
       context.go('/business-login');
     }
@@ -75,7 +80,8 @@ class _BusinessForgotPasswordScreenState
     ref.listen(businessAuthProvider, (_, next) {
       next.whenOrNull(
         error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red[700]),
+          SnackBar(
+              content: Text(e.toString()), backgroundColor: Colors.red[700]),
         ),
       );
     });
@@ -105,8 +111,8 @@ class _BusinessForgotPasswordScreenState
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppTheme.darkBg.withOpacity(0.7),
-                    AppTheme.darkBg.withOpacity(0.95),
+                    AppTheme.darkBg.withValues(alpha: 0.7),
+                    AppTheme.darkBg.withValues(alpha: 0.95),
                     AppTheme.darkBg,
                   ],
                 ),
@@ -122,7 +128,8 @@ class _BusinessForgotPasswordScreenState
                   const SizedBox(height: 20),
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => _step == 2 ? setState(() => _step = 1) : context.pop(),
+                    onPressed: () =>
+                        _step == 2 ? setState(() => _step = 1) : context.pop(),
                   ),
                   const SizedBox(height: 32),
                   Row(
@@ -136,7 +143,10 @@ class _BusinessForgotPasswordScreenState
                   if (_step == 1) ...[
                     const Text(
                       'Forgot Password?',
-                      style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -159,7 +169,10 @@ class _BusinessForgotPasswordScreenState
                   ] else ...[
                     const Text(
                       'Reset Password',
-                      style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -169,20 +182,27 @@ class _BusinessForgotPasswordScreenState
                     const SizedBox(height: 8),
                     // Email hint chip
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+                        border: Border.all(
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.mail_outline, color: AppTheme.primaryColor, size: 14),
+                          const Icon(Icons.mail_outline,
+                              color: AppTheme.primaryColor, size: 14),
                           const SizedBox(width: 6),
                           Text(
                             _emailController.text.trim(),
-                            style: const TextStyle(color: AppTheme.primaryColor, fontSize: 13, fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -199,7 +219,8 @@ class _BusinessForgotPasswordScreenState
                       hint: 'New Password',
                       icon: Icons.lock_outline,
                       obscureText: _obscureNew,
-                      onToggle: () => setState(() => _obscureNew = !_obscureNew),
+                      onToggle: () =>
+                          setState(() => _obscureNew = !_obscureNew),
                     ),
                     const SizedBox(height: 16),
                     _inputField(
@@ -207,7 +228,8 @@ class _BusinessForgotPasswordScreenState
                       hint: 'Confirm New Password',
                       icon: Icons.lock_outline,
                       obscureText: _obscureConfirm,
-                      onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                      onToggle: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
                     ),
                     const SizedBox(height: 28),
                     _primaryButton(
@@ -218,13 +240,23 @@ class _BusinessForgotPasswordScreenState
                     const SizedBox(height: 16),
                     Center(
                       child: GestureDetector(
-                        onTap: isLoading ? null : () async {
-                          final token = await ref.read(businessAuthProvider.notifier).forgotPassword(_emailController.text.trim());
-                          if (token != null && mounted) _tokenController.text = token;
-                        },
+                        onTap: isLoading
+                            ? null
+                            : () async {
+                                final token = await ref
+                                    .read(businessAuthProvider.notifier)
+                                    .forgotPassword(
+                                        _emailController.text.trim());
+                                if (token != null && mounted) {
+                                  _tokenController.text = token;
+                                }
+                              },
                         child: const Text(
                           'Resend Code',
-                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500),
                         ),
                       ),
                     ),
@@ -235,7 +267,10 @@ class _BusinessForgotPasswordScreenState
                       onTap: () => context.go('/business-login'),
                       child: const Text(
                         'Back to Business Login',
-                        style: TextStyle(color: AppTheme.primaryColor, fontSize: 14, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            color: AppTheme.primaryColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -313,18 +348,25 @@ class _BusinessForgotPasswordScreenState
               : null,
           filled: true,
           fillColor: const Color(0xFF1E293B),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(9999), borderSide: BorderSide.none),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(9999),
+              borderSide: BorderSide.none),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(9999),
-            borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1),
+            borderSide:
+                const BorderSide(color: AppTheme.primaryColor, width: 1),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
         ),
       ),
     );
   }
 
-  Widget _primaryButton({required String label, required bool isLoading, required VoidCallback onPressed}) {
+  Widget _primaryButton(
+      {required String label,
+      required bool isLoading,
+      required VoidCallback onPressed}) {
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -332,14 +374,18 @@ class _BusinessForgotPasswordScreenState
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(9999),
           boxShadow: [
-            BoxShadow(color: AppTheme.primaryColor.withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 4)),
+            BoxShadow(
+                color: AppTheme.primaryColor.withValues(alpha: 0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 4)),
           ],
         ),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primaryColor,
             foregroundColor: AppTheme.darkBg,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(9999)),
             elevation: 0,
           ),
           onPressed: isLoading ? null : onPressed,
@@ -347,9 +393,12 @@ class _BusinessForgotPasswordScreenState
               ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.darkBg),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppTheme.darkBg),
                 )
-              : Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              : Text(label,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700)),
         ),
       ),
     );

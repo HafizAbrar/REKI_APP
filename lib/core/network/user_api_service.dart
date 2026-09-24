@@ -53,14 +53,23 @@ class UserApiService {
     final formData = FormData();
     if (name != null) formData.fields.add(MapEntry('name', name));
     if (phone != null) formData.fields.add(MapEntry('phone', phone));
-    if (currentLat != null) formData.fields.add(MapEntry('currentLat', currentLat.toString()));
-    if (currentLng != null) formData.fields.add(MapEntry('currentLng', currentLng.toString()));
-    if (locationEnabled != null) formData.fields.add(MapEntry('locationEnabled', locationEnabled.toString()));
+    if (currentLat != null) {
+      formData.fields.add(MapEntry('currentLat', currentLat.toString()));
+    }
+    if (currentLng != null) {
+      formData.fields.add(MapEntry('currentLng', currentLng.toString()));
+    }
+    if (locationEnabled != null) {
+      formData.fields
+          .add(MapEntry('locationEnabled', locationEnabled.toString()));
+    }
     if (backgroundLocationEnabled != null) {
-      formData.fields.add(MapEntry('backgroundLocationEnabled', backgroundLocationEnabled.toString()));
+      formData.fields.add(MapEntry(
+          'backgroundLocationEnabled', backgroundLocationEnabled.toString()));
     }
     if (avatarPath != null) {
-      formData.files.add(MapEntry('avatar', await MultipartFile.fromFile(avatarPath)));
+      formData.files
+          .add(MapEntry('avatar', await MultipartFile.fromFile(avatarPath)));
     }
     final response = await _dio.put('/users/profile', data: formData);
     final data = response.data;
@@ -86,7 +95,8 @@ class UserApiService {
   }
 
   // POST /users/preferences
-  Future<Map<String, dynamic>> savePreferences(Map<String, dynamic> preferences) async {
+  Future<Map<String, dynamic>> savePreferences(
+      Map<String, dynamic> preferences) async {
     final response = await _dio.post('/users/preferences', data: {
       'vibes': preferences['vibes'] ?? [],
       'music': preferences['music'] ?? [],
@@ -95,7 +105,8 @@ class UserApiService {
   }
 
   // PUT /users/preferences
-  Future<Map<String, dynamic>> updatePreferences(Map<String, dynamic> preferences) async {
+  Future<Map<String, dynamic>> updatePreferences(
+      Map<String, dynamic> preferences) async {
     final response = await _dio.put('/users/preferences', data: {
       'vibes': preferences['vibes'] ?? [],
       'music': preferences['music'] ?? [],
@@ -113,7 +124,9 @@ class UserApiService {
     final response = await _dio.get('/users/saved-venues');
     final data = response.data;
     if (data is List) {
-      return data.map((e) => e is Map<String, dynamic> ? e : {'id': e.toString()}).toList();
+      return data
+          .map((e) => e is Map<String, dynamic> ? e : {'id': e.toString()})
+          .toList();
     }
     return [];
   }
@@ -144,13 +157,16 @@ class UserApiService {
   // GET /users/notification-preferences
   Future<NotificationPreferences> getNotificationPreferences() async {
     final response = await _dio.get('/users/notification-preferences');
-    return NotificationPreferences.fromJson(response.data as Map<String, dynamic>);
+    return NotificationPreferences.fromJson(
+        response.data as Map<String, dynamic>);
   }
 
   // PUT /users/notification-preferences
   Future<NotificationPreferences> updateNotificationPreferences(
       Map<String, dynamic> preferences) async {
-    final response = await _dio.put('/users/notification-preferences', data: preferences);
-    return NotificationPreferences.fromJson(response.data as Map<String, dynamic>);
+    final response =
+        await _dio.put('/users/notification-preferences', data: preferences);
+    return NotificationPreferences.fromJson(
+        response.data as Map<String, dynamic>);
   }
 }

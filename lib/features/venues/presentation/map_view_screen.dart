@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/services/city_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -62,8 +63,11 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
   bool _showSuggestions = false;
   Timer? _debounce;
 
-  // Manchester city centre default
-  static const _manchesterCenter = LatLng(53.4808, -2.2426);
+  // Center on the selected city.
+  LatLng get _cityCenter {
+    final city = ref.read(selectedCityProvider).valueOrNull;
+    return LatLng(city?.defaultLat ?? 53.4808, city?.defaultLng ?? -2.2426);
+  }
 
   @override
   void initState() {
@@ -71,7 +75,6 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
     _selectedVenueId = widget.venueId;
     Future.microtask(() {
       ref.read(venueManagementProvider.notifier).loadVenues();
-      _getUserLocation();
     });
   }
 
@@ -106,7 +109,7 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
         );
       }
     } catch (_) {
-      // permission denied or GPS unavailable — stay on Manchester centre
+      // permission denied or GPS unavailable — stay on selected city centre
     } finally {
       if (mounted) setState(() => _locationLoading = false);
     }
@@ -181,7 +184,7 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
           ].join(' • '),
           onTap: () => context.push('/venue-detail?id=${venue.id}'),
         ),
-        zIndex: isSelected ? 2 : 1,
+        zIndexInt: isSelected ? 2 : 1,
         onTap: () {
           setState(() => _selectedVenueId = venue.id);
           _mapController?.animateCamera(
@@ -197,6 +200,17 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(selectedCityProvider, (previous, next) {
+      final city = next.valueOrNull;
+      if (city == null || city.id == previous?.valueOrNull?.id) return;
+      setState(() {
+        _selectedVenueId = null;
+        _searchQuery = '';
+        _searchController.clear();
+      });
+      _mapController?.animateCamera(CameraUpdate.newLatLngZoom(
+          LatLng(city.defaultLat, city.defaultLng), 14));
+    });
     final venuesAsync = ref.watch(venueManagementProvider);
 
     return Scaffold(
@@ -239,9 +253,8 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                   return GoogleMap(
                     initialCameraPosition: CameraPosition(
                       target: widget.venueId != null
-                          ? _venueLatLng(venues, widget.venueId!) ??
-                              _manchesterCenter
-                          : _manchesterCenter,
+                          ? _venueLatLng(venues, widget.venueId!) ?? _cityCenter
+                          : _cityCenter,
                       zoom: 14,
                     ),
                     onMapCreated: (c) {
@@ -296,10 +309,11 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                           child: Container(
                             height: 48,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B).withOpacity(0.95),
+                              color: const Color(0xFF1E293B)
+                                  .withValues(alpha: 0.95),
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
-                                  color: Colors.white.withOpacity(0.1)),
+                                  color: Colors.white.withValues(alpha: 0.1)),
                             ),
                             child: TextField(
                               controller: _searchController,
@@ -343,11 +357,11 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(16),
-                          border:
-                              Border.all(color: Colors.white.withOpacity(0.1)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.1)),
                           boxShadow: [
                             BoxShadow(
-                                color: Colors.black.withOpacity(0.4),
+                                color: Colors.black.withValues(alpha: 0.4),
                                 blurRadius: 12)
                           ],
                         ),
@@ -379,8 +393,8 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                                   width: 32,
                                   height: 32,
                                   decoration: BoxDecoration(
-                                    color:
-                                        _ragColor(v.busyness).withOpacity(0.15),
+                                    color: _ragColor(v.busyness)
+                                        .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(Icons.store_outlined,
@@ -400,8 +414,8 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color:
-                                        _ragColor(v.busyness).withOpacity(0.15),
+                                    color: _ragColor(v.busyness)
+                                        .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(v.busyness.toUpperCase(),
@@ -464,9 +478,9 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B).withOpacity(0.92),
+                color: const Color(0xFF1E293B).withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,12 +505,14 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B).withOpacity(0.92),
+                  color: const Color(0xFF1E293B).withValues(alpha: 0.92),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.3), blurRadius: 8)
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 8)
                   ],
                 ),
                 child: _locationLoading
@@ -534,13 +550,13 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B).withOpacity(0.96),
+                        color: const Color(0xFF1E293B).withValues(alpha: 0.96),
                         borderRadius: BorderRadius.circular(24),
-                        border:
-                            Border.all(color: Colors.white.withOpacity(0.1)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1)),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               blurRadius: 20)
                         ],
                       ),
@@ -635,9 +651,9 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withOpacity(0.92),
+            color: const Color(0xFF1E293B).withValues(alpha: 0.92),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: Icon(icon, color: Colors.white, size: 20),
         ),
@@ -653,11 +669,11 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFF2DD4BF)
-              : const Color(0xFF1E293B).withOpacity(0.92),
+              : const Color(0xFF1E293B).withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(18),
           border: isSelected
               ? null
-              : Border.all(color: Colors.white.withOpacity(0.1)),
+              : Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

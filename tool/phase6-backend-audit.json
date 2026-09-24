@@ -1,0 +1,245 @@
+{
+  "checkedAtUtc": "2026-09-23T07:00:47.158965+00:00",
+  "baseUrl": "https://api.reki.uk",
+  "openapiUrl": "https://api.reki.uk/api/docs-json",
+  "methodology": "Live OpenAPI contract inspection and unauthenticated GET requests only. No production mutations. 401 indicates authentication required, not successful role authorization. Response schemas are incomplete for protected operations.",
+  "cities": [
+    {
+      "id": "8aa452ff-dade-44ec-9f72-aeecdacb0e6c",
+      "slug": "birmingham",
+      "isActive": true
+    },
+    {
+      "id": "adf27b6b-fefb-40a6-8ebf-e42fdacb3fe5",
+      "slug": "london",
+      "isActive": true
+    },
+    {
+      "id": "5fc18dc5-7cb7-4c2e-9c4f-fa2387dbbbd2",
+      "slug": "manchester",
+      "isActive": true
+    }
+  ],
+  "readOnlyChecks": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/cities",
+      "status": 200,
+      "count": 3
+    },
+    {
+      "method": "GET",
+      "path": "/cities/manchester",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/cities/detect?lat=53.4808&lng=-2.2426",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/users/location/city",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/business/venues",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/worker/venues",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/worker/staff",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/live/snapshot?city=london",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/cities/id/8aa452ff-dade-44ec-9f72-aeecdacb0e6c",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/venues?city=birmingham&limit=1",
+      "status": 200,
+      "total": 0
+    },
+    {
+      "method": "GET",
+      "path": "/offers?city=birmingham",
+      "status": 200,
+      "count": 0
+    },
+    {
+      "method": "GET",
+      "path": "/cities/id/adf27b6b-fefb-40a6-8ebf-e42fdacb3fe5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/venues?city=london&limit=1",
+      "status": 200,
+      "total": 0
+    },
+    {
+      "method": "GET",
+      "path": "/offers?city=london",
+      "status": 200,
+      "count": 0
+    },
+    {
+      "method": "GET",
+      "path": "/cities/id/5fc18dc5-7cb7-4c2e-9c4f-fa2387dbbbd2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/venues?city=manchester&limit=1",
+      "status": 200,
+      "total": 17
+    },
+    {
+      "method": "GET",
+      "path": "/offers?city=manchester",
+      "status": 200,
+      "count": 16
+    },
+    {
+      "method": "GET",
+      "path": "/venues/9fd1e379-bd5c-4ac7-9bb6-3dd23e4ab110/whats-on",
+      "status": 200,
+      "count": 0
+    },
+    {
+      "method": "GET",
+      "path": "/worker/venues/9fd1e379-bd5c-4ac7-9bb6-3dd23e4ab110/live-info",
+      "status": 401
+    }
+  ],
+  "requiredContracts": [
+    {
+      "method": "GET",
+      "path": "/cities",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/cities/{slug}",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/cities/id/{id}",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/cities/detect",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/users/city",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/users/locale",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/users/location/city",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/worker/staff",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/worker/staff",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/worker/staff/{staffId}",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/worker/venues",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/worker/venues/{venueId}/assignments",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/worker/venues/{venueId}/assignments/{businessUserId}",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/worker/venues/{venueId}/status",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/worker/venues/{venueId}/live-info",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/worker/venues/{venueId}/live-info",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/worker/venues/{venueId}/redemptions/scan",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/venues/{id}/whats-on",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/business/venues/{id}/whats-on",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/venues",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/offers",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/live/snapshot",
+      "documented": true
+    }
+  ]
+}

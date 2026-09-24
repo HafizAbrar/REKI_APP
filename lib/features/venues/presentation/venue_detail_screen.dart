@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'whats_on_banner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -221,7 +222,8 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.transparent,
-                                  const Color(0xFF0F172A).withOpacity(0.6),
+                                  const Color(0xFF0F172A)
+                                      .withValues(alpha: 0.6),
                                   const Color(0xFF0F172A),
                                 ],
                                 stops: const [0.0, 0.7, 1.0],
@@ -258,7 +260,13 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                                           ? null
                                           : () async {
                                               if (!await guardGuestAction(
-                                                  context)) return;
+                                                  context)) {
+                                                return;
+                                              }
+                                              if (!mounted ||
+                                                  !context.mounted) {
+                                                return;
+                                              }
                                               setState(
                                                   () => _savingFavorite = true);
                                               final notifier = ref.read(
@@ -268,7 +276,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                                                       widget.venueId)
                                                   : await notifier.saveVenue(
                                                       widget.venueId);
-                                              if (mounted) {
+                                              if (context.mounted && mounted) {
                                                 setState(() =>
                                                     _savingFavorite = false);
                                                 if (!success) {
@@ -309,13 +317,15 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                               padding: const EdgeInsets.all(20),
                               margin: const EdgeInsets.only(bottom: 24),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B).withOpacity(0.8),
+                                color: const Color(0xFF1E293B)
+                                    .withValues(alpha: 0.8),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                    color: Colors.white.withOpacity(0.05)),
+                                    color:
+                                        Colors.white.withValues(alpha: 0.05)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withValues(alpha: 0.2),
                                     blurRadius: 20,
                                   ),
                                 ],
@@ -374,6 +384,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          WhatsOnBanner(venueId: venue.id),
                           _buildVibeSection(venue),
                           const SizedBox(height: 16),
                           SizedBox(
@@ -455,9 +466,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
         decoration: BoxDecoration(
           color: isFavorite
               ? const Color(0xFF2DD4BF)
-              : Colors.black.withOpacity(0.3),
+              : Colors.black.withValues(alpha: 0.3),
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: isLoading
             ? Padding(
@@ -480,9 +491,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Text(
         text,
@@ -581,7 +592,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Row(
                 children: [
@@ -604,7 +615,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2DD4BF).withOpacity(0.2),
+                      color: const Color(0xFF2DD4BF).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -638,7 +649,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
             height: 200,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               color: const Color(0xFF1E293B),
             ),
             child: ClipRRect(
@@ -664,7 +675,8 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                         border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF2DD4BF).withOpacity(0.5),
+                            color:
+                                const Color(0xFF2DD4BF).withValues(alpha: 0.5),
                             blurRadius: 20,
                           ),
                         ],
@@ -685,7 +697,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            const Color(0xFF0F172A).withOpacity(0.9),
+                            const Color(0xFF0F172A).withValues(alpha: 0.9),
                           ],
                         ),
                       ),
@@ -897,14 +909,15 @@ class _VibeCheckCardState extends ConsumerState<_VibeCheckCard> {
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.3)),
+          border:
+              Border.all(color: const Color(0xFF2DD4BF).withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withOpacity(0.15),
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.star, color: Color(0xFFF59E0B), size: 20),
