@@ -1,4 +1,4 @@
-# Phase 6 verification — updated 24 September 2026
+# Phase 6 verification — updated 25 September 2026
 
 ## Verdict
 
@@ -22,14 +22,22 @@ Phase 6 is implemented substantially on the app side, but **not fully verified w
 
 The locale-derived RTL bug is fixed. `City.fromJson` derives direction from the preferred locale when explicit direction metadata is absent. The shared production `CityLocalization` widget preserves Persian/Hebrew/Urdu and locale script/region subtags. Regression tests cover Arabic defaults, explicit overrides, persisted metadata, and switching RTL/LTR cities.
 
-Latest validation: **126 tests passed**, **static analysis clean**. Scan tracing is available as `reki.qr.decode_to_confirmation` in Dart DevTools timelines; it contains no voucher/token data and is not proof of the full camera-to-confirmation target.
+Latest validation: **139 tests passed**, **static analysis clean**. Scan tracing is available as `reki.qr.decode_to_confirmation` in Dart DevTools timelines; it contains no voucher/token data and is not proof of the full camera-to-confirmation target.
+
+## iOS production integration check
+
+The app was run on an iPhone 17 simulator against `https://api.reki.uk`. Guest authentication returned 201, and the Manchester live snapshot and full venue requests returned 200. Google map tiles, simulated Manchester location, RAG-coloured venue markers, category filtering, hybrid map style, marker selection, venue details, and the live home feed were exercised successfully.
+
+This check exposed and closed a production-only map defect: `/live/snapshot` returns lightweight venue status records without coordinates. Those records were previously accepted as complete venues, placing markers at `(0, 0)`. The provider now detects incomplete map data and falls back to `GET /venues`, which restored all Manchester venue markers. Regression tests reject missing and geographically invalid coordinates.
+
+Push delivery is not verified in the simulator because it does not receive a real APNs token. The signed Ad Hoc build must be installed on the registered physical device for that check.
 
 ## Backend evidence
 
 Fresh audit timestamp and individual results are in `tool/phase6-backend-audit.json`. All 22 reviewed required/supporting contracts are documented. No required route was found missing from live OpenAPI.
 
 - City list, slug/UUID lookup, location detection, and public What's On GET: HTTP 200.
-- Manchester: 17 venues and 16 offers.
+- Manchester: 17 venues and 17 offers; one public What's On item was returned for the audited venue.
 - London and Birmingham: zero venues and zero offers each.
 - Protected worker/staff/live-info/user-city/live-snapshot reads: HTTP 401 without credentials.
 - No production mutations were performed. A documented route and an unauthenticated 401 do not prove role authorization or successful writes.
@@ -43,10 +51,10 @@ Fresh audit timestamp and individual results are in `tool/phase6-backend-audit.j
 4. Run physical camera permission/background/resume tests and measure complete scan-to-confirmation latency.
 5. Populate and launch a second city, then measure feature parity. Active configuration alone is not launch evidence.
 
-Static analysis and complete automated test results are recorded in `tool/phase6-recheck-analysis.txt` and `tool/phase6-recheck-tests.txt`. The prior single-app Android debug build succeeded; it was not rebuilt during this read-only review because application source was unchanged. No claim of production end-to-end success is made.
+The full automated suite and static analysis were rerun after the map correction. The iOS simulator build also succeeded and was exercised against production. No claim of authenticated role/mutation or physical-device end-to-end success is made.
 
 ## Staging handoff
 
-The user selected staging test accounts. No staging URL or account configuration has been supplied. The only local API origin is production (`https://api.reki.uk`), and no staging environment variables are configured. No device is currently attached as of the 24 September check. Therefore authenticated staging tests, physical-device timing, and second-city launch cannot honestly be marked complete.
+The user selected staging test accounts. No staging URL or account configuration has been supplied. The only local API origin is production (`https://api.reki.uk`), and no staging environment variables are configured. No physical device is currently attached as of the 25 September check. Therefore authenticated staging tests, physical-device timing, push delivery, and second-city launch cannot honestly be marked complete.
 
 See `PHASE6_ACCEPTANCE.md` for the executable staging check and exact remaining inputs.

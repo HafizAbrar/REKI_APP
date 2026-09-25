@@ -64,7 +64,7 @@ class _StaffManagementScreenState extends ConsumerState<StaffManagementScreen> {
               builder: (ctx, update) => AlertDialog(
                     title: Text('Venue access for $name'),
                     content: DropdownButtonFormField<String>(
-                      value: venueId,
+                      initialValue: venueId,
                       isExpanded: true,
                       items: venues
                           .map((v) => DropdownMenuItem(

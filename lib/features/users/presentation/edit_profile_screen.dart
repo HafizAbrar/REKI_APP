@@ -401,7 +401,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.primaryColor,
+            activeThumbColor: AppTheme.primaryColor,
             inactiveThumbColor: const Color(0xFF475569),
             inactiveTrackColor: const Color(0xFF334155),
           ),

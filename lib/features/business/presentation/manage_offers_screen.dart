@@ -1068,7 +1068,7 @@ class _EditOfferSheetState extends State<_EditOfferSheet> {
                         Switch(
                           value: _isAvailableNow,
                           onChanged: (v) => setState(() => _isAvailableNow = v),
-                          activeColor: AppTheme.primaryColor,
+                          activeThumbColor: AppTheme.primaryColor,
                           inactiveThumbColor: const Color(0xFF475569),
                           inactiveTrackColor: const Color(0xFF1E293B),
                         ),

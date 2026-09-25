@@ -236,7 +236,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
             _card(children: [
               _label('VENUE'),
               DropdownButtonFormField<String>(
-                value: _selectedVenueId,
+                initialValue: _selectedVenueId,
                 dropdownColor: const Color(0xFF1E293B),
                 style: const TextStyle(color: Colors.white, fontSize: 15),
                 decoration: _dec('Select venue', Icons.store_outlined),
@@ -504,7 +504,7 @@ class _CreateOfferScreenState extends ConsumerState<CreateOfferScreen> {
                   Switch(
                     value: _isAvailableNow,
                     onChanged: (v) => setState(() => _isAvailableNow = v),
-                    activeColor: AppTheme.primaryColor,
+                    activeThumbColor: AppTheme.primaryColor,
                     inactiveThumbColor: const Color(0xFF475569),
                     inactiveTrackColor: const Color(0xFF1E293B),
                   ),

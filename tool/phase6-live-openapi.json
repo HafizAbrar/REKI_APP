@@ -2745,7 +2745,6 @@
                 "required": [
                   "name",
                   "address",
-                  "city",
                   "area",
                   "category",
                   "lat",
@@ -2765,6 +2764,11 @@
                   "city": {
                     "type": "string",
                     "example": "Manchester"
+                  },
+                  "cityId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "ID from GET /cities; may be used instead of city"
                   },
                   "area": {
                     "type": "string",
@@ -4035,6 +4039,155 @@
         ]
       }
     },
+    "/admin/cities": {
+      "get": {
+        "operationId": "AdminController_getCities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "All cities including inactive ones"
+          },
+          "401": {
+            "description": "JWT missing or invalid"
+          },
+          "403": {
+            "description": "Admin role required"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all cities (admin only)",
+        "tags": [
+          "Admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminController_createCity",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "City created"
+          },
+          "401": {
+            "description": "JWT missing or invalid"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "409": {
+            "description": "City slug already exists"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new city (admin only)",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/cities/{id}": {
+      "put": {
+        "operationId": "AdminController_updateCity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "City updated"
+          },
+          "401": {
+            "description": "JWT missing or invalid"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "City not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a city (admin only)",
+        "tags": [
+          "Admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminController_deleteCity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "City deactivated"
+          },
+          "401": {
+            "description": "JWT missing or invalid"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "City not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deactivate a city (admin only)",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/admin/demo/simulate": {
       "post": {
         "operationId": "DemoController_simulate",
@@ -5187,15 +5340,44 @@
       "UpdateCityDto": {
         "type": "object",
         "properties": {
-          "city": {
+          "slug": {
             "type": "string",
-            "example": "manchester",
-            "description": "Supported city slug"
+            "example": "leeds"
+          },
+          "name": {
+            "type": "string",
+            "example": "Leeds"
+          },
+          "countryCode": {
+            "type": "string",
+            "example": "GB"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Europe/London"
+          },
+          "defaultLocale": {
+            "type": "string",
+            "example": "en-GB"
+          },
+          "latitude": {
+            "type": "number",
+            "example": 53.8008
+          },
+          "longitude": {
+            "type": "number",
+            "example": -1.5491
+          },
+          "detectionRadiusKm": {
+            "type": "number",
+            "example": 50,
+            "description": "Detection radius in km"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
           }
-        },
-        "required": [
-          "city"
-        ]
+        }
       },
       "UpdateLocaleDto": {
         "type": "object",
@@ -5507,6 +5689,56 @@
         },
         "required": [
           "userId"
+        ]
+      },
+      "CreateCityDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "leeds"
+          },
+          "name": {
+            "type": "string",
+            "example": "Leeds"
+          },
+          "countryCode": {
+            "type": "string",
+            "example": "GB"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Europe/London"
+          },
+          "defaultLocale": {
+            "type": "string",
+            "example": "en-GB"
+          },
+          "latitude": {
+            "type": "number",
+            "example": 53.8008
+          },
+          "longitude": {
+            "type": "number",
+            "example": -1.5491
+          },
+          "detectionRadiusKm": {
+            "type": "number",
+            "example": 50,
+            "description": "Detection radius in km"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "countryCode",
+          "timezone",
+          "latitude",
+          "longitude"
         ]
       },
       "SimulateDemoDto": {

@@ -7,6 +7,35 @@ import 'package:reki_mvp/core/models/vibe_schedule.dart';
 import 'package:reki_mvp/core/models/social_models.dart';
 
 void main() {
+  group('Venue coordinates', () {
+    Venue venueAt(double latitude, double longitude) => Venue(
+          id: 'venue-1',
+          name: 'Test Venue',
+          type: 'bar',
+          latitude: latitude,
+          longitude: longitude,
+          address: 'Test Street',
+          busyness: 'QUIET',
+          currentVibe: '',
+          availableVibes: const [],
+          offers: const [],
+          lastUpdated: DateTime(2026),
+        );
+
+    test('accepts real map coordinates', () {
+      expect(venueAt(53.4808, -2.2426).hasValidCoordinates, isTrue);
+    });
+
+    test('rejects missing coordinates parsed as zero', () {
+      expect(venueAt(0, 0).hasValidCoordinates, isFalse);
+    });
+
+    test('rejects coordinates outside geographic bounds', () {
+      expect(venueAt(91, -2.2426).hasValidCoordinates, isFalse);
+      expect(venueAt(53.4808, -181).hasValidCoordinates, isFalse);
+    });
+  });
+
   // ── Venue ──────────────────────────────────────────────────────────────────
   group('Venue model', () {
     final json = {

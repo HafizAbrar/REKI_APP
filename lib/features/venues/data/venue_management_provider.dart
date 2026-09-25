@@ -38,7 +38,8 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
           final snapshot =
               await venueApi.getLiveSnapshot(city: selectedCity?.slug);
           if (!mounted || version != _loadVersion) return;
-          final raw = snapshot['venues'] ?? snapshot['data'] ?? snapshot['items'];
+          final raw =
+              snapshot['venues'] ?? snapshot['data'] ?? snapshot['items'];
           if (raw is List && raw.isNotEmpty) {
             final venues = raw
                 .map((j) {
@@ -50,7 +51,15 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
                 })
                 .whereType<Venue>()
                 .toList();
-            if (venues.isNotEmpty && mounted && version == _loadVersion) {
+            // The production snapshot is optimized for live status and may
+            // omit coordinates. Do not expose those partial records to map
+            // consumers; fall through to the full venue endpoint instead.
+            final hasMapData =
+                venues.every((venue) => venue.hasValidCoordinates);
+            if (venues.isNotEmpty &&
+                hasMapData &&
+                mounted &&
+                version == _loadVersion) {
               state = AsyncValue.data(venues);
               _loading = false;
               return;

@@ -295,7 +295,7 @@ class _ReviewSheetState extends ConsumerState<_ReviewSheet> {
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            activeColor: const Color(0xFF2DD4BF),
+            activeThumbColor: const Color(0xFF2DD4BF),
             title: const Text('The listed vibe was accurate',
                 style: TextStyle(color: Colors.white)),
             value: _vibeAccurate,

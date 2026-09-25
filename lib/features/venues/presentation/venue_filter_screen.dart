@@ -187,7 +187,7 @@ class _VenueFilterScreenState extends ConsumerState<VenueFilterScreen> {
                         Switch(
                           value: offersOnly,
                           onChanged: (v) => setState(() => offersOnly = v),
-                          activeColor: const Color(0xFF14B8A6),
+                          activeThumbColor: const Color(0xFF14B8A6),
                           inactiveThumbColor: Colors.white,
                           inactiveTrackColor: const Color(0xFF1E293B),
                         ),

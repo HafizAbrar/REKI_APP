@@ -105,18 +105,18 @@ class _WhatsOnEditorState extends ConsumerState<WhatsOnEditor> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: const Color(0xFF334155).withValues(alpha: 0.5)),
+        border:
+            Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Row(children: [
-            const Icon(Icons.campaign_outlined,
+          const Row(children: [
+            Icon(Icons.campaign_outlined,
                 color: AppTheme.primaryColor, size: 16),
-            const SizedBox(width: 8),
-            const Text("WHAT'S ON NOW",
+            SizedBox(width: 8),
+            Text("WHAT'S ON NOW",
                 style: TextStyle(
                     color: Color(0xFF94A3B8),
                     fontSize: 11,
@@ -131,7 +131,8 @@ class _WhatsOnEditorState extends ConsumerState<WhatsOnEditor> {
             runSpacing: 8,
             children: _quickTexts
                 .map((t) => GestureDetector(
-                      onTap: _saving ? null : () => setState(() => _text.text = t),
+                      onTap:
+                          _saving ? null : () => setState(() => _text.text = t),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 7),
@@ -159,8 +160,7 @@ class _WhatsOnEditorState extends ConsumerState<WhatsOnEditor> {
                 child: GestureDetector(
                   onTap: _saving ? null : () => setState(() => _type = type),
                   child: Container(
-                    margin: EdgeInsets.only(
-                        right: type != _types.last ? 8 : 0),
+                    margin: EdgeInsets.only(right: type != _types.last ? 8 : 0),
                     padding: const EdgeInsets.symmetric(vertical: 9),
                     decoration: BoxDecoration(
                       color: selected
@@ -205,9 +205,9 @@ class _WhatsOnEditorState extends ConsumerState<WhatsOnEditor> {
           Theme(
             data: Theme.of(context).copyWith(
               colorScheme: Theme.of(context).colorScheme.copyWith(
-                onSurface: Colors.white,
-                onSurfaceVariant: const Color(0xFF94A3B8),
-              ),
+                    onSurface: Colors.white,
+                    onSurfaceVariant: const Color(0xFF94A3B8),
+                  ),
             ),
             child: TextFormField(
               controller: _text,
@@ -217,8 +217,10 @@ class _WhatsOnEditorState extends ConsumerState<WhatsOnEditor> {
               style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Tell customers what is happening right now...',
-                hintStyle: const TextStyle(color: Color(0xFF475569), fontSize: 13),
-                counterStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                hintStyle:
+                    const TextStyle(color: Color(0xFF475569), fontSize: 13),
+                counterStyle:
+                    const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                 filled: true,
                 fillColor: const Color(0xFF0F172A),
                 border: OutlineInputBorder(
@@ -260,12 +262,12 @@ class _WhatsOnEditorState extends ConsumerState<WhatsOnEditor> {
                       items: [1, 2, 4, 8, 24]
                           .map((h) => DropdownMenuItem(
                                 value: h,
-                                child: Text('Expires in $h hr${h > 1 ? 's' : ''}'),
+                                child:
+                                    Text('Expires in $h hr${h > 1 ? 's' : ''}'),
                               ))
                           .toList(),
-                      onChanged: _saving
-                          ? null
-                          : (h) => setState(() => _hours = h!),
+                      onChanged:
+                          _saving ? null : (h) => setState(() => _hours = h!),
                     ),
                   ),
                 ),
