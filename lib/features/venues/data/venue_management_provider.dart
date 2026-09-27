@@ -59,7 +59,15 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
                 })
                 .whereType<Venue>()
                 .toList();
-            if (venues.isNotEmpty && mounted && version == _loadVersion) {
+            // The production snapshot is optimized for live status and may
+            // omit coordinates. Do not expose those partial records to map
+            // consumers; fall through to the full venue endpoint instead.
+            final hasMapData =
+                venues.every((venue) => venue.hasValidCoordinates);
+            if (venues.isNotEmpty &&
+                hasMapData &&
+                mounted &&
+                version == _loadVersion) {
               state = AsyncValue.data(venues);
               _hasMore = venues.length >= _pageSize;
               _loading = false;

@@ -451,7 +451,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AppTheme.primaryColor,
+          activeThumbColor: AppTheme.primaryColor,
         ),
       ]);
 

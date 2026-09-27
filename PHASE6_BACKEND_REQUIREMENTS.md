@@ -1,6 +1,6 @@
 # Phase 6 live backend audit
 
-Checked 23 September 2026 using https://api.reki.uk/api/docs-json and read-only HTTP requests. This replaces the 22 September report: the previously absent Phase 6 routes are now documented.
+Checked 25 September 2026 using https://api.reki.uk/api/docs-json and read-only HTTP requests. The previously absent Phase 6 routes remain documented.
 
 ## Conclusion
 
@@ -37,10 +37,11 @@ Other documented compatibility routes include `POST /offers/redeem-by-code`, `PO
 
 - `GET /cities`: 200; Manchester, London, and Birmingham are active.
 - City slug lookup, detection around Manchester, and ID lookup using each real city UUID: 200.
-- `GET /venues?city=manchester&limit=1`: 200, 17 venues; Manchester offers: 16.
+- `GET /venues?city=manchester&limit=1`: 200, 17 venues; Manchester offers: 17.
 - London and Birmingham venue and offer queries: 200, zero records. Configured cities do not establish that a second city has launched with feature parity.
-- `GET /venues/{validVenueId}/whats-on`: 200, an empty array.
+- `GET /venues/{validVenueId}/whats-on`: 200, one current item for the audited venue.
 - User city, business venues, worker venues, worker staff, worker live-info, and live snapshot reads: 401 unauthenticated.
+- Authenticated guest runtime verification: `POST /auth/guest` returned 201, then `GET /live/snapshot?city=manchester` and `GET /venues?city=manchester&page=1&limit=20` returned 200 from the iOS app.
 - A preliminary request using the slug `manchester` in the UUID endpoint `/cities/id/manchester` returned 500. Actual UUID lookups succeed. Backend input validation should return 400 for malformed IDs rather than 500; this is not a missing route.
 
 ## Confirmed request contracts and app corrections

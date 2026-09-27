@@ -351,7 +351,7 @@ class _NotificationPreferencesScreenState
                 color: Colors.white.withValues(alpha: 0.45), fontSize: 12)),
         value: value,
         onChanged: onChanged,
-        activeColor: iconColor,
+        activeThumbColor: iconColor,
         inactiveThumbColor: const Color(0xFF475569),
         inactiveTrackColor: const Color(0xFF334155),
       ),
@@ -412,7 +412,7 @@ class _NotificationPreferencesScreenState
                     quietHoursEnd = null;
                   }
                 }),
-                activeColor: const Color(0xFF2DD4BF),
+                activeThumbColor: const Color(0xFF2DD4BF),
                 inactiveThumbColor: const Color(0xFF475569),
                 inactiveTrackColor: const Color(0xFF334155),
               ),

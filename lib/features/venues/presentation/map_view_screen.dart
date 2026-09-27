@@ -56,6 +56,7 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
   Position? _userPosition;
   bool _locationLoading = false;
   String? _mapError;
+  MapType _mapType = MapType.terrain;
 
   final _searchController = TextEditingController();
   final _searchFocus = FocusNode();
@@ -166,6 +167,34 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
     });
   }
 
+  void _cycleMapType() {
+    setState(() {
+      const types = [
+        MapType.normal,
+        MapType.terrain,
+        MapType.hybrid,
+        MapType.satellite
+      ];
+      final idx = types.indexOf(_mapType);
+      _mapType = types[(idx + 1) % types.length];
+    });
+  }
+
+  IconData get _mapTypeIcon {
+    switch (_mapType) {
+      case MapType.normal:
+        return Icons.map_outlined;
+      case MapType.terrain:
+        return Icons.terrain;
+      case MapType.hybrid:
+        return Icons.satellite_alt;
+      case MapType.satellite:
+        return Icons.satellite;
+      default:
+        return Icons.layers;
+    }
+  }
+
   Set<Marker> _buildMarkers(List<Venue> venues) {
     final filtered = _filteredVenues(venues);
 
@@ -272,7 +301,7 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
                     myLocationButtonEnabled: false,
                     zoomControlsEnabled: false,
                     mapToolbarEnabled: false,
-                    mapType: MapType.normal,
+                    mapType: _mapType,
                     onTap: (_) => setState(() {
                       _selectedVenueId = null;
                       _showSuggestions = false;
@@ -495,42 +524,68 @@ class _MapViewScreenState extends ConsumerState<MapViewScreen> {
             ),
           ),
 
-          // ── My location button ────────────────────────────────────────
+          // ── Map type toggle + My location button ────────────────────
           Positioned(
             bottom: _selectedVenueId != null ? 160 : 40,
             right: 16,
-            child: GestureDetector(
-              onTap: _getUserLocation,
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B).withValues(alpha: 0.92),
-                  shape: BoxShape.circle,
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 8)
-                  ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: _cycleMapType,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B).withValues(alpha: 0.92),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1)),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 8)
+                      ],
+                    ),
+                    child: Icon(_mapTypeIcon,
+                        color: const Color(0xFF2DD4BF), size: 22),
+                  ),
                 ),
-                child: _locationLoading
-                    ? const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Color(0xFF2DD4BF)),
-                      )
-                    : Icon(
-                        _userPosition != null
-                            ? Icons.my_location
-                            : Icons.location_searching,
-                        color: _userPosition != null
-                            ? const Color(0xFF2DD4BF)
-                            : const Color(0xFF94A3B8),
-                        size: 22,
-                      ),
-              ),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: _getUserLocation,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B).withValues(alpha: 0.92),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1)),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 8)
+                      ],
+                    ),
+                    child: _locationLoading
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Color(0xFF2DD4BF)),
+                          )
+                        : Icon(
+                            _userPosition != null
+                                ? Icons.my_location
+                                : Icons.location_searching,
+                            color: _userPosition != null
+                                ? const Color(0xFF2DD4BF)
+                                : const Color(0xFF94A3B8),
+                            size: 22,
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
 

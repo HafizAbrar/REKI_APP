@@ -90,9 +90,9 @@ class AuthInterceptor extends Interceptor {
   Future<String?> _refreshTokens() async {
     final refreshToken = await _storage.read(key: 'refresh_token');
     if (refreshToken == null) {
-      // An access token without refresh credentials cannot recover from a 401.
-      // Clear the unusable token so subsequent requests do not keep sending it.
-      await _expire();
+      // No refresh token — cannot recover from 401. Do NOT call _expire() or
+      // fire sessionExpiredStream; the access token may still be valid for
+      // other endpoints (e.g. after Google login before city selection).
       return null;
     }
     Response<dynamic> response;

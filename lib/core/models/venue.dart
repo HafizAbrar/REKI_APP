@@ -42,6 +42,17 @@ class Venue {
   String? get budgetSymbol =>
       priceLevel == null ? null : '£' * priceLevel!.clamp(1, 4);
 
+  /// Whether this venue can be placed safely on a map.
+  ///
+  /// Some lightweight API responses intentionally omit coordinates. Those
+  /// values are parsed as (0, 0), which is not a usable venue location.
+  bool get hasValidCoordinates =>
+      latitude >= -90 &&
+      latitude <= 90 &&
+      longitude >= -180 &&
+      longitude <= 180 &&
+      (latitude != 0 || longitude != 0);
+
   String? get budgetLabel {
     switch (priceLevel) {
       case 1:
