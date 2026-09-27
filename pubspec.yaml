@@ -76,6 +76,17 @@ dependencies:
   mobile_scanner: ^7.4.2
   qr_flutter: ^4.1.0
 
+  # Phase 7 — Payments (Stripe)
+  flutter_stripe: ^11.5.0
+
+  # Phase 8 — Security hardening
+  freerasp: ^7.0.0
+  local_auth: ^2.3.0
+  crypto: ^3.0.3
+
+  # Phase 8 — ASO
+  in_app_review: ^2.0.9
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

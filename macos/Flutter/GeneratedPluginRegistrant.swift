@@ -15,6 +15,8 @@ import flutter_local_notifications
 import flutter_secure_storage_macos
 import geolocator_apple
 import google_sign_in_ios
+import in_app_review
+import local_auth_darwin
 import mobile_scanner
 import path_provider_foundation
 import share_plus
@@ -34,6 +36,8 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FlutterSecureStoragePlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStoragePlugin"))
   GeolocatorPlugin.register(with: registry.registrar(forPlugin: "GeolocatorPlugin"))
   FLTGoogleSignInPlugin.register(with: registry.registrar(forPlugin: "FLTGoogleSignInPlugin"))
+  InAppReviewPlugin.register(with: registry.registrar(forPlugin: "InAppReviewPlugin"))
+  LocalAuthPlugin.register(with: registry.registrar(forPlugin: "LocalAuthPlugin"))
   MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
   SharePlusMacosPlugin.register(with: registry.registrar(forPlugin: "SharePlusMacosPlugin"))

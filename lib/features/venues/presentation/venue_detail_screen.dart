@@ -12,11 +12,19 @@ import '../../../core/config/env.dart';
 import '../../../core/services/venue_repository.dart';
 import '../../../features/users/data/user_preferences_provider.dart';
 import '../../../shared/widgets/guest_guard.dart';
+import '../../../shared/widgets/app_cached_image.dart';
 import '../../../shared/widgets/venue_budget_tag.dart';
 import '../../../core/models/venue.dart';
 import '../../../core/services/social_repository.dart';
 import '../../social/data/social_provider.dart';
 import '../../social/presentation/venue_reviews_section.dart';
+import '../../predictions/presentation/prediction_badge.dart';
+import '../../predictions/presentation/prediction_providers.dart';
+import '../../predictions/data/crowd_prediction_service.dart';
+import '../../predictions/data/smart_alert_scheduler.dart';
+import '../../predictions/data/smart_notification_timing.dart';
+import '../../recommendations/presentation/recommendation_providers.dart';
+import '../../../core/services/observability_service.dart';
 
 class VenueDetailScreen extends ConsumerStatefulWidget {
   final String venueId;
@@ -112,6 +120,46 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     );
   }
 
+  /// Phase 7 — SmartNotificationTiming integration: after a successful
+  /// check-in, train the local statistical model on the rolling history and
+  /// schedule one heads-up for the next predicted busy window. Respects the
+  /// vibe-alerts toggle + quiet hours and degrades to "no alert" whenever
+  /// there is insufficient history. Safe fallback: any failure is swallowed —
+  /// check-in UX is never affected.
+  Future<void> _scheduleSmartHeadsUp(Venue venue) async {
+    try {
+      final prefs = ref.read(notificationPreferencesProvider).valueOrNull;
+      if (prefs != null && !prefs.vibeAlerts) return;
+      final history = CrowdHistoryStore.instance.observationsFor(venue.id);
+      if (history.isEmpty) return; // no data → no alert, deliberately
+      final model = CrowdPredictionModel()..train(history);
+      final now = DateTime.now();
+      final levels = <int, double>{};
+      for (var h = 0; h < 24; h++) {
+        levels[h] =
+            model.predict(DateTime(now.year, now.month, now.day, h)).level;
+      }
+      final sendAt = SmartNotificationTiming.bestSendTime(
+        day: now,
+        peakLevels: levels,
+        quietHoursStart: prefs?.quietHoursStart,
+        quietHoursEnd: prefs?.quietHoursEnd,
+      );
+      if (sendAt == null) return;
+      final scheduled = await ref
+          .read(smartVenueAlertSchedulerProvider)
+          .scheduleVenueHeadsUp(
+              venueId: venue.id, venueName: venue.name, sendAt: sendAt);
+      if (scheduled) {
+        ref
+            .read(observabilityProvider)
+            .trackEvent('smart_alert_scheduled', {'venue_id': venue.id});
+      }
+    } catch (_) {
+      // never propagate: smart alerts are best-effort extras
+    }
+  }
+
   Future<void> _checkIn(Venue venue) async {
     if (!await guardGuestAction(context) || !mounted) return;
     setState(() => _checkingIn = true);
@@ -141,6 +189,20 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
       ref.invalidate(checkInsProvider);
       ref.invalidate(achievementsProvider);
       ref.invalidate(leaderboardProvider);
+      // Phase 7 — strong positive signal for the on-device affinity model and
+      // product observability.
+      ref
+          .read(userAffinitiesProvider.notifier)
+          .record(venueType: venue.type, vibe: venue.currentVibe, weight: 1.0);
+      ref.read(observabilityProvider).trackEvent(
+          'venue_checked_in', {'venue_id': venue.id, 'venue_type': venue.type});
+      // Phase 7 — feed the rolling local crowd history with the live snapshot
+      // so the statistical prediction fallback keeps improving, then (if the
+      // user has vibe alerts enabled) schedule a smart heads-up before the
+      // next predicted busy window, respecting quiet hours and permissions.
+      CrowdHistoryStore.instance
+          .record(venue.id, venue.busyness, DateTime.now());
+      _scheduleSmartHeadsUp(venue);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(checkIn.pointsAwarded > 0
@@ -181,26 +243,14 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                       child: Stack(
                         children: [
                           venue.coverImageUrl != null
-                              ? Image.network(
-                                  venue.coverImageUrl!.startsWith('http')
+                              ? AppCachedImage(
+                                  url: venue.coverImageUrl!.startsWith('http')
                                       ? venue.coverImageUrl!
                                       : '${Env.apiBaseUrl}${venue.coverImageUrl!.startsWith('/') ? '' : '/'}${venue.coverImageUrl}',
                                   width: double.infinity,
                                   height: double.infinity,
                                   fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      color: const Color(0xFF334155),
-                                      child: const Center(
-                                        child: CircularProgressIndicator(
-                                            color: Color(0xFF2DD4BF)),
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Container(
+                                  placeholder: Container(
                                     color: const Color(0xFF334155),
                                     child: const Center(
                                       child: Icon(Icons.image,
@@ -547,9 +597,21 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                 ),
               ],
             ),
-            Text(
-              venue.busyness,
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  venue.busyness,
+                  style:
+                      const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                ),
+                // Phase 7 — statistical crowd-outlook badge (backend history +
+                // local fallback, honest confidence indication).
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: PredictionBadge(venueId: venue.id),
+                ),
+              ],
             ),
           ],
         ),

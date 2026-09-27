@@ -47,6 +47,33 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Google OAuth server client ID (Web OAuth client from Google Cloud Console).
+        // Provide via key.properties / ~/.gradle/gradle.properties as GOOGLE_WEB_CLIENT_ID,
+        // or with -PGOOGLE_WEB_CLIENT_ID=... on the Gradle command line. The release
+        // build must NOT ship with this unset (Google sign-in without it fails at runtime).
+        val googleWebClientId = (project.findProperty("GOOGLE_WEB_CLIENT_ID") as String?)
+            ?: keystoreProperties.getProperty("googleWebClientId")
+            ?: System.getenv("GOOGLE_WEB_CLIENT_ID")
+            ?: "GOOGLE_WEB_CLIENT_ID_NOT_SET"
+        manifestPlaceholders["googleWebClientId"] = googleWebClientId
+        if (googleWebClientId == "GOOGLE_WEB_CLIENT_ID_NOT_SET") {
+            logger.warn(
+                "WARNING: GOOGLE_WEB_CLIENT_ID is not configured; " +
+                    "Google sign-in backed by the server client ID will not work in this build.",
+            )
+        }
+
+        val googleMapsApiKey = (project.findProperty("GOOGLE_MAPS_API_KEY") as String?)
+            ?: keystoreProperties.getProperty("googleMapsApiKey")
+            ?: System.getenv("GOOGLE_MAPS_API_KEY")
+            ?: "GOOGLE_MAPS_API_KEY_NOT_SET"
+        manifestPlaceholders["googleMapsApiKey"] = googleMapsApiKey
+        if (googleMapsApiKey == "GOOGLE_MAPS_API_KEY_NOT_SET") {
+            logger.warn(
+                "WARNING: GOOGLE_MAPS_API_KEY is not configured; maps will not work in this build.",
+            )
+        }
     }
 
     signingConfigs {

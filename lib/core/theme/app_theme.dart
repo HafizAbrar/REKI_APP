@@ -25,8 +25,8 @@ class AppTheme {
       error: Color(0xFFEF4444),
       onError: Colors.white,
     ),
-    inputDecorationTheme: InputDecorationTheme(
-      errorStyle: const TextStyle(
+    inputDecorationTheme: const InputDecorationTheme(
+      errorStyle: TextStyle(
         color: Color(0xFFEF4444),
         fontSize: 12,
         fontWeight: FontWeight.w500,

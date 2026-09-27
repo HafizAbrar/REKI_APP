@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/app_cached_image.dart';
 import '../data/user_preferences_provider.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -300,13 +301,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           fit: BoxFit.cover, width: 100, height: 100);
     }
     if (_existingAvatarUrl != null && _existingAvatarUrl!.isNotEmpty) {
-      return Image.network(
-        _existingAvatarUrl!,
+      return AppCachedImage(
+        url: _existingAvatarUrl,
         fit: BoxFit.cover,
         width: 100,
         height: 100,
-        errorBuilder: (_, __, ___) =>
-            const Icon(Icons.person, color: Colors.white, size: 48),
+        placeholder: const Icon(Icons.person, color: Colors.white, size: 48),
       );
     }
     return const Icon(Icons.person, color: Colors.white, size: 48);

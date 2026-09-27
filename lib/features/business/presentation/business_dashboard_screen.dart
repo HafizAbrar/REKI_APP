@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'business_provider.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/security/biometric_auth_service.dart';
+import '../../../core/services/observability_service.dart';
 import '../../../core/theme/app_theme.dart';
 
 class BusinessDashboardScreen extends ConsumerStatefulWidget {
@@ -963,14 +965,35 @@ class _WeatherCard extends StatelessWidget {
 
 // ── Quick Actions Grid ───────────────────────────────────────────────────────
 
-class _QuickActionsGrid extends StatelessWidget {
+class _QuickActionsGrid extends ConsumerWidget {
   final String venueId;
   final String venueName;
 
   const _QuickActionsGrid({required this.venueId, required this.venueName});
 
+  /// Phase 8 — billing & subscription details are gated behind an on-device
+  /// biometric proof, the standard defence-in-depth measure for financial
+  /// surfaces. Falls through silently when the device has no biometrics.
+  Future<void> _openBilling(BuildContext context, WidgetRef ref) async {
+    final biometrics = ref.read(biometricAuthServiceProvider);
+    final observability = ref.read(observabilityProvider);
+    if (await biometrics.isAvailable()) {
+      observability.trackEvent('biometric_prompt_shown', {'surface': 'billing'});
+      final ok = await biometrics.authenticate(
+          reason: 'Authenticate to view subscription & billing');
+      if (ok) {
+        observability.trackEvent('biometric_success', {'surface': 'billing'});
+      } else {
+        // Cancelled / failed — stay on the dashboard, never loop the prompt.
+        observability.trackEvent('biometric_failed', {'surface': 'billing'});
+        return;
+      }
+    }
+    if (context.mounted) context.push('/billing');
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1026,6 +1049,14 @@ class _QuickActionsGrid extends StatelessWidget {
               label: 'Staff',
               color: const Color(0xFF10B981),
               onTap: () => context.push('/staff-management'),
+            ),
+            // Phase 7 — entry point for the previously unreachable /paywall &
+            // /billing routes, protected by an on-device biometric check.
+            _ActionTile(
+              icon: Icons.workspace_premium_outlined,
+              label: 'Subscription & Billing',
+              color: const Color(0xFFF43F5E),
+              onTap: () => _openBilling(context, ref),
             ),
           ],
         ),

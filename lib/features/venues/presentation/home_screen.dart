@@ -11,6 +11,7 @@ import '../../../features/city_selection/presentation/city_selection_screen.dart
 import '../../../shared/widgets/app_cached_image.dart';
 import '../../../shared/widgets/guest_guard.dart';
 import '../../../shared/widgets/venue_budget_tag.dart';
+import '../../recommendations/presentation/recommended_section.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -279,14 +280,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             return _buildNoResults(filters.isActive);
                           }
 
-                          return ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 132),
-                            itemCount: filteredVenues.length,
-                            itemBuilder: (context, index) => Padding(
-                              key: ValueKey(filteredVenues[index].id),
-                              padding: const EdgeInsets.only(bottom: 24),
-                              child:
-                                  _buildVenueCard(venue: filteredVenues[index]),
+                          return NotificationListener<ScrollNotification>(
+                            onNotification: (notification) {
+                              if (notification.metrics.extentAfter < 600) {
+                                ref
+                                    .read(venueManagementProvider.notifier)
+                                    .loadMore();
+                              }
+                              return false;
+                            },
+                            child: ListView.builder(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 16, 16, 132),
+                              // Phase 7 — first item is the local-heuristic
+                              // recommendation strip; +1 for it.
+                              itemCount: filteredVenues.length + 1,
+                              itemBuilder: (context, index) {
+                                if (index == 0) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: RecommendedSection(
+                                      onVenueTap: (id) =>
+                                          context.push('/venue/$id'),
+                                    ),
+                                  );
+                                }
+                                final venue = filteredVenues[index - 1];
+                                return Padding(
+                                  key: ValueKey(venue.id),
+                                  padding: const EdgeInsets.only(bottom: 24),
+                                  child: _buildVenueCard(venue: venue),
+                                );
+                              },
                             ),
                           );
                         },
@@ -993,82 +1018,90 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildNavItem(IconData icon, int index,
       {bool hasNotification = false}) {
     bool isActive = _selectedNavIndex == index;
-    return GestureDetector(
-      onTap: () {
-        if (index == 1) {
-          context
-              .push('/map')
-              .then((_) => setState(() => _selectedNavIndex = 0));
-        } else if (index == 2) {
-          guardGuestAction(context).then((allowed) {
-            if (allowed && mounted) {
-              context
-                  .push('/offers')
-                  .then((_) => setState(() => _selectedNavIndex = 0));
-            }
-          });
-        } else if (index == 3) {
-          guardGuestAction(context).then((allowed) {
-            if (allowed && mounted) {
-              context
-                  .push('/profile')
-                  .then((_) => setState(() => _selectedNavIndex = 0));
-            }
-          });
-        } else {
-          setState(() => _selectedNavIndex = index);
-        }
-      },
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: isActive
-                    ? const Color(0xFF2DD4BF)
-                    : const Color(0xFF94A3B8),
-                size: 24,
-              ),
-              if (isActive)
-                Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  width: 4,
-                  height: 4,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF2DD4BF),
-                    shape: BoxShape.circle,
+    const navLabels = ['Home', 'Map', 'Offers', 'Profile'];
+    final label = index < navLabels.length ? navLabels[index] : 'Tab $index';
+    return Semantics(
+      button: true,
+      selected: isActive,
+      label: label,
+      child: GestureDetector(
+        onTap: () {
+          if (index == 1) {
+            context
+                .push('/map')
+                .then((_) => setState(() => _selectedNavIndex = 0));
+          } else if (index == 2) {
+            guardGuestAction(context).then((allowed) {
+              if (allowed && mounted) {
+                context
+                    .push('/offers')
+                    .then((_) => setState(() => _selectedNavIndex = 0));
+              }
+            });
+          } else if (index == 3) {
+            guardGuestAction(context).then((allowed) {
+              if (allowed && mounted) {
+                context
+                    .push('/profile')
+                    .then((_) => setState(() => _selectedNavIndex = 0));
+              }
+            });
+          } else {
+            setState(() => _selectedNavIndex = index);
+          }
+        },
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  color: isActive
+                      ? const Color(0xFF2DD4BF)
+                      : const Color(0xFF94A3B8),
+                  size: 24,
+                ),
+                if (isActive)
+                  Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    width: 4,
+                    height: 4,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF2DD4BF),
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-            ],
-          ),
-          if (hasNotification)
-            Positioned(
-              top: -4,
-              right: -4,
-              child: Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF0F172A), width: 2),
-                ),
-                child: const Center(
-                  child: Text(
-                    '3',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+              ],
+            ),
+            if (hasNotification)
+              Positioned(
+                top: -4,
+                right: -4,
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border:
+                        Border.all(color: const Color(0xFF0F172A), width: 2),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '3',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

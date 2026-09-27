@@ -15,6 +15,8 @@ final venueManagementProvider =
 });
 
 class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
+  static const _pageSize = 20;
+
   final VenueRepository _repository;
   final Ref _ref;
 
@@ -23,9 +25,15 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
 
   int _loadVersion = 0;
   bool _loading = false;
+  bool _loadingMore = false;
+  bool _hasMore = true;
+  int _page = 1;
+
   Future<void> loadVenues({bool silent = false}) async {
     if (!mounted || (silent && _loading)) return;
     _loading = true;
+    _page = 1;
+    _hasMore = true;
     final version = ++_loadVersion;
     if (!silent) state = const AsyncValue.loading();
     try {
@@ -38,7 +46,8 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
           final snapshot =
               await venueApi.getLiveSnapshot(city: selectedCity?.slug);
           if (!mounted || version != _loadVersion) return;
-          final raw = snapshot['venues'] ?? snapshot['data'] ?? snapshot['items'];
+          final raw =
+              snapshot['venues'] ?? snapshot['data'] ?? snapshot['items'];
           if (raw is List && raw.isNotEmpty) {
             final venues = raw
                 .map((j) {
@@ -52,6 +61,7 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
                 .toList();
             if (venues.isNotEmpty && mounted && version == _loadVersion) {
               state = AsyncValue.data(venues);
+              _hasMore = venues.length >= _pageSize;
               _loading = false;
               return;
             }
@@ -60,10 +70,17 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
           // Snapshot unavailable — fall through to full venue list
         }
       }
-      final result = await _repository.getAllVenues(cityId: selectedCity?.slug);
+      final result = await _repository.getAllVenues(
+        cityId: selectedCity?.slug,
+        page: _page,
+        limit: _pageSize,
+      );
       if (!mounted || version != _loadVersion) return;
       state = result.when(
-        success: (venues) => AsyncValue.data(venues),
+        success: (venues) {
+          _hasMore = venues.length >= _pageSize;
+          return AsyncValue.data(venues);
+        },
         failure: (error) => silent && state.hasValue
             ? state
             : AsyncValue.error(error, StackTrace.current),
@@ -74,6 +91,39 @@ class VenueManagementNotifier extends StateNotifier<AsyncValue<List<Venue>>> {
       }
     } finally {
       if (version == _loadVersion) _loading = false;
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (!mounted || _loading || _loadingMore || !_hasMore || !state.hasValue) {
+      return;
+    }
+    _loadingMore = true;
+    final version = _loadVersion;
+    final nextPage = _page + 1;
+    try {
+      final selectedCity = await _ref.read(selectedCityProvider.future);
+      final result = await _repository.getAllVenues(
+        cityId: selectedCity?.slug,
+        page: nextPage,
+        limit: _pageSize,
+      );
+      if (!mounted || version != _loadVersion) return;
+      result.when(
+        success: (venues) {
+          final current = state.valueOrNull ?? const <Venue>[];
+          final seen = current.map((venue) => venue.id).toSet();
+          final unique = venues.where((venue) => seen.add(venue.id)).toList();
+          state = AsyncValue.data([...current, ...unique]);
+          _page = nextPage;
+          _hasMore = venues.length >= _pageSize;
+        },
+        failure: (_) {
+          // Keep the current page visible; the next scroll can retry.
+        },
+      );
+    } finally {
+      _loadingMore = false;
     }
   }
 

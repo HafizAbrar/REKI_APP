@@ -46,8 +46,7 @@ class OfflineSyncService {
         final retries = row['retries'] as int;
         if (retries >= _maxRetries) {
           appLogger.w(
-              'OfflineSync: dropping ${row['action']} after $_maxRetries retries');
-          await _db.removeAction(id);
+              'OfflineSync: retaining ${row['action']} after $_maxRetries retries for recovery');
           continue;
         }
         try {

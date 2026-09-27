@@ -11,7 +11,7 @@
         android:label="reki_mvp"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -53,10 +53,10 @@
             android:value="2" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCcEnQ1uLbE5qqsuh8qxJHQFNpHzDuv9Cc" />
+            android:value="${googleMapsApiKey}" />
         <meta-data
             android:name="com.google.android.gms.auth.api.signin.CLIENT_ID"
-            android:value="YOUR_WEB_CLIENT_ID_HERE" />
+            android:value="${googleWebClientId}" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

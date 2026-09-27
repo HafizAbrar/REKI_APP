@@ -1,0 +1,2 @@
+package_name("uk.reki.app")
+# json_key_file path is supplied via PLAY_STORE_CONFIG_JSON in CI.

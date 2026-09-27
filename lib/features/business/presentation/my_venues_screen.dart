@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/app_cached_image.dart';
 import 'business_provider.dart';
 
 class MyVenuesScreen extends ConsumerWidget {
@@ -165,22 +166,12 @@ class _VenueCard extends ConsumerWidget {
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(16)),
               child: coverImage != null
-                  ? Image.network(
-                      coverImage,
+                  ? AppCachedImage(
+                      url: coverImage,
                       width: double.infinity,
                       height: 120,
                       fit: BoxFit.cover,
-                      loadingBuilder: (_, child, progress) => progress == null
-                          ? child
-                          : Container(
-                              color: const Color(0xFF0F172A),
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                    color: AppTheme.primaryColor,
-                                    strokeWidth: 2),
-                              ),
-                            ),
-                      errorBuilder: (_, __, ___) => Container(
+                      placeholder: Container(
                         color: const Color(0xFF0F172A),
                         child: Center(
                           child: Icon(Icons.broken_image,

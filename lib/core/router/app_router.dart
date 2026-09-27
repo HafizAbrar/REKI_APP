@@ -41,6 +41,12 @@ import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/business/presentation/create_venue_screen.dart';
 import '../../features/social/presentation/social_hub_screen.dart';
 import '../../features/business/presentation/staff_management_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/subscription/presentation/paywall_screen.dart';
+import '../../features/subscription/presentation/billing_screen.dart';
+import '../../features/subscription/presentation/widgets/feature_gate.dart';
+import '../../features/subscription/data/subscription_models.dart';
+import '../security/security_blocked_screen.dart';
 
 String? _routeGuard(BuildContext context, GoRouterState state) =>
     roleRedirect(AuthService().currentUser, state.matchedLocation);
@@ -166,9 +172,17 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/venue-analytics/:id',
-      builder: (_, state) => VenueAnalyticsScreen(
-        venueId: state.pathParameters['id'] ?? '',
-        venueName: state.uri.queryParameters['name'] ?? '',
+      // Phase 7 — advanced analytics is a Pro-tier feature; gate client-side
+      // (backend still enforces authoritatively).
+      builder: (_, state) => Scaffold(
+        body: FeatureGate(
+          minimumTier: SubscriptionTier.pro,
+          featureName: 'Advanced analytics',
+          child: VenueAnalyticsScreen(
+            venueId: state.pathParameters['id'] ?? '',
+            venueName: state.uri.queryParameters['name'] ?? '',
+          ),
+        ),
       ),
     ),
     GoRoute(
@@ -204,5 +218,16 @@ final appRouter = GoRouter(
     GoRoute(
         path: '/staff-management',
         builder: (_, __) => const StaffManagementScreen()),
+
+    // ── Phase 7 & 8 — Onboarding, Payments & Billing ─────────────────────
+    GoRoute(
+        path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
+    GoRoute(path: '/paywall', builder: (_, __) => const PaywallScreen()),
+    GoRoute(path: '/billing', builder: (_, __) => const BillingScreen()),
+    // Phase 8 — RASP hard-threat blocking screen (see main.dart).
+    GoRoute(
+      path: '/security-blocked',
+      builder: (_, __) => const SecurityBlockedScreen(),
+    ),
   ],
 );

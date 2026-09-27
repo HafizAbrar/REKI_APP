@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../data/offer_detail_provider.dart';
+import '../../../core/services/app_rating_service.dart';
+import '../../../core/services/observability_service.dart';
 
 class OfferRedeemedScreen extends ConsumerStatefulWidget {
   final String offerId;
@@ -404,16 +406,22 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
   }
 
   Widget _iconBtn(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.08),
-          shape: BoxShape.circle,
+    return Semantics(
+      button: true,
+      label: 'Back',
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          // 44x44 logical px minimum touch target (WCAG / Apple HIG).
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.white, size: 18),
         ),
-        child: Icon(icon, color: Colors.white, size: 18),
       ),
     );
   }
@@ -425,6 +433,12 @@ class _OfferRedeemedScreenState extends ConsumerState<OfferRedeemedScreen> {
 
     if (success) {
       setState(() => _redeemed = true);
+      // Phase 8 — genuine positive moment: successful redemption is the
+      // highest-signal satisfaction event; feeds store-rating prompts
+      // (90-day cooldown / max 3 prompts enforced inside the service).
+      ref.read(appRatingServiceProvider).recordPositiveMoment();
+      ref.read(observabilityProvider).trackEvent(
+          'offer_redeemed', {'offer_id': widget.offerId});
     } else {
       final err = ref.read(offerActionProvider(widget.offerId)).error;
       ScaffoldMessenger.of(context).showSnackBar(

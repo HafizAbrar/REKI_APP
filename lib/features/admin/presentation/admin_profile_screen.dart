@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/network/user_api_service.dart';
+import '../../../shared/widgets/app_cached_image.dart';
 
 class AdminProfileScreen extends ConsumerStatefulWidget {
   const AdminProfileScreen({super.key});
@@ -221,10 +222,13 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
                               ),
                               child: ClipOval(
                                 child: _avatarUrl != null
-                                    ? Image.network(_avatarUrl!,
+                                    ? AppCachedImage(
+                                        url: _avatarUrl,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            _avatarFallback())
+                                        width: 100,
+                                        height: 100,
+                                        placeholder: _avatarFallback(),
+                                      )
                                     : _avatarFallback(),
                               ),
                             ),

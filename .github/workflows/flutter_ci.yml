@@ -1,0 +1,78 @@
+# Phase 8 — Full CI/CD pipeline (GitHub Actions).
+# On push/PR: analyze + test. On main: build & (on tag) deploy via Fastlane.
+name: Flutter CI/CD
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  analyze-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze --fatal-warnings
+      - run: flutter test --coverage
+      - run: dart run tool/check_coverage.dart 9.0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flutter-coverage
+          path: coverage/lcov.info
+
+  build-android:
+    needs: analyze-test
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: flutter pub get
+      - name: Decode signing keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
+      - name: Build release AAB
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: >
+          flutter build appbundle --release
+          --dart-define=API_BASE_URL=https://api.reki.uk
+          --dart-define=CERT_PINS=${{ secrets.CERT_PINS }}
+          --dart-define=STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release.aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
+  deploy-stores:
+    needs: build-android
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-release.aab
+          path: android/fastlane/
+      - name: Deploy to Google Play (internal track)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: android
+      - run: bundle exec fastlane deploy_internal
+        working-directory: android
+        env:
+          PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}

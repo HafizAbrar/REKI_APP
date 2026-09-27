@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/router/role_navigation.dart';
+import '../onboarding/presentation/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,10 +57,12 @@ class _SplashScreenState extends State<SplashScreen>
       debugPrint('Splash auth check failed: $e');
     }
 
-    // No token or failed to fetch user, go to login
+    // No token or failed to fetch user. Phase 8 — first-run onboarding.
     if (mounted && !_navigated) {
       _navigated = true;
-      context.go('/login');
+      final onboardingDone = await OnboardingScreen.hasCompleted();
+      if (!mounted) return;
+      context.go(onboardingDone ? '/login' : '/onboarding');
     }
   }
 

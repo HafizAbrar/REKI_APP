@@ -194,7 +194,7 @@ packages:
     source: hosted
     version: "0.3.5+2"
   crypto:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: crypto
       sha256: c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf
@@ -531,6 +531,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  flutter_stripe:
+    dependency: "direct main"
+    description:
+      name: flutter_stripe
+      sha256: a474b283f4b07e8973687514bf48762e618073b0d6b7acc45cea9a60466d4f8c
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.5.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -541,6 +549,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  freerasp:
+    dependency: "direct main"
+    description:
+      name: freerasp
+      sha256: "5b9a3402a7a30d928897e2264e2700a30db1df14de289f500b3a0cf50dc19df2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.5.1"
+  freezed_annotation:
+    dependency: transitive
+    description:
+      name: freezed_annotation
+      sha256: c2e2d632dd9b8a2b7751117abcfc2b4888ecfe181bd9fca7170d9ef02e595fe2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.4"
   geolocator:
     dependency: "direct main"
     description:
@@ -805,6 +829,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.2"
+  in_app_review:
+    dependency: "direct main"
+    description:
+      name: in_app_review
+      sha256: "364db0c160b37fe7fad9cdaa18f968473924b17368869010af902760421b6bf8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.12"
+  in_app_review_platform_interface:
+    dependency: transitive
+    description:
+      name: in_app_review_platform_interface
+      sha256: fed2c755f2125caa9ae10495a3c163aa7fab5af3585a9c62ef4a6920c5b45f10
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.5"
   intl:
     dependency: "direct main"
     description:
@@ -877,6 +917,46 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  local_auth:
+    dependency: "direct main"
+    description:
+      name: local_auth
+      sha256: "434d854cf478f17f12ab29a76a02b3067f86a63a6d6c4eb8fbfdcfe4879c1b7b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.0"
+  local_auth_android:
+    dependency: transitive
+    description:
+      name: local_auth_android
+      sha256: "48924f4a8b3cc45994ad5993e2e232d3b00788a305c1bf1c7db32cef281ce9a3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.52"
+  local_auth_darwin:
+    dependency: transitive
+    description:
+      name: local_auth_darwin
+      sha256: "0e9706a8543a4a2eee60346294d6a633dd7c3ee60fae6b752570457c4ff32055"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
+  local_auth_platform_interface:
+    dependency: transitive
+    description:
+      name: local_auth_platform_interface
+      sha256: f98b8e388588583d3f781f6806e4f4c9f9e189d898d27f0c249b93a1973dd122
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
+  local_auth_windows:
+    dependency: transitive
+    description:
+      name: local_auth_windows
+      sha256: bc4e66a29b0fdf751aafbec923b5bed7ad6ed3614875d8151afe2578520b2ab5
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.11"
   logger:
     dependency: "direct main"
     description:
@@ -1402,6 +1482,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  stripe_android:
+    dependency: transitive
+    description:
+      name: stripe_android
+      sha256: a666352e0c20753ecd8feebb5944882bf597167be4f020641266515a495bd55f
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.5.0"
+  stripe_ios:
+    dependency: transitive
+    description:
+      name: stripe_ios
+      sha256: "0f7afed3ac61e544e7525da9b692b23d93e762d56f6c9aa7f77fc6d9a686a65d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.5.0"
+  stripe_platform_interface:
+    dependency: transitive
+    description:
+      name: stripe_platform_interface
+      sha256: "23c10f3875da07f85a6196fcb676e64c767ad2d04ec73ba4e941ac797a4ee4d3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.5.0"
   synchronized:
     dependency: transitive
     description:

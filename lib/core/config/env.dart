@@ -26,6 +26,13 @@ class Env {
   );
 
   /// OAuth 2.0 Web client used to request a backend-verifiable Google ID token.
+  /// Phase 8 — SHA-256 certificate pins for TLS pinning (base64).
+  /// Comma-separated via --dart-define, e.g. "abc...=,def...=".
+  static const String certificatePins = String.fromEnvironment(
+    'CERT_PINS',
+    defaultValue: '',
+  );
+
   static const String googleServerClientId = String.fromEnvironment(
     'GOOGLE_SERVER_CLIENT_ID',
     defaultValue:

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'core/network/interceptors/auth_interceptor.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/device_registration_service.dart';
+import 'core/security/app_security_service.dart';
+import 'core/services/observability_service.dart';
 import 'shared/widgets/connectivity_banner.dart';
 import 'features/city_selection/presentation/city_selection_screen.dart'
     show selectedCityProvider;
@@ -29,12 +32,25 @@ Future<void> main() async {
     await Firebase.initializeApp();
     await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    // Phase 8 — capture uncaught asynchronous errors as Crashlytics fatals.
+    // FlutterError.onError above handles synchronous build/layout errors.
+    PlatformDispatcher.instance.onError = (error, stack) {
+      try {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      } catch (_) {}
+      return true; // handled — the engine would otherwise kill the process
+    };
     appLogger.i('Firebase initialised');
   } catch (e) {
     appLogger.w('Firebase init skipped: $e');
   }
 
   NotificationService().initialize();
+
+  // Phase 8 — runtime security (jailbreak/root/tamper detection) is wired in
+  // _RekiAppState._initRuntimeSecurity(), where the hard-threat callback needs
+  // Riverpod context for navigation and observability.
+
   appLogger.i('REKI MVP started');
 
   runApp(const ProviderScope(child: RekiApp()));
@@ -54,6 +70,22 @@ class _RekiAppState extends ConsumerState<RekiApp> {
     _initFcm();
     _initConnectivity();
     _listenSessionExpiry();
+    _initRuntimeSecurity();
+  }
+
+  /// Phase 8 — RASP hard-threat response: on a serious integrity threat
+  /// (tampered build, jailbreak/root) block access to sensitive business and
+  /// payment functionality behind a non-dismissable security screen, and log
+  /// a safe anonymous event. Debug builds skip freeRASP entirely.
+  void _initRuntimeSecurity() {
+    final security = ref.read(appSecurityServiceProvider);
+    security.onHardThreat = (threat) {
+      ref.read(observabilityProvider).trackEvent('integrity_threat_detected', {
+        'platform': 'flutter',
+      });
+      appRouter.go('/security-blocked');
+    };
+    unawaited(security.initialise());
   }
 
   final _subscriptions = <StreamSubscription<dynamic>>[];
